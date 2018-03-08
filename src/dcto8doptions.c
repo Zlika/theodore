@@ -48,14 +48,11 @@ int frequency; //frequence 6809 en kHz
 //variables externes
 extern SDL_Surface *dialogbox;
 extern int xclient, yclient, vblnumbermax;
-extern SDL_Surface *buttonsurfaceup[][LANGUAGE_MAX];
-extern SDL_Surface *buttonsurfacedown[][LANGUAGE_MAX];
 extern int xclient, yclient, vblnumbermax;
 extern int k7protection; //protection k7 (0=lecture/ecriture 1=lecture seule)
 extern int fdprotection; //protection fd (0=lecture/ecriture 1=lecture seule)
 extern int keybpriority; //0=manettes prioritaires 1=clavier prioritaire
 extern char *msg[MSG_MAX][LANGUAGE_MAX]; //messages en plusieurs langues
-extern int rmask, gmask, bmask, amask;
 extern button bouton[];
 extern char path[][TEXT_MAXLENGTH];
 
@@ -119,7 +116,7 @@ void Initdefault()
 //Mise a jour d'un parametre avec la valeur i de la popuptable////////////////
 void Setoption(int i)
 {
- int f[5] = {100, 500, 1000, 2000, 5000}; //frequences provesseur
+ int f[5] = {100, 500, 1000, 2000, 5000}; //frequences processeur
  int v[4] = {10, 4, 2, 1}; //nombre de vbl entre deux trames affichees
  extern int dialog, popuptable;
  if(i >= 0) switch(popuptable)
@@ -263,22 +260,22 @@ void Initoptions()
 //Option save ////////////////////////////////////////////////////////////////
 void Saveoptions()
 {
- int i, r;
+ int i;
  i = 0;
  fseek(fpi, 0, SEEK_SET);
- r = fwrite("dcto8dini-01", 12, 1, fpi);
- r = fwrite(&language, 4, 1, fpi);  //langue
- r = fwrite(&frequency, 4, 1, fpi); //frequence 6809
- r = fwrite(&xclient, 4, 1, fpi);   //largeur ecran
- r = fwrite(&yclient, 4, 1, fpi);   //hauteur ecran
- r = fwrite(&vblnumbermax, 4, 1, fpi);
- r = fwrite(&k7protection, 4, 1, fpi);
- r = fwrite(&fdprotection, 4, 1, fpi);
- r = fwrite(&keybpriority, 4, 1, fpi);
- r = fwrite(&i, 4, 1, fpi);         //reserve
- r = fwrite(&i, 4, 1, fpi);         //reserve
- r = fwrite(&i, 4, 1, fpi);         //reserve
- r = fwrite(&i, 4, 1, fpi);         //reserve
- r = fwrite(&i, 4, 1, fpi);         //reserve
+ fwrite("dcto8dini-01", 12, 1, fpi);
+ fwrite(&language, 4, 1, fpi);  //langue
+ fwrite(&frequency, 4, 1, fpi); //frequence 6809
+ fwrite(&xclient, 4, 1, fpi);   //largeur ecran
+ fwrite(&yclient, 4, 1, fpi);   //hauteur ecran
+ fwrite(&vblnumbermax, 4, 1, fpi);
+ fwrite(&k7protection, 4, 1, fpi);
+ fwrite(&fdprotection, 4, 1, fpi);
+ fwrite(&keybpriority, 4, 1, fpi);
+ fwrite(&i, 4, 1, fpi);         //reserve
+ fwrite(&i, 4, 1, fpi);         //reserve
+ fwrite(&i, 4, 1, fpi);         //reserve
+ fwrite(&i, 4, 1, fpi);         //reserve
+ fwrite(&i, 4, 1, fpi);         //reserve
  fclose(fpi);
 }

@@ -752,7 +752,7 @@ Return value is set to :
   case 0x30: INDIRECT; X = W; SET_Z; return 4 + N;            /* LEAX    */
   case 0x31: INDIRECT; Y = W; SET_Z; return 4 + N;            /* LEAY    */
   //d'apres Prehisto, LEAX et LEAY positionnent aussi le bit N de CC
-  //il faut donc modifier l'émulation de ces deux instructions !!!
+  //il faut donc modifier l'emulation de ces deux instructions !!!
   case 0x32: INDIRECT; S = W; return 4 + N; /*CC not set*/    /* LEAS    */
   case 0x33: INDIRECT; U = W; return 4 + N; /*CC not set*/    /* LEAU    */
   case 0x34: PC++; Pshs(GETC(PC - 1)); return 5 + N;          /* PSHS    */

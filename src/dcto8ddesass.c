@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// DCTO8DDESASS.C - boîte de dialogue pour le desassembleur
+// DCTO8DDESASS.C - boite de dialogue pour le desassembleur
 // Author   : Daniel Coulom - danielcoulom@gmail.com
 // Web site : http://dcto8.free.fr
 //
@@ -45,12 +45,10 @@ const dialogeditbox desasseditbox[DESASSEDITBOX_MAX] = {
 
 extern SDL_Surface *dialogbox; //surface d'affichage dialogbox
 extern int language;
-extern int dialog;             //0 ou n°boite de dialogue affichee
+extern int dialog;             //0 ou numero boite de dialogue affichee
 extern SDL_Surface *dialogbox; //surface d'affichage dialogbox
 extern char *msg[MSG_MAX][LANGUAGE_MAX]; //messages en plusieurs langues
 extern const int blanc;
-extern const SDL_Color textnoir;
-extern SDL_Surface *textbox;
 extern button bouton[];
 
 int Dasm6809(char *string, int a);
@@ -82,7 +80,7 @@ void Displaydesass(int x)
  }
 }
 
-//Création de la boite de dialogue du desassembleur ///////////////////////////
+//Creation de la boite de dialogue du desassembleur ///////////////////////////
 void Drawdesassbox()
 {
  SDL_Rect rect;
@@ -128,6 +126,7 @@ void Desasseditboxclick(int editbox)
 void Desassbuttonclick(int button)
 {
  int i, x;
+ unsigned int address;
  //dessin du bouton enfonce
  Drawbutton(&desassbutton[button], 1);
  Displayscreen();
@@ -135,8 +134,8 @@ void Desassbuttonclick(int button)
  x = 0;
  switch(button)
  {
-  case  0: sscanf(startaddresshexa, "%x", &startaddress);
-           startaddress &= 0xffff;
+  case  0: sscanf(startaddresshexa, "%x", &address);
+           startaddress = address & 0xffff;
            x = startaddress;
            break;
   case  1: x = nextaddress;

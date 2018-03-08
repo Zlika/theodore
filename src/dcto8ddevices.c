@@ -49,7 +49,7 @@ extern void (*Mputc)(unsigned short a, char c);
 //6809 registers
 extern char dc6809_cc;
 extern char *dc6809_a, *dc6809_b;
-extern short dc6809_x, dc6809_y, dc6809_s;
+extern short dc6809_x, dc6809_y;
 #define CC dc6809_cc
 #define A *dc6809_a
 #define B *dc6809_b
@@ -120,9 +120,9 @@ void Formatdisk()
  //erreur 72 = protection ecriture
  if(fdprotection == 1) {Diskerror(72); return;}
  u = Mgetc(0x6049) & 0xff; if(u > 03) return; //unite
- u = (1280 * u) << 8; //debut de l'unité dans le fichier .fd
+ u = (1280 * u) << 8; //debut de l'unite dans le fichier .fd
  fatlength = 160;     //80=160Ko, 160=320Ko
- //rem: fatlength provisoire !!!!! (tester la variable adéquate)
+ //rem: fatlength provisoire !!!!! (tester la variable adequate)
  //initialisation de tout le disque avec E5
  for(i = 0; i < 256; i++) buffer[i] = 0xe5;
  fseek(ffd, u, SEEK_SET);
@@ -146,7 +146,7 @@ void Loadfd(char *name)
 {
  char filename[256];
  extern char path[][TEXT_MAXLENGTH];
- //fermeture disquette éventuellement ouverte
+ //fermeture disquette eventuellement ouverte
  if(ffd) {fclose(ffd); ffd = NULL; fdname[0] = 0;}
  if(name[0] == 0) return;
  //ouverture de la nouvelle disquette
@@ -194,7 +194,7 @@ void Loadk7(char *name)
 {
  char filename[256];
  extern char path[][TEXT_MAXLENGTH];
- if(fk7) {fclose(fk7); fk7 = NULL; k7name[0] = 0;} //fermeture cassette éventuellement ouverte
+ if(fk7) {fclose(fk7); fk7 = NULL; k7name[0] = 0;} //fermeture cassette eventuellement ouverte
  if(name[0] == 0) return;
  strcpy(k7name, name);
  strcpy(filename, path[0]);
@@ -244,7 +244,7 @@ void Loadmemo(char *name)
 // Initialisation noms de fichiers et pointeur de fonction de chargement //////
 void Initfilenames(char c)
 {
- extern void (*Load[]);
+ extern void (*Load[])(char *);
  k7name[0] = 0;
  fdname[0] = 0;
  memoname[0] = 0;
@@ -301,4 +301,3 @@ void Readpenxy(int device)
  Y = ypen;
  CC &= 0xfe;
 }
-

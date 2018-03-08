@@ -1033,4 +1033,4 @@ int instruction[0x300]=
 /*11fc*/ INV,    
 /*11fd*/ INV,    
 /*11fe*/ INV,    
-/*11ff*/ INV   | INV  |  0}; 
+/*11ff*/ INV   | INV  |  0};

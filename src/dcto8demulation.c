@@ -39,12 +39,12 @@ char *rambank;       //pointeur banque ram utilisateur
 char *romsys;        //pointeur rom systeme
 char *rombank;       //pointeur banque rom ou cartouche
 //banques
-int nvideopage;      //n° page video (00-01)
-int nvideobank;      //n° banque video (00-03)
-int nrambank;        //n° banque ram (00-1f)
-int nrombank;        //n° banque rom (00-07)
-int nsystbank;       //n° banque systeme (00-01)
-int nctrlbank;       //n° banque controleur (00-03)
+int nvideopage;      //numero page video (00-01)
+int nvideobank;      //numero banque video (00-03)
+int nrambank;        //numero banque ram (00-1f)
+int nrombank;        //numero banque rom (00-07)
+int nsystbank;       //numero banque systeme (00-01)
+int nctrlbank;       //numero banque controleur (00-03)
 //flags cartouche
 int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
 int carflags;        //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
@@ -57,11 +57,11 @@ int xpen, ypen;      //lightpen coordinates
 int penbutton;       //lightpen button state
 //affichage
 int videolinecycle;  //compteur ligne (0-63)
-int videolinenumber; //numero de ligne video affichée (0-311)
+int videolinenumber; //numero de ligne video affichee (0-311)
 int vblnumber;       //compteur du nombre de vbl avant affichage
 int vblnumbermax;    //nombre de vbl entre deux affichages
 int displayflag;     //indicateur pour l'affichage
-int bordercolor;     //couleur de la bordure de l'écran
+int bordercolor;     //couleur de la bordure de l'Ã©cran
 //divers
 int sound;           //niveau du haut-parleur
 int mute;            // mute flag
@@ -72,11 +72,11 @@ int timer_irqcount;  //nombre de cycles avant la fin de l'irq timer
 //variables externes
 extern int dc6809_irq;
 
-//Accès mémoire
+//Acces memoire
 char Mgetto8d(unsigned short a);
 void Mputto8d(unsigned short a, char c);
 char (*Mgetc)(unsigned short);       //pointeur fonction courante
-short Mgetw(unsigned short a) {return (Mgetc(a) << 8 | (Mgetc(++a) & 0xff));}
+short Mgetw(unsigned short a) {return (Mgetc(a) << 8 | (Mgetc(a+1) & 0xff));}
 void (*Mputc)(unsigned short, char); //pointeur fonction courante
 void Mputw(unsigned short a, short w) {Mputc(a, w >> 8); Mputc(++a, w);}
 
@@ -95,7 +95,7 @@ E7C0= registre d'etat composite port C (CSR)
 - csr1= cp1 interrupt flag (clavier)
 - csr2= cp2 interrupt flag
 - csr3-csr6 unused and set to zeroes
-- csr7= composite interrupt flag (si au moins un interrupt flag à 1)
+- csr7= composite interrupt flag (si au moins un interrupt flag a 1)
 
 E7C1= registre de controle peripherique port C (PCRC)
 - pcr0= CP1 interruption mask (0=masked, 1=enabled)
@@ -204,7 +204,7 @@ void TO8rombank()
  //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
  //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
  //par la banque RAM definie par les 5 bits de poids faible de e7e6
- //subtilite : les deux segments de 8K de la banque sont inversés.
+ //subtilite : les deux segments de 8K de la banque sont inverses.
  if(port[0x26] & 0x20)
  {
   //e7c3 |= 4;
@@ -275,7 +275,7 @@ int Iniln()
 }
 
 int Initn()
-{//debut à 12 microsecondes ligne 56, fin à 51 microsecondes ligne 255
+{//debut a 12 microsecondes ligne 56, fin a 51 microsecondes ligne 255
  if(videolinenumber < 56) return 0;
  if(videolinenumber > 255) return 0;
  if(videolinenumber == 56) if(videolinecycle < 12) return 0;
@@ -316,14 +316,14 @@ void Joysmove(int n, int x, int y)
  Joysemul(n++, (x > 37767) ? 0 : 0x80);
 }
 
-// Initialisation programme de l'ordinateur émulé ////////////////////////////
+// Initialisation programme de l'ordinateur emule ////////////////////////////
 void Initprog()
 {
  int i;
  void Reset6809();
- for(i = 0; i < KEYBOARDKEY_MAX; i++) touche[i] = 0x80; //touches relachées
+ for(i = 0; i < KEYBOARDKEY_MAX; i++) touche[i] = 0x80; //touches relachees
  joysposition = 0xff;                      //manettes au centre
- joysaction = 0xc0;                        //boutons relachés
+ joysaction = 0xc0;                        //boutons relaches
  carflags &= 0xec;
  Mputc = Mputto8d;
  Mgetc = Mgetto8d;
@@ -349,7 +349,7 @@ void TO8dpatch(char rom[], int patch[])
  }
 }
 
-// Hardreset de l'ordinateur émulé ///////////////////////////////////////////
+// Hardreset de l'ordinateur Ã©mulÃ© ///////////////////////////////////////////
 void Hardreset()
 {
  int i;
@@ -357,9 +357,19 @@ void Hardreset()
  struct tm *loctime;
  extern int pause6809;
  pause6809 = 1;
- for(i = 0; i < sizeof(ram); i++) ram[i] = -((i & 0x80) >> 7);
- for(i = 0; i < sizeof(port); i++) port[i] = 0; port[0x09] = 0x0f;
- for(i = 0; i < sizeof(car); i++) car[i] = 0;
+ for(i = 0; i < sizeof(ram); i++)
+ {
+  ram[i] = -((i & 0x80) >> 7);
+ }
+ for(i = 0; i < sizeof(port); i++)
+ {
+  port[i] = 0;
+ }
+ port[0x09] = 0x0f;
+ for(i = 0; i < sizeof(car); i++)
+ {
+  car[i] = 0;
+ }
  //patch de la rom
  TO8dpatch(to8dbasic, to8dbasicpatch);
  TO8dpatch(to8dmoniteur - 0xe000, to8dmoniteurpatch);
@@ -485,8 +495,8 @@ void Mputto8d(unsigned short a, char c)
 {
  switch(a >> 12)
  {
-  //subtilité :
-  //quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inversés
+  //subtilite :
+  //quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inverses
   case 0x0: case 0x1:
    if(!(port[0x26] & 0x20)) {carflags = (carflags & 0xfc) | (a & 3); TO8rombank();}
    if((port[0x26] & 0x60) != 0x60) return;
@@ -526,6 +536,7 @@ void Mputto8d(unsigned short a, char c)
    case 0xe7e7: port[0x27] = c; TO8rambank(); return;
    default: return;
   }
+  return;
   default: return;
  }
  return;
@@ -538,7 +549,7 @@ char Mgetto8d(unsigned short a)
  extern int joysposition, joysaction;
  switch(a >> 12)
  {
-  //subtilité : quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inversés
+  //subtilite : quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inverses
   case 0x0: case 0x1: return (port[0x26] & 0x20) ? rombank[a + 0x2000] : rombank[a];
   case 0x2: case 0x3: return (port[0x26] & 0x20) ? rombank[a - 0x2000] : rombank[a];
   case 0x4: case 0x5: return ramvideo[a];
@@ -564,6 +575,7 @@ char Mgetto8d(unsigned short a)
             if(a < 0xe800) return(port[a & 0x3f]);
             return(romsys[a]);
   }
+  return romsys[a];
   default: return romsys[a];
  }
 }

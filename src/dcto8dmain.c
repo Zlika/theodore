@@ -26,7 +26,7 @@
 #include "dcto8dmsg.h"
 #include "dcto8dinterface.h"
 
-#define SDL_main main    //indispensable pour éviter l'erreur
+#define SDL_main main    //indispensable pour eviter l'erreur
                          //undefined reference to `WinMain@16'
 
 
@@ -53,9 +53,16 @@ void About()
  int i;
  char *text1[9], *text2[6];
  Createdialogbox(336, 236);
- for(i = 0; i < 8; i++) text1[i] = msg[i + 2][language]; text1[i] = "";
+ for(i = 0; i < 8; i++)
+ {
+  text1[i] = msg[i + 2][language];
+ }
  text1[i] = "";
- for(i = 0; i < 5; i++) text2[i] = msg[i + 20][language]; text2[i] = "";
+ for(i = 0; i < 5; i++)
+ {
+  text2[i] = msg[i + 20][language];
+ }
+ text2[i] = "";
 
  /*test police/////////////////////////////////////////////
  char string[8][33];
@@ -208,22 +215,35 @@ void Eventloop()
    switch(event.type)
    {
     case SDL_VIDEORESIZE:
-         Resizescreen(event.resize.w, event.resize.h); break;
+         Resizescreen(event.resize.w, event.resize.h);
+         break;
     case SDL_MOUSEBUTTONDOWN:
-         penbutton = 1; Mouseclick(); break;
+         penbutton = 1;
+         Mouseclick();
+         break;
     case SDL_MOUSEBUTTONUP:
-         penbutton = 0; xmove = ymove = 0; break;
+         penbutton = 0;
+         xmove = ymove = 0;
+         break;
     case SDL_MOUSEMOTION:
-         xmouse = event.motion.x; ymouse = event.motion.y;
+         xmouse = event.motion.x;
+         ymouse = event.motion.y;
          xpen = xmouse * XBITMAP / xclient - 16;
          ypen = (ymouse - YSTATUS) * YBITMAP / yclient - 8;
-         if(xmove) if(ymove) Dialogmove(); break;
+         if(xmove && ymove)
+         {
+           Dialogmove();
+         }
+         break;
     case SDL_KEYDOWN:
          Keydown(event.key.keysym.sym, event.key.keysym.scancode,
-                 event.key.keysym.unicode); break;
+                 event.key.keysym.unicode);
+         break;
     case SDL_KEYUP:
-         Keyup(event.key.keysym.sym, event.key.keysym.scancode); break;
-    case SDL_QUIT: return;
+         Keyup(event.key.keysym.sym, event.key.keysym.scancode);
+         break;
+    case SDL_QUIT:
+         return;
    }
   }
   SDL_Delay(20); blink++;
