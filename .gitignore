@@ -15,3 +15,8 @@ stamp-h1
 /src/.dirstamp
 /src/*.o
 
+.autotools
+.cproject
+.project
+.settings/
+
