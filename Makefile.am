@@ -1,7 +1,7 @@
 AM_CFLAGS = --pedantic -Wall -Wno-overflow -std=c99 -O2 -fsigned-char -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE -pie
 AM_LDFLAGS = -z relro -z now
-dcto8d_CFLAGS = $(SDL_CFLAGS) $(AM_CFLAGS)
-dcto8d_LDFLAGS = $(SDL_LIBS) $(AM_LDFLAGS)
+dcto8d_CFLAGS = $(SDL2_CFLAGS) $(AM_CFLAGS)
+dcto8d_LDFLAGS = $(SDL2_LIBS) $(AM_LDFLAGS)
 
 bin_PROGRAMS = dcto8d
 dcto8d_SOURCES = src/dc6809dass.c \

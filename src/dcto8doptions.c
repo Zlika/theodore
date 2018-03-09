@@ -224,7 +224,7 @@ void Initoptions()
  memset(currentdir, 0, 256);
  Initdefault();
  //chemins d'acces
- getcwd(currentdir, 256);
+ if (getcwd(currentdir, 256) == NULL) return;
  strcat(currentdir, "/");
  strcpy(path[0], currentdir);
  strcpy(path[1], currentdir);

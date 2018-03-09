@@ -162,11 +162,11 @@ void Loadfd(char *name)
 void Readoctetk7()
 {
  int byte = 0;
- if(fk7 == NULL) {Initprog(); Erreur(11); return;}
+ if(fk7 == NULL) {Initprog(); Erreur(__func__, "fk7 == NULL"); return;}
  byte = fgetc(fk7);
  if(byte == EOF)
  {
-  Initprog(); Erreur(12);
+  Initprog(); Erreur(__func__, "byte == EOF");
   fseek(fk7, 0, SEEK_SET); k7index = 0; Drawk7index(); return;
  }
  A = k7octet = byte; Mputc(0x2045, byte); k7bit = 0;
@@ -183,9 +183,9 @@ void Readbitk7()
 
 void Writeoctetk7()
 {
- if(fk7 == NULL) {Initprog(); Erreur(11); return;}
- if(k7protection) {Initprog(); Erreur(13); return;}
- if(fputc(A, fk7) == EOF) {Initprog(); Erreur(13); return;}
+ if(fk7 == NULL) {Initprog(); Erreur(__func__, "fk7 == NULL"); return;}
+ if(k7protection) {Initprog(); Erreur(__func__, "k7protection"); return;}
+ if(fputc(A, fk7) == EOF) {Initprog(); Erreur(__func__, "fputc(A, fk7) == EOF"); return;}
  Mputc(0x2045, 0);
  if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; Drawk7index();}
 }

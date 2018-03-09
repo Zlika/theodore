@@ -23,10 +23,12 @@
 #include <SDL.h>
 #include <string.h>
 #include "dcto8dglobal.h"
-
-#define VIDEO_MODE SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE
+#include "dcto8dicon.h"
 
 // global variables //////////////////////////////////////////////////////////
+SDL_Window *window = NULL;     //fenetre d'affichage de l'ecran
+SDL_Renderer *renderer = NULL;
+SDL_Texture *texture = NULL;   //texture mise à jour a partir de screen
 SDL_Surface *screen = NULL;    //surface d'affichage de l'ecran
 int xclient;                   //largeur fenetre utilisateur
 int yclient;                   //hauteur ecran MO5 dans fenetre utilisateur
@@ -54,7 +56,7 @@ extern int videolinenumber;
 extern char *pagevideo;
 
 extern void Drawstatusbar();
-extern void SDL_error(int n);
+extern void SDL_error(const char* function, const char* message);
 
 // Modification de la palette ////////////////////////////////////////////////
 void Palette(int n, int r, int v, int b)
@@ -69,6 +71,15 @@ void Palette(int n, int r, int v, int b)
  }
 }
 
+// Mise à jour de la fenetre graphique ///////////////////////////////////////
+void Render()
+{
+ SDL_UpdateTexture(texture, NULL, screen->pixels, screen->pitch);
+ SDL_RenderClear(renderer);
+ SDL_RenderCopy(renderer, texture, NULL, NULL);
+ SDL_RenderPresent(renderer);
+}
+
 //Display screen /////////////////////////////////////////////////////////////
 void Displayscreen()
 {
@@ -77,14 +88,14 @@ void Displayscreen()
  extern SDL_Rect dialogrect;
  extern int dialog;
  if(dialog > 0)
-   if(SDL_BlitSurface(dialogbox, NULL, screen, &dialogrect) < 0) SDL_error(31);
+   if(SDL_BlitSurface(dialogbox, NULL, screen, &dialogrect) < 0) SDL_error(__func__, "SDL_BlitSurface");
  if(--screencount < 0)  //1 fois sur 10 pour diminuer le temps d'affichage
  {
   if(statusbar != NULL)
-  if(SDL_BlitSurface(statusbar, NULL, screen, NULL) < 0) SDL_error(32);
+  if(SDL_BlitSurface(statusbar, NULL, screen, NULL) < 0) SDL_error(__func__, "SDL_BlitSurface");
   screencount = 9;
  }
- if(SDL_Flip(screen) < 0) SDL_error(33);
+ Render();
 }
 
 // Decodage octet video mode 320x16 standard /////////////////////////////////
@@ -183,7 +194,7 @@ void Displaysegment()
  segmentmax = videolinecycle - 10;
  if(segmentmax > 42) segmentmax = 42;
  if(SDL_MUSTLOCK(screen))
-   if(SDL_LockSurface(screen) < 0) {SDL_error(34); return;}
+   if(SDL_LockSurface(screen) < 0) {SDL_error(__func__, "SDL_LockSurface"); return;}
  while(currentlinesegment < segmentmax)
  {
   if(videolinenumber < 56) {Displayborder(); continue;}
@@ -200,7 +211,7 @@ void Nextline()
 {
  int *p0, *p1;
  if(SDL_MUSTLOCK(screen))
-   if(SDL_LockSurface(screen) < 0) {SDL_error(35); return;}
+   if(SDL_LockSurface(screen) < 0) {SDL_error(__func__, "SDL_LockSurface"); return;}
  p1 = pmin + (videolinenumber - 47) * yclient / YBITMAP * xclient;
  if(videolinenumber == 263) p1 = pmax;
  p0 = pcurrentline;
@@ -236,20 +247,36 @@ void Resizescreen(int x, int y)
   pmax = pmin + screen->w * screen->h;
   for(pcurrentpixel = pmin; pcurrentpixel < pmax; pcurrentpixel++)
       memcpy(pcurrentpixel, pcolor, 4);
-  if(SDL_Flip(screen) < 0) SDL_error(36);
+  Render();
  }
  //creation nouvelle surface
+ SDL_DestroyTexture(texture);
  SDL_FreeSurface(screen);
+ SDL_DestroyRenderer(renderer);
+ SDL_DestroyWindow(window);
  y -= YSTATUS;
  xclient = (x < 336) ? 336 : x;
  yclient = (y < 216) ? 216 : y;
- screen = SDL_SetVideoMode(xclient, yclient + YSTATUS, 32, VIDEO_MODE);
- if(screen == NULL)
- {
-  screen = SDL_SetVideoMode(336, 216, 8, 0);
-  SDL_WM_SetCaption(" Erreur fatale : Mode video non compatible", NULL);
-  SDL_error(37);
- }
+ window = SDL_CreateWindow("DCTO8D",
+                           SDL_WINDOWPOS_UNDEFINED,
+                           SDL_WINDOWPOS_UNDEFINED,
+                           xclient, yclient + YSTATUS,
+                           0);
+ if (window == NULL) { SDL_error(__func__, "SDL_CreateWindow"); return; }
+ SDL_SetWindowIcon(window, SDL_LoadBMP_RW(SDL_RWFromMem(dcto8dicon, sizeof(dcto8dicon)), 1));
+ renderer = SDL_CreateRenderer(window, -1, 0);
+ if (renderer == NULL) { SDL_error(__func__, "SDL_CreateRenderer"); return; }
+ screen = SDL_CreateRGBSurface(FLAGS, xclient, yclient + YSTATUS, 32,
+                                         0x00FF0000,
+                                         0x0000FF00,
+                                         0x000000FF,
+                                         0xFF000000);
+ if (screen == NULL) { SDL_error(__func__, "SDL_CreateRGBSurface"); return; }
+ texture = SDL_CreateTexture(renderer,
+                                SDL_PIXELFORMAT_ARGB8888,
+                                SDL_TEXTUREACCESS_STREAMING,
+                                xclient, yclient + YSTATUS);
+ if (texture == NULL) { SDL_error(__func__, "SDL_CreateTexture"); return; }
  pmin = (int*)(screen->pixels) + YSTATUS * xclient;
  pmax = pmin + yclient * xclient;
  //rafraichissement de l'ecran
@@ -268,3 +295,4 @@ void Resizescreen(int x, int y)
  Displayscreen();
  pause6809 = savepause6809;
 }
+

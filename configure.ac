@@ -13,7 +13,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 
 # Checks for libraries.
-PKG_CHECK_MODULES([SDL], [sdl >= 1.2.0 sdl < 2.0.0])
+PKG_CHECK_MODULES([SDL2], [sdl2 >= 2.0.0])
 
 # Checks for header files.
 AC_HEADER_STDC

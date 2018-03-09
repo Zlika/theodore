@@ -372,7 +372,7 @@ void Keyboardinit()
  }
  //recuperation des valeurs de dcto8d.ini (0x40=touches 0x140=joysticks)
  fseek(fpi, 0, SEEK_END);
- i = (int)ftell(fpi); //Info(i);
+ i = (int)ftell(fpi);
  if(i < 0x140) return;
  fseek(fpi, 0x40, SEEK_SET); j = fgetc(fpi); fseek(fpi, 0x40, SEEK_SET);
  if(j == KEYBOARDKEY_MAX) fread(to8dkeycode, 256, 1, fpi);
@@ -415,7 +415,7 @@ void Keyup(int keysym, int scancode)
 }
 
 // Key down //////////////////////////////////////////////////////////////////
-void Keydown(int sym, int scancode, int unicode)
+void Keydown(int sym, int scancode)
 {
  int ijoy, ikey, keycode;
  extern int pause6809;
@@ -424,6 +424,7 @@ void Keydown(int sym, int scancode, int unicode)
  extern void exit(int n);
  extern void Joysemul(int i, int state);
  extern void TO8key(int n);
+ extern void SwitchFullScreenMode();
  //le scancode seul ne permet pas de distinguer le pave numerique
  //keycode = scancode + 0x40 pour le pave numerique
  //keycode = scancode pour toutes les autres touches
@@ -433,33 +434,9 @@ void Keydown(int sym, int scancode, int unicode)
  lastkeycode = keycode;
  lastkeysym = sym;
 
- //essai (infructueux) de detection des deux touches shift simultanees
- //quand une touche shift est enfoncee, les mouvements de l'autre
- //ne sont pas detectes, et elle est toujours consideree comme relachee
- //idem pour les touches CTRL droit et gauche
- //difference pour les touches ALT : si la gauche est enfoncee, la droite
- //est detectee, mais pas l'inverse.
- //Remarque : ce comportement est observe dans Windows, mais pas dans Linux
-
- //static int flag = 0;
- //Uint8 *keystate;
- //SDL_PumpEvents();
- //keystate = SDL_GetKeyState(NULL);
- //flag = 256 - flag;
- //Keyboard(flag + 2 * keystate[SDLK_LSHIFT] + keystate[SDLK_RSHIFT]); return;
-
- //SDL_Event event;
- //event.key.type = SDL_KEYUP;
- //event.key.state = SDL_RELEASED;
- //Keyboard(SDL_GetModState());
- //SDL_PushEvent(&event);
- //SDL_SetModState(0);
-
  //touches de raccourcis dcto8d
  if(sym == SDLK_ESCAPE) {Initprog(); pause6809 = 0; return;}
  if(sym == SDLK_PAUSE) {pause6809 = 1; return;}
- //if(keycode == 0x01) {Initprog(); pause6809 = 0; return;}//touche ESC enfoncee
- //if(keycode == 0x45) {pause6809 = 1; return;}            //touche PAUSE enfoncee
 
  //la touche AltGr envoie 2 evenements keydown
  //le premier keysym = 0x132 (LCTRL)
@@ -494,10 +471,10 @@ void Keydown(int sym, int scancode, int unicode)
         break;
    default:
         if(xcursor > xmax - 1) break;
-        if((unicode & 0xff) < 0x20) break;
-        if((unicode & 0xff) > 0x126) break;
+        if((sym & 0xff) < 0x20) break;
+        if((sym & 0xff) > 0x126) break;
         strcpy(string, text + xcursor);
-        text[xcursor] = unicode & 0xff;
+        text[xcursor] = sym & 0xff;
         text[++xcursor] = 0;
         strcat(text, string);
   }
@@ -508,7 +485,7 @@ void Keydown(int sym, int scancode, int unicode)
  pause6809 = 0;  //l'appui sur une touche arrete la pause
 
  //emulation joystick
- ijoy = to8djoycode[keycode & 0xff]; //Info(i);
+ ijoy = to8djoycode[keycode & 0xff];
  ikey = to8dkeycode[keycode & 0xff];
  if(dialog == 3) Displaykey();
  if(dialog == 4) Displayjoy();
@@ -539,19 +516,6 @@ void Testshiftkey()
  //Cette routine utilise la fonction GetAsyncKeyState de windows pour
  //detecter la veritable position des touches.
  //Elle est appellee environ 20 fois par seconde par la fonction Playsound
-
- //SDL_GetModState ne marche pas si les 2 touches sont enfoncees
- //int mode = SDL_GetModState();
- //extern int touche[]; //position touches MO5
- //touche[to8dkey[SDLK_LSHIFT]] = ((mode & 1)) ? 0x00 : 0x80;
- //touche[to8dkey[SDLK_RSHIFT]] = ((mode & 2)) ? 0x00 : 0x80;
- //sprintf(infos, "ModState=%04x", mode);
- //Printstring(infos, 0, 238, 7);
- //SDL_GetKeyState ne marche pas mieux
- //Uint8 *keystate = SDL_GetKeyState(NULL);
- //sprintf(infos, "Left=%i    Right=%i",
- //        keystate[SDLK_LSHIFT], keystate[SDLK_RSHIFT]);
- //Printstring(infos, 100, 238, 7);
 
 #ifdef WIN32
  static int lshift, rshift; //position des touches shift

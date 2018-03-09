@@ -21,7 +21,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <SDL.h>
-#include "dcto8dicon.h"
 #include "dcto8dglobal.h"
 #include "dcto8dmsg.h"
 #include "dcto8dinterface.h"
@@ -31,7 +30,6 @@
 
 
 // global variables //////////////////////////////////////////////////////////
-const SDL_VideoInfo *videoinfo;
 SDL_AudioSpec audio;
 int pause6809;        //processor pause state
 int report;           //nombre de milliemes de cycle a reporter
@@ -44,120 +42,55 @@ unsigned char cursor[] = {
 
 extern int language;
 
-extern void Createdialogbox(int x, int y);
-extern void Drawmessagebox(char *titre, char *text1[], char *text2[]);
-
 // About message box /////////////////////////////////////////////////////////
 void About()
 {
  int i;
- char *text1[9], *text2[6];
- Createdialogbox(336, 236);
+ SDL_version linked;
+ char message[1024];
+
+ message[0] = '\0';
  for(i = 0; i < 8; i++)
  {
-  text1[i] = msg[i + 2][language];
+  sprintf(message + strlen(message), "\n%s", msg[i + 2][language]);
  }
- text1[i] = "";
+ sprintf(message + strlen(message), "\n");
  for(i = 0; i < 5; i++)
  {
-  text2[i] = msg[i + 20][language];
+  sprintf(message + strlen(message), "\n%s", msg[i + 20][language]);
  }
- text2[i] = "";
+ sprintf(message + strlen(message), "\n");
 
- /*test police/////////////////////////////////////////////
- char string[8][33];
- for(i = 0; i < 8; i++)
- {
-  int j;
-  for(j = 0; j < 32; j++) string[i][j] = 32 + 32 * i + j;
-  string[i][j] = 0;
-  text2[i] = string[i];
- }
- */
+ SDL_GetVersion(&linked);
+ sprintf(message + strlen(message), "\nSDL %d.%d.%d", linked.major, linked.minor, linked.patch);
 
- /*version SDL/////////////////////////////////////////////
- const SDL_version *vdll = SDL_Linked_Version();
- SDL_version vsdl;
- SDL_VERSION(&vsdl);
- char versdl[50], verdll[50];
- sprintf(versdl, "Version SDL : %u.%u.%u",
-         vsdl.major, vsdl.minor, vsdl.patch);
- sprintf(verdll, "Version DLL : %u.%u.%u",
-         vdll->major, vdll->minor, vdll->patch);
- text2[0] = versdl;
- text2[1] = verdll;
- i = 2;
- */
-
- /*affichage de controle de variables d'affichage /////////////////////////
- char string0[20], string1[20], string2[20];
- extern int videolinenumber, currentlinesegment, currentvideomemory;
- sprintf(string0, "videolinenumber....: %i", videolinenumber);
- sprintf(string1, "currentlinesegment.: %i", currentlinesegment);
- sprintf(string2, "currentvideomemory.: %i", currentvideomemory);
- text2[0] = string0;
- text2[1] = string1;
- text2[2] = string2;
- text2[3] = "";
- */
-
- /*affichage de controle des registres 6809 ///////////////////////////////
- char string0[20], string1[20], string2[20];
- extern int PC, CC;
- extern short X, Y, U, S;
- sprintf(string0, "PC=%04x    CC=%02x", PC, CC);
- sprintf(string1, "X=%04x    Y=%04x", X & 0xffff, Y & 0xffff);
- sprintf(string2, "S=%04x    U=%04x", S & 0xffff, U & 0xffff);
- text2[0] = string0;
- text2[1] = string1;
- text2[2] = string2;
- text2[3] = "";
- */
-
- Drawmessagebox(msg[1][language], text1, text2);
-
+ SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                          msg[1][language],
+                          message,
+                          NULL);
 }
 
 // Message d'erreur SDL //////////////////////////////////////////////////////
-void SDL_error(int n)
+void SDL_error(const char* function, const char* message)
 {
  char string[256];
- char *text1[3], *text2[1];
- Createdialogbox(300, 90);
- sprintf(string, "%i", n);
- text1[0] = string;
- text1[1] = SDL_GetError();
- text1[2] = "";
- text2[0] = "";
- Drawmessagebox("SDL error", text1, text2);
+ sprintf(string, "%s : %s\n%s", function, message, SDL_GetError());
+ SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                          "SDL Error",
+                          string,
+                          NULL);
  SDL_Delay(1000);
 }
 
 // Message d'erreur emulateur ////////////////////////////////////////////////
-void Erreur(int n)
+void Erreur(const char* function, const char* message)
 {
  char string[256];
- char *text1[3], *text2[1];
- Createdialogbox(300, 90);
- sprintf(string, "%i", n);
- text1[0] = string;
- text1[1] = msg[n][language];
- text1[2] = "";
- text2[0] = "";
- Drawmessagebox(msg[10][language], text1, text2);
-}
-
-// Affichage de controle d'une valeur ///////////////////////////////////////
-void Info(int n)
-{
- char string[32];
- char *text1[4], *text2[1];
- sprintf(string, "0x%04x (%i)", n, n);
- Createdialogbox(120, 60);
- text1[0] = string;
- text1[1] = "";
- text2[0] = "";
- Drawmessagebox("Info", text1, text2);
+ sprintf(string, "%s : %s", function, message);
+ SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                          "Emulator Error",
+                          string,
+                          NULL);
 }
 
 // Joysticks initialization //////////////////////////////////////////////////
@@ -205,7 +138,7 @@ void Eventloop()
  extern int penbutton, xmouse, ymouse, xmove, ymove, xpen, ypen;
  extern void Resizescreen(int x, int y), Displayscreen();
  extern void Mouseclick(), Dialogmove();
- extern void Keydown(int sym, int scancode, int unicode);
+ extern void Keydown(int sym, int scancode);
  extern void Keyup(int sym, int scancode);
 
  while(1)
@@ -214,8 +147,11 @@ void Eventloop()
   {
    switch(event.type)
    {
-    case SDL_VIDEORESIZE:
-         Resizescreen(event.resize.w, event.resize.h);
+    case SDL_WINDOWEVENT:
+         if (event.window.event == SDL_WINDOWEVENT_RESIZED)
+         {
+          Resizescreen(event.window.data1, event.window.data2);
+         }
          break;
     case SDL_MOUSEBUTTONDOWN:
          penbutton = 1;
@@ -236,8 +172,7 @@ void Eventloop()
          }
          break;
     case SDL_KEYDOWN:
-         Keydown(event.key.keysym.sym, event.key.keysym.scancode,
-                 event.key.keysym.unicode);
+         Keydown(event.key.keysym.sym, event.key.keysym.scancode);
          break;
     case SDL_KEYUP:
          Keyup(event.key.keysym.sym, event.key.keysym.scancode);
@@ -252,40 +187,9 @@ void Eventloop()
  }
 }
 
-/*
-// Restaurer la fenetre ///////////////////////////////////////////////////////
-void Restorewindow()
-{
- //Avec SDL 1.2, il semble impossible
- //- de maximiser ou restaurer la fenetre
- //- de savoir si la fenetre est maximisee ou pas
- //La fenetre initiale de SDL n'etant pas maximisee, l'idee etait d'arreter
- //puis de redemarrer le sous-systeme video pour restaurer la fenetre.
- //Il y a eu un resultat (fenetre correctement restauree) mais trop
- //d'inconvenients : perte du focus, plantages et autres phenomenes inexpliques.
- //Je crois qu'il faut attendre la version 1.3
-
- extern int penbutton, xclient, yclient, ystatus;
- extern void Resizescreen(int x, int y);
-
- //SDL_PauseAudio(1);    //Arrete l'emulation
- //SDL_Delay(200);
- SDL_QuitSubSystem(SDL_INIT_VIDEO);
- SDL_InitSubSystem(SDL_INIT_VIDEO);
- atexit(SDL_Quit);
- SDL_WM_SetIcon(SDL_LoadBMP("dcto8d.bmp"), NULL);
- SDL_WM_SetCaption(msg[language][0], NULL);            //titre fenetre
- SDL_SetCursor(SDL_CreateCursor(cursor, cursor + 48, 16, 24, 0, 0));
- Resizescreen(xclient, ystatus + yclient);
- penbutton = 0;
- //SDL_PauseAudio(0);    //Lance l'emulation
-}
-*/
-
 //Main program ///////////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
- SDL_RWops *rw;
  extern int xclient, yclient, screencount;
  extern void Init6809(), Initfilenames(), Hardreset();
  extern void Initoptions(), Saveoptions();
@@ -301,13 +205,10 @@ int main(int argc, char *argv[])
  Hardreset();                      //MO5 initialization
 
  //initialize SDL video and keyboard
- if(SDL_Init(SDL_INIT_VIDEO) < 0) SDL_error(2);
+ if(SDL_Init(SDL_INIT_VIDEO) < 0) SDL_error(__func__, "SDL_Init");
  atexit(SDL_Quit);
- rw = SDL_RWFromMem(dcto8dicon, sizeof(dcto8dicon));
- SDL_WM_SetIcon(SDL_LoadBMP_RW(rw, 1), NULL);  //icone fenetre
- SDL_WM_SetCaption(msg[0][language], NULL);    //titre fenetre
+
  SDL_SetCursor(SDL_CreateCursor(cursor, cursor + 48, 16, 24, 0, 0)); //curseur
- SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
  Resizescreen(xclient, yclient + YSTATUS);
  Initfontsurfaces();   //Initialisation des surfaces des polices
  Initbuttonsurfaces(); //Initialisation des surfaces des boutons
@@ -316,16 +217,15 @@ int main(int argc, char *argv[])
  Displayscreen();
 
  //initialize SDL audio
- if(SDL_Init(SDL_INIT_AUDIO) < 0) SDL_error(3);
+ if(SDL_Init(SDL_INIT_AUDIO) < 0) SDL_error(__func__, "SDL_Init");
  audio.freq = 22050;
  audio.format = AUDIO_U8;
  audio.channels = 1;
  audio.samples = 1024;
  audio.callback = Playsound;
  audio.userdata = NULL;
- if(SDL_OpenAudio(&audio, NULL) < 0 ) SDL_error(4);
+ if(SDL_OpenAudio(&audio, NULL) < 0 ) SDL_error(__func__, "SDL_OpenAudio");
  SDL_PauseAudio(0);    //Lance l'emulation
- SDL_EnableUNICODE(1);
 
  //test events
  Eventloop();

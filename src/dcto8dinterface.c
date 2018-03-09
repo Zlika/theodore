@@ -395,11 +395,11 @@ void Initbuttonsurfaces()
    r.x = 2; r.y = 2;
    if(i > 19) r.y = 4; //4 pour les touches
    textbox = Rendertext(string, 0, gris1);
-   if(textbox == NULL) {SDL_error(25); return;}
+   if(textbox == NULL) {SDL_error(__func__, "textbox == NULL"); return;}
 
    //application du texte sur la surface du bouton
-   if(SDL_BlitSurface(textbox, NULL, buttonup[i][j], &r) < 0) SDL_error(26);
-   if(SDL_BlitSurface(textbox, NULL, buttondown[i][j], &r) < 0) SDL_error(27);
+   if(SDL_BlitSurface(textbox, NULL, buttonup[i][j], &r) < 0) SDL_error(__func__, "SDL_BlitSurface");
+   if(SDL_BlitSurface(textbox, NULL, buttondown[i][j], &r) < 0) SDL_error(__func__, "SDL_BlitSurface");
   }
  }
 }
@@ -464,11 +464,11 @@ void Drawtextbox(SDL_Surface *surf, char *string, SDL_Rect rect,
  if(string[0] == 0) return;
  SDL_FreeSurface(textbox);
  textbox = Rendertext(string, textcolor, boxcolor);
- if(textbox == NULL) {SDL_error(11); return;}
+ if(textbox == NULL) {SDL_error(__func__, "textbox == NULL"); return;}
  textrect.x = -2; textrect.w = rect.w - 4;
  textrect.y = -2; textrect.h = rect.h;
  r = SDL_BlitSurface(textbox, &textrect, surf, &rect);
- if(r < 0) SDL_error(12);
+ if(r < 0) SDL_error(__func__, "r < 0");
 }
 
 //Draw message box ////////////////////////////////////////////////////////////
@@ -584,10 +584,9 @@ void Drawstatusbar()
  {
   rect.x = statusbutton[i].x; if(rect.x < 0) rect.x += xclient;
   rect.y = statusbutton[i].y; if(rect.y < 0) rect.y += yclient;
-  //Info(rect.x); SDL_Delay(1000);
   surf = buttonup[statusbutton[i].n][language];
   r = SDL_BlitSurface(surf, NULL, statusbar, &rect);
-  if(r < 0) {SDL_error(13); return;}
+  if(r < 0) {SDL_error(__func__, "r < 0"); return;}
  }
 }
 
@@ -595,7 +594,7 @@ void Drawstatusbar()
 void Initstatusbar()
 {
  statusbar = SDL_CreateRGBSurface(FLAGS, 2048, YSTATUS, 32, rmask, gmask, bmask, amask);
- if(statusbar == NULL) SDL_error(14);
+ if(statusbar == NULL) SDL_error(__func__, "statusbar == NULL");
  Drawstatusbar();
 }
 
@@ -650,7 +649,7 @@ void Createdialogbox(int w, int h)
  rect.x = closebutton.x + dialogbox->w;
  rect.y = closebutton.y;
  r = SDL_BlitSurface(buttonup[closebutton.n][language], NULL, dialogbox, &rect);
- if(r < 0) SDL_error(15);
+ if(r < 0) SDL_error(__func__, "r < 0");
 }
 
 //Traitement des clics souris dans la barre de statut ////////////////////////
@@ -677,7 +676,7 @@ void Statusclick()
  rect.x = statusbutton[i].x; if(rect.x < 0) rect.x += xclient;
  rect.y = statusbutton[i].y; if(rect.y < 0) rect.y += yclient;
  r = SDL_BlitSurface(buttondown[statusbutton[i].n][language], NULL, screen, &rect);
- if(r < 0) {SDL_error(16); return;}
+ if(r < 0) {SDL_error(__func__, "r < 0"); return;}
 
  //traitement
  switch(i)

@@ -6,7 +6,6 @@ config.h.in
 config.log
 config.status
 configure
-dcto8d
 Makefile
 Makefile.in
 stamp-h1
@@ -20,3 +19,5 @@ stamp-h1
 .project
 .settings/
 
+dcto8d
+dcto8d.ini
