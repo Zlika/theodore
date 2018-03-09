@@ -219,10 +219,12 @@ void Initoptions()
 {
  int r;
  char string[256];
- char *currentdir;
+ char currentdir[256];
+ memset(string, 0, 256);
+ memset(currentdir, 0, 256);
  Initdefault();
  //chemins d'acces
- currentdir = getcwd (NULL, 0);
+ getcwd(currentdir, 256);
  strcat(currentdir, "/");
  strcpy(path[0], currentdir);
  strcpy(path[1], currentdir);
@@ -231,7 +233,7 @@ void Initoptions()
  fpi = fopen("dcto8d.ini", "rb+");                 //s'il existe ouverture
  if(fpi == NULL) fpi = fopen("dcto8d.ini", "wb+"); //s'il n'existe pas : creation
  r = fread(string, 12, 1, fpi);                    //lecture identifiant
- if(strcmp("dcto8dini-01", string) != 0) return;
+ if(r != 1 || strcmp("dcto8dini-01", string) != 0) return;
  //initialisation des options
  r = fread(&language, 4, 1, fpi);  //langue
  r = fread(&frequency, 4, 1, fpi); //frequence 6809
