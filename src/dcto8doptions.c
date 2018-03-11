@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include "dcto8dglobal.h"
 #include "dcto8dinterface.h"
+#include "dcto8dmsg.h"
 
 #define OPTIONBUTTON_MAX 8   //nombre de boutons boite de dialogue options
 
@@ -52,7 +53,6 @@ extern int xclient, yclient, vblnumbermax;
 extern int k7protection; //protection k7 (0=lecture/ecriture 1=lecture seule)
 extern int fdprotection; //protection fd (0=lecture/ecriture 1=lecture seule)
 extern int keybpriority; //0=manettes prioritaires 1=clavier prioritaire
-extern char *msg[MSG_MAX][LANGUAGE_MAX]; //messages en plusieurs langues
 extern button bouton[];
 extern char path[][TEXT_MAXLENGTH];
 
@@ -69,31 +69,31 @@ void Drawoptionbox()
   Createdialogbox(172, 216);
   rect.x = 10; rect.w = dialogbox->w - 32;
   rect.y = 5; rect.h = 15;
-  Drawtextbox(dialogbox, msg[29][language], rect, 1, bleu, 0); //titre
+  Drawtextbox(dialogbox, _(MSG_MENU_SETTINGS), rect, 1, bleu, 0); //titre
   dialog = 2;
  }
  //options
  rect.x = 10; rect.w = 94;
  rect.y = 32; rect.h = 15;
- Drawtextbox(dialogbox, msg[(language) ? 26 : 25][language], rect, 0, blanc, -1);
+ Drawtextbox(dialogbox, language ? _(MSG_SETTINGS_LANG_EN) : _(MSG_SETTINGS_LANG_FR), rect, 0, blanc, -1);
  sprintf(string, "Zoom : %i%s", 100 * xclient / XBITMAP, "%");
  rect.y += 20;
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
- sprintf(string, "%s : %i%s", msg[28][language], frequency / 10, "%");
+ sprintf(string, "%s : %i%s", _(MSG_SETTINGS_PROC), frequency / 10, "%");
  rect.y += 20;
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
- sprintf(string, "%s : %i%s", msg[27][language], 100 / vblnumbermax, "%");
+ sprintf(string, "%s : %i%s", _(MSG_SETTINGS_FPS), 100 / vblnumbermax, "%");
  rect.y += 20;
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
- sprintf(string, "%s k7 : %s", msg[48][language],
-         msg[(k7protection) ? 43 : 42][language]);
+ sprintf(string, "%s k7 : %s", _(MSG_SETTINGS_WRITE),
+         k7protection ? _(MSG_NO) : _(MSG_YES));
  rect.y += 20;
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
- sprintf(string, "%s fd : %s", msg[48][language],
-         msg[(fdprotection) ? 43 : 42][language]);
+ sprintf(string, "%s fd : %s", _(MSG_SETTINGS_WRITE),
+         fdprotection ? _(MSG_NO) : _(MSG_YES));
  rect.y += 20;
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
- sprintf(string, "%s", msg[(keybpriority) ? 47 : 46][language]);
+ sprintf(string, "%s", keybpriority ? _(MSG_SETTINGS_NUMPAD) : _(MSG_MENU_JOYSTICKS));
  rect.y += 20;
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
  //dessin des boutons
@@ -142,7 +142,7 @@ void Optionclick()
  extern int dialog;
  extern SDL_Rect dialogrect;
  extern int popuptable;
- extern char *popuptabletext[];
+ extern const char *popuptabletext[];
 
  //recherche du bouton du clic
  for(i = 0; i < OPTIONBUTTON_MAX; i++)
@@ -162,8 +162,8 @@ void Optionclick()
  y = optionbutton[i].y;
  switch(i)
  {
-  case 0: popuptabletext[0] = msg[25][language]; //langue
-          popuptabletext[1] = msg[26][language];
+  case 0: popuptabletext[0] = _(MSG_SETTINGS_LANG_FR); //langue
+          popuptabletext[1] = _(MSG_SETTINGS_LANG_EN);
           popuptabletext[2] = "";
           Drawpopuptable(1, x, y);
           break;
@@ -189,18 +189,18 @@ void Optionclick()
           popuptabletext[4] = "";
           Drawpopuptable(4, x, y);
           break;
-  case 4: popuptabletext[0] = msg[42][language]; //ecriture k7
-          popuptabletext[1] = msg[43][language];
+  case 4: popuptabletext[0] = _(MSG_YES); //ecriture k7
+          popuptabletext[1] = _(MSG_NO);
           popuptabletext[2] = "";
           Drawpopuptable(5, x, y);
           break;
-  case 5: popuptabletext[0] = msg[42][language]; //ecriture fd
-          popuptabletext[1] = msg[43][language];
+  case 5: popuptabletext[0] = _(MSG_YES); //ecriture fd
+          popuptabletext[1] = _(MSG_NO);
           popuptabletext[2] = "";
           Drawpopuptable(6, x, y);
           break;
-  case 6: popuptabletext[0] = msg[46][language]; //manettes ou clavier numerique
-          popuptabletext[1] = msg[47][language];
+  case 6: popuptabletext[0] = _(MSG_MENU_JOYSTICKS); //manettes ou clavier numerique
+          popuptabletext[1] = _(MSG_SETTINGS_NUMPAD);
           popuptabletext[2] = "";
           Drawpopuptable(7, x, y);
           break;

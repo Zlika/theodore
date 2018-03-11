@@ -25,6 +25,7 @@
 #include <string.h>
 #include "dcto8dglobal.h"
 #include "dcto8dinterface.h"
+#include "dcto8dmsg.h"
 
 int startaddress;         //adresse de debut du desassemblage
 int nextaddress;          //adresse de la deuxieme instruction desassemblee
@@ -44,10 +45,8 @@ const dialogeditbox desasseditbox[DESASSEDITBOX_MAX] = {
 };
 
 extern SDL_Surface *dialogbox; //surface d'affichage dialogbox
-extern int language;
 extern int dialog;             //0 ou numero boite de dialogue affichee
 extern SDL_Surface *dialogbox; //surface d'affichage dialogbox
-extern char *msg[MSG_MAX][LANGUAGE_MAX]; //messages en plusieurs langues
 extern const int blanc;
 extern button bouton[];
 
@@ -58,7 +57,7 @@ void Displaydesass(int x)
 {
  SDL_Rect rect;
  int i;
- SDL_Surface *Rendertext(char *string, int color, int background);
+ SDL_Surface *Rendertext(const char *string, int color, int background);
  //desassemblage
  rect.x = 10; rect.y = 35; rect.w = 368; rect.h = 15;
  for(i = 0; i < 20; i++)
@@ -95,7 +94,7 @@ void Drawdesassbox()
   Createdialogbox(290, 365);
   rect.x = 10; rect.w = dialogbox->w - 32;
   rect.y = 5; rect.h = 15;
-  Drawtextbox(dialogbox, msg[32][language], rect, 1, bleu, 0); //titre
+  Drawtextbox(dialogbox, _(MSG_MENU_DISASSEMBLY), rect, 1, bleu, 0); //titre
   dialog = 5;
   startaddress = 0xf000;
   sprintf(startaddresshexa, "%04X", startaddress);

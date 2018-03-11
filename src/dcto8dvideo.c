@@ -24,6 +24,7 @@
 #include <string.h>
 #include "dcto8dglobal.h"
 #include "dcto8dicon.h"
+#include "dcto8dmsg.h"
 
 // global variables //////////////////////////////////////////////////////////
 SDL_Window *window = NULL;     //fenetre d'affichage de l'ecran
@@ -257,7 +258,7 @@ void Resizescreen(int x, int y)
  y -= YSTATUS;
  xclient = (x < 336) ? 336 : x;
  yclient = (y < 216) ? 216 : y;
- window = SDL_CreateWindow("DCTO8D",
+ window = SDL_CreateWindow(_(MSG_PROGNAME),
                            SDL_WINDOWPOS_UNDEFINED,
                            SDL_WINDOWPOS_UNDEFINED,
                            xclient, yclient + YSTATUS,

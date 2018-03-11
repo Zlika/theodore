@@ -24,6 +24,9 @@
 //
 //2007-12-28 : v11.0 released
 
+#ifndef __DCTO8DASS_H
+#define __DCTO8DASS_H
+
 //type d'instruction
 #define INV   0x0000 //invalide 
 #define INH   0x0100 //inherente 
@@ -1034,3 +1037,5 @@ int instruction[0x300]=
 /*11fd*/ INV,    
 /*11fe*/ INV,    
 /*11ff*/ INV   | INV  |  0};
+
+#endif

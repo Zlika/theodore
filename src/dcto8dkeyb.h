@@ -21,6 +21,9 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+#ifndef __DCTO8DKEYB_H
+#define __DCTO8DKEYB_H
+
 //scancode du clavier pour chaque touche du TO8
 //(+ 0x40 pour les touches du pave numerique pour les distinguer des autres)
 int pckeycode[KEYBOARDKEY_MAX]=
@@ -127,3 +130,4 @@ int pcjoycode[JOYSTICKKEY_MAX]=
  0x56  //9 manette 1 ACTION
 };
 
+#endif

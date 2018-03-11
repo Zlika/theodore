@@ -29,6 +29,7 @@
 #include "dcto8dglobal.h"
 #include "dcto8dkeyb.h"
 #include "dcto8dinterface.h"
+#include "dcto8dmsg.h"
 
 //variables globales
 char to8dkeycode[256]; //scancode to8d en fonction du scancode pc
@@ -144,11 +145,9 @@ const dialogbutton joystickbutton[JOYSTICKBUTTON_MAX] = {
 };
 
 //variables externes
-extern int language;
 extern int touche[];
 extern int dialog;             //0 ou numero boite de dialogue affichee
 extern SDL_Surface *dialogbox; //surface d'affichage dialogbox
-extern char *msg[MSG_MAX][LANGUAGE_MAX]; //messages en plusieurs langues
 extern button bouton[];
 
 //Emulation clavier : affichage du nom de la derniere touche pressee //////////
@@ -166,8 +165,8 @@ void Displaykey()
  rect.x = 321; rect.y = 194; rect.w = 185;
  rect.h = 15;
  i = to8dkeycode[lastkeycode & 0xff];
- sprintf(string, "%s : %s", msg[15][language],
-  (i < KEYBOARDKEY_MAX) ? bouton[keyboardbutton[i].n].name : msg[18][language]);
+ sprintf(string, "%s : %s", _(MSG_EMULATED_KEY),
+  (i < KEYBOARDKEY_MAX) ? bouton[keyboardbutton[i].n].name : _(MSG_BTN_NONE));
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
 }
 
@@ -185,8 +184,8 @@ void Displayjoy()
  //code et nom de la fonction manette
  rect.x = 230; rect.y = 154; rect.w = 180; rect.h = 15;
  i = to8djoycode[lastkeycode & 0xff];
- sprintf(string, "%s : %s", msg[35][language],
-  (i < JOYSTICKKEY_MAX) ? bouton[joystickbutton[i].n].name : msg[18][language]);
+ sprintf(string, "%s : %s", _(MSG_EMULATED_FUNC),
+  (i < JOYSTICKKEY_MAX) ? bouton[joystickbutton[i].n].name : _(MSG_BTN_NONE));
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
 }
 
@@ -206,15 +205,15 @@ void Drawkeyboardbox()
   Createdialogbox(546, 292);
   rect.x = 10; rect.w = dialogbox->w - 32;
   rect.y = 5; rect.h = 15;
-  Drawtextbox(dialogbox, msg[14][language], rect, 1, bleu, 0); //titre
+  Drawtextbox(dialogbox, _(MSG_KEYBOARD_LAYOUT), rect, 1, bleu, 0); //titre
   dialog = 3;
  }
  //message d'aide
  rect.x = 126; rect.y = 215; rect.w = 370;
- sprintf(string, "%s %s.", msg[16][language], msg[15][language]);
+ sprintf(string, "%s %s.", _(MSG_PRESS_KEY), _(MSG_EMULATED_KEY));
  Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
  rect.y += 15;
- Drawtextbox(dialogbox, msg[17][language], rect, 0, gris0, 0);
+ Drawtextbox(dialogbox, _(MSG_CLICK_PICTURE), rect, 0, gris0, 0);
  //dessin des boutons
  for(i = 0; i < KEYBOARDBUTTON_MAX; i++) Drawbutton(&keyboardbutton[i], 0);
  Displaykey(0);  //nom de la touche lastkey
@@ -237,15 +236,15 @@ void Drawjoystickbox()
   Createdialogbox(454, 252);
   rect.x = 10; rect.w = dialogbox->w - 32;
   rect.y = 5; rect.h = 15;
-  Drawtextbox(dialogbox, msg[34][language], rect, 1, bleu, 0); //titre
+  Drawtextbox(dialogbox, _(MSG_JOY_EMULATION), rect, 1, bleu, 0); //titre
   dialog = 4;
  }
  //message d'aide
  rect.x = 80; rect.y = 175; rect.w = 370;
- sprintf(string, "%s %s.", msg[16][language], msg[35][language]);
+ sprintf(string, "%s %s.", _(MSG_PRESS_KEY), _(MSG_EMULATED_FUNC));
  Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
  rect.y += 15;
- Drawtextbox(dialogbox, msg[17][language], rect, 0, gris0, 0);
+ Drawtextbox(dialogbox, _(MSG_CLICK_PICTURE), rect, 0, gris0, 0);
  //dessin des boutons
  for(i = 0; i < JOYSTICKBUTTON_MAX; i++) Drawbutton(&joystickbutton[i], 0);
  //numero des manettes

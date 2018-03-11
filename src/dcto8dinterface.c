@@ -27,6 +27,7 @@
 #include "dcto8dglobal.h"
 #include "dcto8dfont.h"
 #include "dcto8dinterface.h"
+#include "dcto8dmsg.h"
 
 #define DIRLIST_LENGTH 32
 #define DIRLIST_NMAX 500
@@ -55,25 +56,25 @@ const int gris3 = 0xff606060;
 
 //definition des boutons
 button bouton[BOUTON_MAX] = {
-{"\xa4""1",        16,  16}, //00 croix
+{"\xa4""1",        16,  16},   //00 croix
 {" ""\xa4""6",       16,   8}, //01 previous
 {" ""\xa4""7",       16,   8}, //02 next
-{"\xa4""8",        16,  16}, //03 fleche pour popup
+{"\xa4""8",        16,  16},   //03 fleche pour popup
 {"",           0,   0}, //04
 {"",           0,   0}, //05
 {"",           0,   0}, //06
 {"",           0,   0}, //07
 {"Options",   42,  16}, //08
 {" ?",        18,  16}, //09
-{"{49}",      35,  18}, //10 +10
+{" + 10",     35,  18}, //10 +10
 {"k7",        18,  16}, //11
 {"fd",        18,  16}, //12
 {"memo",      36,  16}, //13
-{"{44}",      75,  18}, //14 desassembler
-{"{45}",      30,  18}, //15 +1
-{"{36}",     172,  18}, //16
-{"{37}",     172,  18}, //17
-{"{38}",     150,  18}, //18 parametres par defaut
+{"{0}",      75,  18}, //14 desassembler
+{" + 1",      30,  18}, //15 +1
+{"{1}",     172,  18}, //16
+{"{2}",     172,  18}, //17
+{"{3}",     150,  18}, //18 parametres par defaut
 {" Action",   44,  18}, //19
 {"F7  F2",    38,  18}, //0x00
 {" _ 6",      26,  24}, //0x01
@@ -184,7 +185,7 @@ const dialogbutton statusbutton[STATUSBUTTON_MAX] = {
 
 SDL_Surface *buttonup[BOUTON_MAX][LANGUAGE_MAX];
 SDL_Surface *buttondown[BOUTON_MAX][LANGUAGE_MAX];
-SDL_Surface *fontsurface[2]; //0=noir 1=blanc
+SDL_Surface *fontsurface[2];   //0=noir 1=blanc
 SDL_Surface *textbox = NULL;   //surface d'affichage de texte
 SDL_Surface *dialogbox = NULL; //surface d'affichage dialogbox
 SDL_Surface *statusbar = NULL; //surface de la barre de statut
@@ -200,7 +201,7 @@ int blink = -1;                //flag de clignotement du curseur
 int xcursor = 0;               //position du curseur dans la chaine de caracteres
 //char editboxtext[EDITBOX_MAX][TEXT_MAXLENGTH]; //zones texte des editbox
 char dirlist[DIRLIST_NMAX][DIRLIST_LENGTH]; //liste des fichiers du repertoire
-char *popuptabletext[POPUPTABLE_NMAX];  //pointeur vers lignes de la popup table
+const char *popuptabletext[POPUPTABLE_NMAX];  //pointeur vers lignes de la popup table
 char path[3][TEXT_MAXLENGTH];   //repertoires des fichiers k7, fd, memo
 
 void (*Load[3])(char *name);   //pointeur fonction de chargement de fichier
@@ -208,11 +209,9 @@ void (*Load[3])(char *name);   //pointeur fonction de chargement de fichier
 //external
 extern SDL_Surface *screen;    //surface d'affichage de l'ecran
 extern int xclient, yclient;   //taille ecran affiche
-extern char *msg[MSG_MAX][LANGUAGE_MAX];  //messages en plusieurs langues
-extern int language;
 
 //Creation d'une surface contenant un texte////////////////////////////////////
-SDL_Surface *Rendertext(char *string, int color, int background)
+SDL_Surface *Rendertext(const char *string, int color, int background)
 {
  //color
  //0 = noir largeur variable
@@ -356,17 +355,17 @@ void Initbuttonsurfaces()
 {
  SDL_Rect r;
  int i, j, w, h;
- char *string;
+ const char *string;
 
  for(i = 0; i < BOUTON_MAX; i++)
  {
   if(bouton[i].name[0] == 0) continue; //bouton non cree
   w = bouton[i].w;
   h = bouton[i].h;
+  string = bouton[i].name;
   //creation du bouton dans chaque langue
   for(j = 0; j < LANGUAGE_MAX; j++)
   {
-   string = bouton[i].name;
    //boutons non traduits
    if(j > 0) if(string[0] != '{')
    {
@@ -386,9 +385,7 @@ void Initbuttonsurfaces()
    {
     int imsg;
     imsg = strtol(string + 1, NULL, 10);
-    if(imsg < 0) imsg = 0;
-    if(imsg > MSG_MAX) imsg = 0;
-    string = msg[imsg][j];
+    string = msg_btn[imsg][j];
    }
    //creation de l'image du texte
    SDL_FreeSurface(textbox);
@@ -434,12 +431,12 @@ void Sortdirectory(char *path)
 }
 
 //Draw textbox ///////////////////////////////////////////////////////////////
-void Drawtextbox(SDL_Surface *surf, char *string, SDL_Rect rect,
+void Drawtextbox(SDL_Surface *surf, const char *string, SDL_Rect rect,
                  int textcolor, int boxcolor, int relief)
 {
  int r;
  SDL_Rect textrect;
- SDL_Surface *Rendertext(char *string, int color, int background);
+ SDL_Surface *Rendertext(const char *string, int color, int background);
  SDL_FillRect(surf, &rect, boxcolor);
  if(relief > 0) //en relief
  {
@@ -801,18 +798,25 @@ void Drawpopuptable(int n, int x, int y)
 void Drawmenubox()
 {
  SDL_Rect rect;
- int i;
  char string[50];
  dialogrect.x = xclient - 122; dialogrect.w = 120;
  dialogrect.y = YSTATUS; dialogrect.h = 4 * 16 + 10;
  Createbox(gris0);
  rect.x = 10; rect.w = 105; rect.y = 4; rect.h = 14;
- for(i = 29; i < 33; i++)
- {
-  sprintf(string, "%s...", msg[i][language]);
-  Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
-  rect.y += 16;
- }
+
+ sprintf(string, "%s...", _(MSG_MENU_SETTINGS));
+ Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
+ rect.y += 16;
+ sprintf(string, "%s...", _(MSG_MENU_KEYBOARD));
+ Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
+ rect.y += 16;
+ sprintf(string, "%s...", _(MSG_MENU_JOYSTICKS));
+ Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
+ rect.y += 16;
+ sprintf(string, "%s...", _(MSG_MENU_DISASSEMBLY));
+ Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
+ rect.y += 16;
+
  dialog = 1003;
 }
 
@@ -821,7 +825,7 @@ void Drawpopupdirectory(int n)
 {
  SDL_Rect rect;
  int i;
- void *string;
+ const char *string;
  Sortdirectory(path[n]);
  if(dircount <= 0) return;
  dirmax = dirmin + 20;
@@ -832,7 +836,7 @@ void Drawpopupdirectory(int n)
  Createbox(gris0);
  rect.x = 10; rect.w = dialogrect.w - 12;
  rect.y = 4; rect.h = 14;
- Drawtextbox(dialogbox, msg[39][language], rect, 0, gris0, 0);
+ Drawtextbox(dialogbox, _(MSG_UNLOAD), rect, 0, gris0, 0);
  for(i = dirmin; i < dirmax; i++)
  {
   rect.y += 16;
@@ -841,7 +845,7 @@ void Drawpopupdirectory(int n)
  if((dirmax < dircount) || (dirmin > 0))
  {
   rect.y += 16;
-  string = msg[(dirmax == dircount) ? 41 : 40][language];
+  string = (dirmax == dircount) ? _(MSG_BACK_TO_FIRST) : _(MSG_NEXT);
   Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
  }
  dialog = 1000 + n;

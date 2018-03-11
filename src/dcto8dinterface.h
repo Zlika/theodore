@@ -20,6 +20,11 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void Drawtextbox(SDL_Surface *s, char *txt, SDL_Rect rect, int t, int b, int r);
+#ifndef __DCTO8DINTERFACE_H
+#define __DCTO8DINTERFACE_H
+
+void Drawtextbox(SDL_Surface *s, const char *txt, SDL_Rect rect, int t, int b, int r);
 void Drawbutton(const dialogbutton *bouton, int push);
 void Draweditbox(const dialogeditbox *box);
+
+#endif

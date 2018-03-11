@@ -28,7 +28,6 @@
 #define SDL_main main    //indispensable pour eviter l'erreur
                          //undefined reference to `WinMain@16'
 
-
 // global variables //////////////////////////////////////////////////////////
 SDL_AudioSpec audio;
 int pause6809;        //processor pause state
@@ -40,32 +39,19 @@ unsigned char cursor[] = {
  192,0,224,0,240,0,248,0,252,0,254,0,255,0,255,128,255,192,255,224,255,240,255,
  0,231,128,199,128,131,192,3,192,3,224,1,224,1,240,0,240,0,192,0,0,0,0};
 
-extern int language;
-
 // About message box /////////////////////////////////////////////////////////
 void About()
 {
- int i;
  SDL_version linked;
  char message[1024];
 
  message[0] = '\0';
- for(i = 0; i < 8; i++)
- {
-  sprintf(message + strlen(message), "\n%s", msg[i + 2][language]);
- }
- sprintf(message + strlen(message), "\n");
- for(i = 0; i < 5; i++)
- {
-  sprintf(message + strlen(message), "\n%s", msg[i + 20][language]);
- }
- sprintf(message + strlen(message), "\n");
-
+ sprintf(message + strlen(message), "\n%s", _(MSG_ABOUT));
  SDL_GetVersion(&linked);
- sprintf(message + strlen(message), "\nSDL %d.%d.%d", linked.major, linked.minor, linked.patch);
+ sprintf(message + strlen(message), "\n\nSDL %d.%d.%d", linked.major, linked.minor, linked.patch);
 
  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                          msg[1][language],
+                          _(MSG_ABOUT_TITLE),
                           message,
                           NULL);
 }

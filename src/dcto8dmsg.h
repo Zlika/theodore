@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// DCTO8DMSG.C - message text used by dcto8d
+// DCTO8DMSG.H - message text used by dcto8d
 // Author   : Daniel Coulom - danielcoulom@gmail.com
 // Web site : http://dcto8.free.fr
 //
@@ -20,109 +20,45 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+#ifndef __DCTO8DMSG_H
+#define __DCTO8DMSG_H
+
 #include "../config.h"
 
 //2 langues : 0=francais 1=anglais
-//MSG_MAX messages par langue
+extern int language;
 
-char *msg[MSG_MAX][LANGUAGE_MAX]={
-/*00*/{" DCTO8D - Emulateur TO8D Thomson",
-/*00*/ " DCTO8D - Thomson TO8D emulator"},
-/*01*/{"A propos de DCTO8D",
-/*01*/ "About DCTO8D"},
-/*02*/{"Version : "VERSION,
-/*02*/ "Version : "VERSION},
-/*03*/{"Auteur : Daniel Coulom",
-/*03*/ "Author : Daniel Coulom"},
-/*04*/{"Site internet : http://dcto8.free.fr",
-/*04*/ "Web site : http://dcto8.free.fr"},
-/*05*/{" ",
-/*05*/ " "},
-/*06*/{"Ce programme est diffusé SANS AUCUNE GARANTIE.",
-/*06*/ "This program comes with ABSOLUTELY NO WARRANTY."},
-/*07*/{"C'est un logiciel libre, et vous êtes encouragés à le redistribuer",
-/*07*/ "This is free software, and you are welcome to redistribute it under"},
-/*08*/{"sous certaines conditions. Lire les détails dans dcto8d-licence.txt",
-/*08*/ "certain conditions. More details in dcto8d-licence.txt"},
-/*09*/{" ",
-/*09*/ " "},
-/*10*/{"Erreur",
-/*10*/ "Error"},
-/*11*/{"Pas de cassette dans le lecteur",
-/*11*/ "No tape currently loaded"},
-/*12*/{"Fin de cassette, rembobinage automatique",
-/*12*/ "End of tape, automatic rewind"},
-/*13*/{"Cassette prot""\xe9""g""\xe9""e en ""\xe9""criture",
-/*13*/ "Tape write error"},
-/*14*/{"Disposition du clavier TO8D",
-/*14*/ "TO8D keyboard layout"},
-/*15*/{"touche TO8D ""\xe9""mul""\xe9""e",
-/*15*/ "emulated TO8D key"},
-/*16*/{"Appuyez sur une touche pour voir la ",
-/*16*/ "Press a key to show the "},
-/*17*/{"Cliquez sur l'image pour changer la correspondance.",
-/*17*/ "Click a button in the picture to make a change."},
-/*18*/{"aucune",
-/*18*/ "none"},
-/*19*/{"",
-/*19*/ ""},
-/*20*/{"Raccourcis clavier :",
-/*20*/ "Keyboard shortcuts :"},
-/*21*/{"- ECHAP= initialisation programme",
-/*21*/ "- ESC= reset TO8D program"},
-/*22*/{"- PAUSE= arrêt processeur 6809",
-/*22*/ "- PAUSE= stop 6809 processor"},
-/*23*/{" ",
-/*23*/ " "},
-/*24*/{"Lire la documentation pour d'autres informations...",
-/*24*/ "Please check the documentation for more information."},
-/*25*/{"Fran""\xe7""ais",
-/*25*/ "French"},
-/*26*/{"Anglais",
-/*26*/ "English"},
-/*27*/{"Trames / s",
-/*27*/ "Frames / s"},
-/*28*/{"Processeur",
-/*28*/ "Processor"},
-/*29*/{"Param""\xe8""tres",
-/*29*/ "Settings"},
-/*30*/{"Clavier",
-/*30*/ "Keyboard"},
-/*31*/{"Manettes",
-/*31*/ "Joysticks"},
-/*32*/{"D""\xe9""sassemblage",
-/*32*/ "Disassembly"},
-/*33*/{"",
-/*33*/ ""},
-/*34*/{"Emulation des manettes",
-/*34*/ "Joystick emulation"},
-/*35*/{"fonction ""\xe9""mul""\xe9""e",
-/*35*/ "emulated function"},
-/*36*/{"R""\xe9""tablir la disposition standard",
-/*36*/ "Restore standard layout"},
-/*37*/{"Sauver la disposition personnalis""\xe9""e",
-/*37*/ "Save customized layout"},
-/*38*/{"R""\xe9""tablir les valeurs par d""\xe9""faut",
-/*38*/ "Restore default values"},
-/*39*/{"[d""\xe9""charger]",
-/*39*/ "[unload]"},
-/*40*/{"[suite...]",
-/*40*/ "[next...]"},
-/*41*/{"[retour au d""\xe9""but...]",
-/*41*/ "[back to first...]"},
-/*42*/{"oui",
-/*42*/ "yes"},
-/*43*/{"non",
-/*43*/ "no"},
-/*44*/{"D\xe9sassembler",
-/*44*/ "Disassemble"},
-/*45*/{" + 1",
-/*45*/ " + 1"},
-/*46*/{"Manettes",
-/*46*/ "Joysticks"},
-/*47*/{"Pav\xe9"" num""\xe9""rique",
-/*47*/ "Numpad"},
-/*48*/{"Ecriture",
-/*48*/ "Write"},
-/*49*/{" + 10",
-/*49*/ " + 10"}};
+#define _(X) gettext(X)
+
+// Renvoie la chaine de caracteres en fonction de la langue selectionnee.
+const char* gettext(const char *msg[2]);
+
+extern const char* MSG_ABOUT_TITLE[];
+extern const char* MSG_ABOUT[];
+extern const char* MSG_PROGNAME[];
+extern const char* MSG_MENU_SETTINGS[];
+extern const char* MSG_MENU_KEYBOARD[];
+extern const char* MSG_MENU_JOYSTICKS[];
+extern const char* MSG_MENU_DISASSEMBLY[];
+extern const char* MSG_BTN_NONE[];
+extern const char* MSG_EMULATED_KEY[];
+extern const char* MSG_EMULATED_FUNC[];
+extern const char* MSG_KEYBOARD_LAYOUT[];
+extern const char* MSG_PRESS_KEY[];
+extern const char* MSG_CLICK_PICTURE[];
+extern const char* MSG_JOY_EMULATION[];
+extern const char* MSG_UNLOAD[];
+extern const char* MSG_BACK_TO_FIRST[];
+extern const char* MSG_NEXT[];
+extern const char* MSG_SETTINGS_LANG_FR[];
+extern const char* MSG_SETTINGS_LANG_EN[];
+extern const char* MSG_SETTINGS_FPS[];
+extern const char* MSG_SETTINGS_PROC[];
+extern const char* MSG_SETTINGS_WRITE[];
+extern const char* MSG_YES[];
+extern const char* MSG_NO[];
+extern const char* MSG_SETTINGS_NUMPAD[];
+
+extern const char *msg_btn[][2];
+
+#endif

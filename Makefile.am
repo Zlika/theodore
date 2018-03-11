@@ -19,6 +19,7 @@ dcto8d_SOURCES = src/dc6809dass.c \
 				 src/dcto8dkeyb.h \
 				 src/dcto8dmain.c \
 				 src/dcto8dmsg.h \
+				 src/dcto8dmsg.c \
 				 src/dcto8doptions.c \
 				 src/dcto8dvideo.c \
 				 src/to8dbasic.h \

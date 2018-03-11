@@ -22,13 +22,15 @@
 //
 //2007-12-28 : v11.0 released
 
+#ifndef __DCTO8DGLOBAL_H
+#define __DCTO8DGLOBAL_H
+
 #define XBITMAP 672
 #define YBITMAP 216
 #define YSTATUS 20
 
 #define LANGUAGE_MAX 2        //nombre de langues differentes
 #define TEXT_MAXLENGTH 256    //longueur maxi d'une chaine de texte
-#define MSG_MAX 50            //nombre de textes dans chaque langue
 
 #define BOUTON_MAX 104        //nombre de boutons differents
 
@@ -78,3 +80,5 @@ void Initprog();
 void Resizescreen(int x, int y);
 void SDL_error(const char* function, const char* message);
 void Setoption(int i);
+
+#endif
