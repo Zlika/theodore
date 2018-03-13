@@ -436,6 +436,7 @@ void Keydown(int sym, int scancode)
  //touches de raccourcis dcto8d
  if(sym == SDLK_ESCAPE) {Initprog(); pause6809 = 0; return;}
  if(sym == SDLK_PAUSE) {pause6809 = 1; return;}
+ if(sym == SDLK_F6) {SwitchFullScreenMode(); return;}
 
  //la touche AltGr envoie 2 evenements keydown
  //le premier keysym = 0x132 (LCTRL)

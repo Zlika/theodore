@@ -22,6 +22,7 @@
 
 #include <SDL.h>
 #include <string.h>
+#include <stdbool.h>
 #include "dcto8dglobal.h"
 #include "dcto8dicon.h"
 #include "dcto8dmsg.h"
@@ -46,6 +47,7 @@ int *pmax;                     //pointeur ecran : dernier pixel + 1
 int screencount;               //nbre ecrans affiches entre 2 affichages status
 int xpixel[XBITMAP + 1];       //abscisse des pixels dans la ligne
 void (*Decodevideo)();         //pointeur fonction decodage memoire video
+bool is_fullscreen = false;    //true when emulator runs in fullscreen
 
 //definition des intensites pour correction gamma anciennes valeurs dcmoto
 //const int g[16]={0,60,90,110,130,148,165,180,193,205,215,225,230,235,240,255};
@@ -232,6 +234,25 @@ void Nextline()
  SDL_UnlockSurface(screen);
 }
 
+// Conserve le rapport largeur/hauteur de l'écran /////////////////////////////
+void KeepAspectRatio(int *x, int *y)
+{
+ float expectedAspectRatio = (float)XBITMAP/(float)(2*YBITMAP);
+ float aspectRatio = (float)*x/(float)*y;
+
+ if(aspectRatio != expectedAspectRatio)
+ {
+  if(aspectRatio > expectedAspectRatio)
+  {
+   *x = expectedAspectRatio * *y;
+  }
+  else
+  {
+   *y = (1.f / expectedAspectRatio) * *x;
+  }
+ }
+}
+
 // Resize screen //////////////////////////////////////////////////////////////
 void Resizescreen(int x, int y)
 {
@@ -258,14 +279,16 @@ void Resizescreen(int x, int y)
  y -= YSTATUS;
  xclient = (x < 336) ? 336 : x;
  yclient = (y < 216) ? 216 : y;
+ KeepAspectRatio(&xclient, &yclient);
  window = SDL_CreateWindow(_(MSG_PROGNAME),
                            SDL_WINDOWPOS_UNDEFINED,
                            SDL_WINDOWPOS_UNDEFINED,
                            xclient, yclient + YSTATUS,
-                           0);
+                           is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
  if (window == NULL) { SDL_error(__func__, "SDL_CreateWindow"); return; }
  SDL_SetWindowIcon(window, SDL_LoadBMP_RW(SDL_RWFromMem(dcto8dicon, sizeof(dcto8dicon)), 1));
  renderer = SDL_CreateRenderer(window, -1, 0);
+ SDL_RenderSetLogicalSize(renderer, xclient, yclient + YSTATUS);
  if (renderer == NULL) { SDL_error(__func__, "SDL_CreateRenderer"); return; }
  screen = SDL_CreateRGBSurface(FLAGS, xclient, yclient + YSTATUS, 32,
                                          0x00FF0000,
@@ -297,3 +320,23 @@ void Resizescreen(int x, int y)
  pause6809 = savepause6809;
 }
 
+void SwitchFullScreenMode()
+{
+ int result;
+ if (is_fullscreen)
+ {
+  is_fullscreen = false;
+  result = SDL_SetWindowFullscreen(window, 0);
+  Resizescreen(XBITMAP, YSTATUS + YBITMAP*2);
+
+ }
+ else
+ {
+  is_fullscreen = true;
+  result = SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+ }
+ if (result != 0)
+ {
+  SDL_error(__func__, "SDL_SetWindowFullscreen");
+ }
+}
