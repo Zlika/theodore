@@ -22,9 +22,14 @@
 
 #include <string.h>
 #include <time.h>
+#include "dcto8demulation.h"
 #include "to8dbasic.h"
 #include "to8dmoniteur.h"
 #include "dcto8dglobal.h"
+#include "dcto8dmain.h"
+#include "dcto8ddevices.h"
+#include "dcto8dkeyb.h"
+#include "dc6809emul.h"
 
 // memory
 char car[0x10000];   //espace cartouche 4x16K
@@ -69,8 +74,6 @@ int timer6846;       //compteur du timer 6846
 int latch6846;       //registre latch du timer 6846
 int keyb_irqcount;   //nombre de cycles avant la fin de l'irq clavier
 int timer_irqcount;  //nombre de cycles avant la fin de l'irq timer
-//variables externes
-extern int dc6809_irq;
 
 //Acces memoire
 char Mgetto8d(unsigned short a);
@@ -166,7 +169,6 @@ void TO8key(int n)
 // Selection de banques memoire //////////////////////////////////////////////
 void TO8videoram()
 {
- extern int nvideopage, nsystbank;
  nvideopage = port[0x03] & 1;
  ramvideo = ram - 0x4000 + (nvideopage << 13);
  nsystbank = (port[0x03] & 0x10) >> 4;
@@ -175,8 +177,6 @@ void TO8videoram()
 
 void TO8rambank()
 {
- extern int nrambank;
- extern void Initcontroller();
  //mode TO8 par e7e5
  if(port[0x27] & 0x10)
  {
@@ -200,7 +200,6 @@ void TO8rambank()
 
 void TO8rombank()
 {
- extern int nrombank;
  //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
  //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
  //par la banque RAM definie par les 5 bits de poids faible de e7e6
@@ -349,13 +348,12 @@ void TO8dpatch(char rom[], int patch[])
  }
 }
 
-// Hardreset de l'ordinateur émulé ///////////////////////////////////////////
+// Hardreset de l'ordinateur emule ///////////////////////////////////////////
 void Hardreset()
 {
  int i;
  time_t curtime;
  struct tm *loctime;
- extern int pause6809;
  pause6809 = 1;
  for(i = 0; i < sizeof(ram); i++)
  {
@@ -412,9 +410,6 @@ void Timercontrol()
 // Traitement des entrees-sorties ////////////////////////////////////////////
 void Entreesortie(int io)
 {
- extern void Readoctetk7(), Writeoctetk7();
- extern void Readsector(), Writesector(), Formatdisk(), Imprime();
- extern void Readmousebutton(), Readpenxy(int i);
  switch(io)
  {
   case 0x14: Readsector(); break;      //lit secteur qd-fd
@@ -545,8 +540,6 @@ void Mputto8d(unsigned short a, char c)
 // Lecture memoire to8d //////////////////////////////////////////////////////
 char Mgetto8d(unsigned short a)
 {
- extern int penbutton;
- extern int joysposition, joysaction;
  switch(a >> 12)
  {
   //subtilite : quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inverses

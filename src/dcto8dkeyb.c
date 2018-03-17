@@ -30,6 +30,10 @@
 #include "dcto8dkeyb.h"
 #include "dcto8dinterface.h"
 #include "dcto8dmsg.h"
+#include "dcto8demulation.h"
+#include "dcto8dmain.h"
+#include "dcto8doptions.h"
+#include "dcto8dvideo.h"
 
 //variables globales
 char to8dkeycode[256]; //scancode to8d en fonction du scancode pc
@@ -37,6 +41,112 @@ char to8djoycode[256]; //numero bouton joystick en fonction du scancode pc
 int keybpriority;      //0=manettes prioritaires 1=clavier prioritaire
 int lastkeycode;       //keycode derniere touche enfoncee
 int lastkeysym;        //keysym derniere touche enfoncee
+
+//scancode du clavier pour chaque touche du TO8
+//(+ 0x40 pour les touches du pave numerique pour les distinguer des autres)
+int pckeycode[KEYBOARDKEY_MAX]=
+{
+0x3b, //0x00 F2
+0x23, //0x01 6
+0x1c, //0x02 Y
+0x0b, //0x03 H
+0x52, //0x04 haut
+0x4f, //0x05 droite
+0x4a, //0x06 RAZ
+0x11, //0x07 N
+0x3c, //0x08 F3
+0x22, //0x09 5
+0x17, //0x0a T
+0x0a, //0x0b G
+0x2e, //0x0c +
+0x50, //0x0d gauche
+0x49, //0x0e INS
+0x05, //0x0f B
+0x3d, //0x10 F4
+0x21, //0x11 4
+0x15, //0x12 R
+0x09, //0x13 F
+0x4a, //0x14 ACC
+0x99, //0x15 1 pad
+0x4c, //0x16 EFF
+0x19, //0x17 V
+0x3e, //0x18 F5
+0x20, //0x19 3
+0x08, //0x1a E
+0x07, //0x1b D
+0x9f, //0x1c 7 pad
+0x9c, //0x1d 4 pad
+0xa2, //0x1e 0 pad
+0x06, //0x1f C
+0x3a, //0x20 F1
+0x1f, //0x21 2
+0x1a, //0x22 Z
+0x16, //0x23 S
+0xa0, //0x24 8 pad
+0x9a, //0x25 2 pad
+0xa3, //0x26 .
+0x1b, //0x27 X
+0x35, //0x28 @
+0x1e, //0x29 1
+0x14, //0x2a A
+0x04, //0x2b Q
+0x64, //0x2c [
+0x9d, //0x2d 5 pad
+0x9e, //0x2e 6 pad
+0x1d, //0x2f W
+0x2b, //0x30 STOP
+0x24, //0x31 7
+0x18, //0x32 U
+0x0d, //0x33 J
+0x2c, //0x34 espace
+0xa1, //0x35 9 pad
+0xac, //0x36 Ent pad
+0x10, //0x37 ,
+0xff, //0x38 ?????????
+0x25, //0x39 8
+0x0c, //0x3a I
+0x0e, //0x3b K
+0x30, //0x3c $
+0x51, //0x3d bas
+0x31, //0x3e ]
+0x36, //0x3f ;
+0xff, //0x40 ?????????
+0x26, //0x41 9
+0x12, //0x42 O
+0x0f, //0x43 L
+0x2a, //0x44 -
+0x34, //0x45 %
+0x28, //0x46 Entree
+0x37, //0x47 :
+0xff, //0x48 ?????????
+0x27, //0x49 0
+0x13, //0x4a P
+0x33, //0x4b M
+0x2d, //0x4c )
+0x2f, //0x4d ^
+0x9b, //0x4e 3 pad
+0x38, //0x4f > <
+0x39, //0x50 lock
+0xe1, //0x51 left shift
+0xe5, //0x52 right shift
+0x4d  //0x53 cnt
+};
+
+//scancode du clavier pour chaque fonction des manettes du T08
+//(+ 0x40 pour les touches du pave numerique pour les distinguer des autres)
+int pcjoycode[JOYSTICKKEY_MAX]=
+{
+ 0x9d, //0 manette 0 HAUT
+ 0x9a, //1 manette 0 BAS
+ 0x99, //2 manette 0 GAUCHE
+ 0x9b, //3 manette 0 DROITE
+ 0x54, //4 manette 1 HAUT
+ 0xa0, //5 manette 1 BAS
+ 0x9f, //6 manette 1 GAUCHE
+ 0xa1, //7 manette 1 DROITE
+ 0xac, //8 manette 0 ACTION
+ 0x56  //9 manette 1 ACTION
+};
 
 #define KEYBOARDBUTTON_MAX 86 //nombre de boutons boite de dialogue clavier
 const dialogbutton keyboardbutton[KEYBOARDBUTTON_MAX] = {
@@ -144,19 +254,12 @@ const dialogbutton joystickbutton[JOYSTICKBUTTON_MAX] = {
 {238, 216, 17}  //0x01 "[sauver]",
 };
 
-//variables externes
-extern int touche[];
-extern int dialog;             //0 ou numero boite de dialogue affichee
-extern SDL_Surface *dialogbox; //surface d'affichage dialogbox
-extern button bouton[];
-
 //Emulation clavier : affichage du nom de la derniere touche pressee //////////
 void Displaykey()
 {
  SDL_Rect rect;
  int i;
  char string[80];
- extern int blanc;
  //code et nom de la touche PC
  rect.x = 56; rect.y = 194; rect.w = 140; rect.h = 15;
  sprintf(string, "0x%02x = %s", lastkeycode, SDL_GetKeyName(lastkeysym));
@@ -176,7 +279,6 @@ void Displayjoy()
  SDL_Rect rect;
  int i;
  char string[80];
- extern int blanc;
  //code et nom de la touche PC
  rect.x = 80; rect.y = 154; rect.w = 140; rect.h = 15;
  sprintf(string, "0x%02x = %s", lastkeycode, SDL_GetKeyName(lastkeysym));
@@ -195,8 +297,6 @@ void Drawkeyboardbox()
  SDL_Rect rect;
  int i;
  char string[256];
- extern int pause6809;
- extern int bleu, gris0;
  pause6809 = 1;
  lastkeycode = 0;
  lastkeysym = 0;
@@ -226,8 +326,6 @@ void Drawjoystickbox()
  SDL_Rect rect;
  int i;
  char string[256];
- extern int pause6809;
- extern int blanc, bleu, gris0;
  pause6809 = 1;
  lastkeycode = 0;
  lastkeysym = 0;
@@ -281,7 +379,6 @@ void Restorejoydefault()
 // Sauvegarde de la configuration du clavier /////////////////////////////////
 void Savekeyfile()
 {
- extern FILE *fpi;
  fseek(fpi, 0x40, SEEK_SET);
  fwrite(to8dkeycode, 256, 1, fpi);
 }
@@ -289,7 +386,6 @@ void Savekeyfile()
 // Sauvegarde de la configuration des manettes ///////////////////////////////
 void Savejoyfile()
 {
- extern FILE *fpi;
  fseek(fpi, 0x140, SEEK_SET);
  fwrite(to8djoycode, 256, 1, fpi);
 }
@@ -298,8 +394,6 @@ void Savejoyfile()
 void Keyclick()
 {
  int i, j, n, x, y;
- extern SDL_Rect dialogrect;    //position dialogbox
- extern int xmouse, ymouse;
  //recherche d'un clic bouton
  for(i = 0; i < KEYBOARDBUTTON_MAX; i++)
  {
@@ -329,8 +423,6 @@ void Keyclick()
 void Joyclick()
 {
  int i, j, n, x, y;
- extern SDL_Rect dialogrect;    //position dialogbox
- extern int xmouse, ymouse;
  //recherche d'un clic bouton
  for(i = 0; i < JOYSTICKBUTTON_MAX; i++)
  {
@@ -360,7 +452,6 @@ void Joyclick()
 void Keyboardinit()
 {
  int i, j;
- extern FILE *fpi;
  //initialisation des tables par defaut
  for(i = 0; i < 256; i++)
  {
@@ -384,8 +475,6 @@ void Keyboardinit()
 void Keyup(int keysym, int scancode)
 {
  int ijoy, ikey, keycode;
- extern void Joysemul(int i, int state);
- extern void TO8key(int n);
  //le scancode seul ne permet pas de distinguer le pave numerique
  //keycode = scancode + 0x40 pour le pave numerique
  //keycode = scancode pour toutes les autres touches
@@ -417,13 +506,6 @@ void Keyup(int keysym, int scancode)
 void Keydown(int sym, int scancode)
 {
  int ijoy, ikey, keycode;
- extern int pause6809;
- extern dialogeditbox *focus;
- extern void Initprog();
- extern void exit(int n);
- extern void Joysemul(int i, int state);
- extern void TO8key(int n);
- extern void SwitchFullScreenMode();
  //le scancode seul ne permet pas de distinguer le pave numerique
  //keycode = scancode + 0x40 pour le pave numerique
  //keycode = scancode pour toutes les autres touches
@@ -451,7 +533,6 @@ void Keydown(int sym, int scancode)
   int xmax;
   char *text;
   char string[TEXT_MAXLENGTH];
-  extern int xcursor;
   text = focus->text;
   xmax = strlen(text);
   xmax = 4;

@@ -24,6 +24,12 @@
 #include "dcto8dglobal.h"
 #include "dcto8dmsg.h"
 #include "dcto8dinterface.h"
+#include "dcto8demulation.h"
+#include "dcto8doptions.h"
+#include "dcto8dvideo.h"
+#include "dc6809emul.h"
+#include "dcto8ddevices.h"
+#include "dcto8dkeyb.h"
 
 #define SDL_main main    //indispensable pour eviter l'erreur
                          //undefined reference to `WinMain@16'
@@ -95,9 +101,6 @@ void Playsound(void *udata, Uint8 *stream, int bufferlength)
  int i;
  int mcycles; //nombre de milliemes de cycles entre deux echantillons
  int icycles; //nombre entier de cycles entre deux echantillons
- extern int mute, sound, frequency;
- extern int Run(int n);
- extern void Testshiftkey();
  //45 cycles 6809 a 992250 Hz = un echantillon a 22050 Hz
  for(i = 0; i < bufferlength; i++)
  {
@@ -119,13 +122,6 @@ void Playsound(void *udata, Uint8 *stream, int bufferlength)
 void Eventloop()
 {
  SDL_Event event;
- extern dialogeditbox *focus;   //editbox ayant le focus
- extern int xclient, yclient, blink;
- extern int penbutton, xmouse, ymouse, xmove, ymove, xpen, ypen;
- extern void Resizescreen(int x, int y), Displayscreen();
- extern void Mouseclick(), Dialogmove();
- extern void Keydown(int sym, int scancode);
- extern void Keyup(int sym, int scancode);
 
  while(1)
  {
@@ -176,12 +172,6 @@ void Eventloop()
 //Main program ///////////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
 {
- extern int xclient, yclient, screencount;
- extern void Init6809(), Initfilenames(), Hardreset();
- extern void Initoptions(), Saveoptions();
- extern void Initfontsurfaces(), Initbuttonsurfaces(), Initstatusbar();
- extern void Resizescreen(int x, int y), Displayscreen(), Keyboardinit();
-
  //initialisations
  Joyinit();                        //Joysticks initialization
  Initoptions();                    //Option initialization

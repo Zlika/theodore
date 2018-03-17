@@ -26,6 +26,10 @@
 #include "dcto8dglobal.h"
 #include "dcto8dicon.h"
 #include "dcto8dmsg.h"
+#include "dcto8demulation.h"
+#include "dcto8dmain.h"
+#include "dcto8doptions.h"
+#include "dcto8dinterface.h"
 
 // global variables //////////////////////////////////////////////////////////
 SDL_Window *window = NULL;     //fenetre d'affichage de l'ecran
@@ -33,7 +37,7 @@ SDL_Renderer *renderer = NULL;
 SDL_Texture *texture = NULL;   //texture mise à jour a partir de screen
 SDL_Surface *screen = NULL;    //surface d'affichage de l'ecran
 int xclient;                   //largeur fenetre utilisateur
-int yclient;                   //hauteur ecran MO5 dans fenetre utilisateur
+int yclient;                   //hauteur ecran dans fenetre utilisateur
 int xmouse;                    //abscisse souris dans fenetre utilisateur
 int ymouse;                    //ordonnee souris dans fenetre utilisateur
 struct pix {char b, g, r, a;}; //structure pixel BGRA
@@ -53,13 +57,6 @@ bool is_fullscreen = false;    //true when emulator runs in fullscreen
 //const int g[16]={0,60,90,110,130,148,165,180,193,205,215,225,230,235,240,255};
 //definition des intensites pour correction gamma de la datasheet EF9369
 int intens[16]={80,118,128,136,142,147,152,156,160,163,166,169,172,175,178,180};
-
-extern int videolinecycle;
-extern int videolinenumber;
-extern char *pagevideo;
-
-extern void Drawstatusbar();
-extern void SDL_error(const char* function, const char* message);
 
 // Modification de la palette ////////////////////////////////////////////////
 void Palette(int n, int r, int v, int b)
@@ -86,10 +83,6 @@ void Render()
 //Display screen /////////////////////////////////////////////////////////////
 void Displayscreen()
 {
- extern SDL_Surface *dialogbox;
- extern SDL_Surface *statusbar;
- extern SDL_Rect dialogrect;
- extern int dialog;
  if(dialog > 0)
    if(SDL_BlitSurface(dialogbox, NULL, screen, &dialogrect) < 0) SDL_error(__func__, "SDL_BlitSurface");
  if(--screencount < 0)  //1 fois sur 10 pour diminuer le temps d'affichage
@@ -183,7 +176,6 @@ void Displayborder()
 {
  int k;
  void *c;
- extern int bordercolor;
  currentlinesegment++;
  c = pcolor + bordercolor;
  k = currentlinesegment << 4;
@@ -257,9 +249,6 @@ void KeepAspectRatio(int *x, int *y)
 void Resizescreen(int x, int y)
 {
  int i, savepause6809;
- extern int pause6809;
- extern int dialog;
- extern void Drawoptionbox();
  savepause6809 = pause6809;
  pause6809 = 1; SDL_Delay(200);
  //effacement surface de l'ecran

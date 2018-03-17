@@ -34,7 +34,6 @@
 
 #define BOUTON_MAX 104        //nombre de boutons differents
 
-#define KEYBOARDKEY_MAX 84    //nombre de touches du clavier TO8D
 #define JOYSTICKKEY_MAX 10    //nombre total de contacts des deux manettes
 
 #define FLAGS 0   // flags in SDL_CreateRGBSurface are unused and should be set to 0
@@ -64,21 +63,5 @@ typedef struct
  int w;         //largeur en pixels
  int h;         //hauteur en pixels
 } button;
-
-//fonctions
-void Createdialogbox(int w, int h);
-void Displayscreen();
-void Drawdesassbox();
-void Drawk7index();
-void Drawjoystickbox();
-void Drawkeyboardbox();
-void Drawpopuptable(int n, int x, int y);
-void Drawoptionbox();
-void Erreur(const char* function, const char* message);
-void Hardreset();
-void Initprog();
-void Resizescreen(int x, int y);
-void SDL_error(const char* function, const char* message);
-void Setoption(int i);
 
 #endif

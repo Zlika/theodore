@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// DCTO8DDEVICES.C   Emulation des peripheriques MO5
+// DCTO8DDEVICES.C   Emulation des peripheriques TO8
 // Author   : Daniel Coulom - danielcoulom@gmail.com
 // Web site : http://dcto8.free.fr
 //
@@ -26,6 +26,10 @@
 #include <sys/stat.h>
 #include <ctype.h>
 #include "dcto8dglobal.h"
+#include "dcto8demulation.h"
+#include "dc6809emul.h"
+#include "dcto8dinterface.h"
+#include "dcto8dmain.h"
 
 // Variable globales /////////////////////////////////////////////////////////
 DIR *dmemo = NULL;  // pointeur directory pour recherche memo7
@@ -42,14 +46,7 @@ char k7name[100];   // nom du fichier cassette
 char fdname[100];   // nom du fichier disquette
 char memoname[100]; // nom du fichier cartouche
 
-//pointeurs vers fonctions d'acces memoire
-extern char (*Mgetc)(unsigned short a);
-extern void (*Mputc)(unsigned short a, char c);
-
 //6809 registers
-extern char dc6809_cc;
-extern char *dc6809_a, *dc6809_b;
-extern short dc6809_x, dc6809_y;
 #define CC dc6809_cc
 #define A *dc6809_a
 #define B *dc6809_b
@@ -145,7 +142,6 @@ void Formatdisk()
 void Loadfd(char *name)
 {
  char filename[256];
- extern char path[][TEXT_MAXLENGTH];
  //fermeture disquette eventuellement ouverte
  if(ffd) {fclose(ffd); ffd = NULL; fdname[0] = 0;}
  if(name[0] == 0) return;
@@ -193,7 +189,6 @@ void Writeoctetk7()
 void Loadk7(char *name)
 {
  char filename[256];
- extern char path[][TEXT_MAXLENGTH];
  if(fk7) {fclose(fk7); fk7 = NULL; k7name[0] = 0;} //fermeture cassette eventuellement ouverte
  if(name[0] == 0) return;
  strcpy(k7name, name);
@@ -221,9 +216,6 @@ void Loadmemo(char *name)
  FILE *fp = NULL;
  int i, c, carsize;
  char filename[256];
- extern int carflags, cartype;
- extern char ram[], car[];
- extern char path[][TEXT_MAXLENGTH];
  strcpy(memoname, name);
  strcpy(filename, path[2]);
  strcat(filename, name);
@@ -242,9 +234,8 @@ void Loadmemo(char *name)
 }
 
 // Initialisation noms de fichiers et pointeur de fonction de chargement //////
-void Initfilenames(char c)
+void Initfilenames()
 {
- extern void (*Load[])(char *);
  k7name[0] = 0;
  fdname[0] = 0;
  memoname[0] = 0;
@@ -256,41 +247,16 @@ void Initfilenames(char c)
 // Lecture boutons souris ////////////////////////////////////////////////////
 void Readmousebutton()
 {
- extern int penbutton;
  A = 3; if(penbutton) {A = 0; CC |= 0x05;}
 }
-
-/*
-// Emulation crayon optique //////////////////////////////////////////////////
-void Readpenxy()
-{
- extern int CC, xpen, ypen;
- extern void Mputw(unsigned short a, short w);
- if((xpen < 0) || (xpen >= 320)) {CC |= 1; return;}
- if((ypen < 0) || (ypen >= 200)) {CC |= 1; return;}
- Mputw(S + 6, xpen); Mputw(S + 8, ypen); CC &= 0xfe;
- return;
-}
-*/
 
 // Lecture position crayon(0) ou souris(1) ///////////////////////////////////
 void Readpenxy(int device)
 {
  int k;
- extern int xpen, ypen;
- extern char port[];
  void Mputw(unsigned short a, short w);
  if((xpen < 0) || (xpen >= 640)) {CC |= 1; return;} //x hors limites
  if((ypen < 0) || (ypen >= 200)) {CC |= 1; return;} //y hors limites
- /*
- if(device == 0) //test crayon optique sur couleur tres sombre
- {
-  unsigned char *p;  //pointeur dans le bitmap du point designe
-  extern void *pix;  //pointeur sur le debut des pixels du bitmap
-  p = pix + (y + 16) * xbitmap + (x + 16) * 2;
-  if((p[0] + p[1] + p[2]) < 10) {CC |= 1; return;}
- }
- */
  k = (port[0x1c] == 0x2a) ? 0 : 1; //mode 40 colonnes : x divise par 2
  if(device > 0) //souris
  {

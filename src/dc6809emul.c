@@ -20,7 +20,6 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-
 //pointeurs vers fonctions d'acces memoire
 char (*Mgetc)(unsigned short a);
 void (*Mputc)(unsigned short a, char c);

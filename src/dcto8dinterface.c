@@ -24,10 +24,16 @@
 #include <string.h>
 #include <dirent.h>
 #include <math.h>
+#include "dcto8dinterface.h"
 #include "dcto8dglobal.h"
 #include "dcto8dfont.h"
-#include "dcto8dinterface.h"
 #include "dcto8dmsg.h"
+#include "dcto8ddevices.h"
+#include "dcto8dvideo.h"
+#include "dcto8doptions.h"
+#include "dcto8ddesass.h"
+#include "dcto8dmain.h"
+#include "dcto8dkeyb.h"
 
 #define DIRLIST_LENGTH 32
 #define DIRLIST_NMAX 500
@@ -193,7 +199,7 @@ SDL_Rect dialogrect;           //position dialogbox
 SDL_Rect popuptablerect;       //position popup table
 int dialog = 0;                //0=rien 1=message, 2=options 3=clavier 4=menu
 int popuptable = 0;            //pouptable inactive par defaut
-dialogeditbox *focus = NULL;   //editbox ayant le focus
+const dialogeditbox *focus = NULL;   //editbox ayant le focus
 int xmove, ymove;              //position souris dans dialogbox deplacee
 int dircount;                  //nombre de fichiers dans le repertoire
 int dirmin, dirmax;            //plage de numeros de fichiers affiches
@@ -206,9 +212,8 @@ char path[3][TEXT_MAXLENGTH];   //repertoires des fichiers k7, fd, memo
 
 void (*Load[3])(char *name);   //pointeur fonction de chargement de fichier
 
-//external
-extern SDL_Surface *screen;    //surface d'affichage de l'ecran
-extern int xclient, yclient;   //taille ecran affiche
+//Forward declarations
+void Menuclick();
 
 //Creation d'une surface contenant un texte////////////////////////////////////
 SDL_Surface *Rendertext(const char *string, int color, int background)
@@ -477,14 +482,6 @@ void Drawmessagebox(char *titre, char *text1[], char *text2[])
  int i;
  dialog = 1;
 
- /*
- //test fontsurface
- extern SDL_Surface *fontsurface;
- rect.x = 10; rect.y = 30;
- SDL_BlitSurface(fontsurface, NULL, dialogbox, &rect);
- return;
- */
-
  //titre
  rect.x = 10; rect.w = dialogbox->w - 32;
  rect.y = 5; rect.h = 15;
@@ -542,8 +539,6 @@ void Drawk7index()
 {
  SDL_Rect rect;
  char index[10];
- extern FILE * fk7;
- extern int k7index, k7indexmax;
  index[0] = 0;
  if(fk7 != NULL) sprintf(index, "%03d/%03d", k7index, k7indexmax);
  rect.x = 2; rect.w = 52; rect.y = 2; rect.h = 15;
@@ -556,7 +551,6 @@ void Drawstatusbar()
  SDL_Rect rect;
  SDL_Surface *surf;
  int i, r;
- extern char k7name[], fdname[], memoname[];
 
  if(statusbar == NULL) return;
 
@@ -654,9 +648,6 @@ void Statusclick()
 {
  SDL_Rect rect;
  int i, r, x, y;
- extern int xmouse, ymouse;
- void Drawmenubox(), Drawpopupdirectory(int);
- extern void Keyboard(), Nextmemo(), About();
 
  //recherche du bouton concerne par le clic
  for(i = 0; i < STATUSBUTTON_MAX; i++)
@@ -691,7 +682,6 @@ void Statusclick()
 void Dialogmove()
 {
  int ytotal;
- extern int xmouse, ymouse;
  ytotal = yclient + YSTATUS;
  dialogrect.x = xmouse - xmove;
  dialogrect.y = ymouse - ymove;
@@ -709,8 +699,6 @@ void Dialogmove()
 void Dialogclick()
 {
  int x, y;
- extern int xmouse, ymouse;
- extern void Optionclick(), Keyclick(), Joyclick(), Desassclick();
 
  //suppression du focus actuel
  if(focus != NULL) {blink = 0; Draweditbox(focus); focus = NULL;}
@@ -741,8 +729,6 @@ void Dialogclick()
 void Mouseclick()
 {
  int i;
- extern int xmouse, ymouse, pause6809;
- extern void Menuclick();
  pause6809 = 1;
 
  //clic dans une popuptable
@@ -855,7 +841,6 @@ void Drawpopupdirectory(int n)
 void Menuclick()
 {
  int i, j, n;
- extern int ymouse;
  n = dialog - 1000;
 
  if(n == 3) //clic dans le menu options

@@ -27,6 +27,10 @@
 #include "dcto8dglobal.h"
 #include "dcto8dinterface.h"
 #include "dcto8dmsg.h"
+#include "dcto8ddevices.h"
+#include "dcto8dvideo.h"
+#include "dcto8demulation.h"
+#include "dcto8dkeyb.h"
 
 #define OPTIONBUTTON_MAX 8   //nombre de boutons boite de dialogue options
 
@@ -46,24 +50,12 @@ FILE *fpi;     //fichier dcto8d.ini
 int language;  //0=francais 1=anglais
 int frequency; //frequence 6809 en kHz
 
-//variables externes
-extern SDL_Surface *dialogbox;
-extern int xclient, yclient, vblnumbermax;
-extern int xclient, yclient, vblnumbermax;
-extern int k7protection; //protection k7 (0=lecture/ecriture 1=lecture seule)
-extern int fdprotection; //protection fd (0=lecture/ecriture 1=lecture seule)
-extern int keybpriority; //0=manettes prioritaires 1=clavier prioritaire
-extern button bouton[];
-extern char path[][TEXT_MAXLENGTH];
-
 //Draw option box ////////////////////////////////////////////////////////////
 void Drawoptionbox()
 {
  SDL_Rect rect;
  int i;
  char string[50];
- extern int dialog;
- extern int bleu, blanc;
  if(dialog != 2)
  {
   Createdialogbox(172, 216);
@@ -118,7 +110,6 @@ void Setoption(int i)
 {
  int f[5] = {100, 500, 1000, 2000, 5000}; //frequences processeur
  int v[4] = {10, 4, 2, 1}; //nombre de vbl entre deux trames affichees
- extern int dialog, popuptable;
  if(i >= 0) switch(popuptable)
  {
   case 1: language = i; break;
@@ -138,11 +129,6 @@ void Setoption(int i)
 void Optionclick()
 {
  int i, x, y;
- extern int xmouse, ymouse;
- extern int dialog;
- extern SDL_Rect dialogrect;
- extern int popuptable;
- extern const char *popuptabletext[];
 
  //recherche du bouton du clic
  for(i = 0; i < OPTIONBUTTON_MAX; i++)
