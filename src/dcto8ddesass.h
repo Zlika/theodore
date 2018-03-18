@@ -23,9 +23,9 @@
 #ifndef __DCTO8DDESASS_H
 #define __DCTO8DDESASS_H
 
-//Traitement des clics dans la boite de dialogue de desassemblage /////////////
-void Desassclick();
 //Creation de la boite de dialogue du desassembleur ///////////////////////////
 void Drawdesassbox();
+//Traitement des clics dans la boite de dialogue de desassemblage /////////////
+void Desassclick();
 
 #endif /* __DCTO8DDESASS_H */

@@ -32,36 +32,4 @@
 #define LANGUAGE_MAX 2        //nombre de langues differentes
 #define TEXT_MAXLENGTH 256    //longueur maxi d'une chaine de texte
 
-#define BOUTON_MAX 104        //nombre de boutons differents
-
-#define JOYSTICKKEY_MAX 10    //nombre total de contacts des deux manettes
-
-#define FLAGS 0   // flags in SDL_CreateRGBSurface are unused and should be set to 0
-
-typedef struct
-{
- int x;         //ordonnee du coin haut-gauche
- int y;         //abscisse du coin haut-gauche
- int w;         //largeur en pixels
- int h;         //hauteur en pixels
- char *text;    //texte a editer
-} dialogeditbox;
-
-typedef struct
-{
- //char name[12]; //nom du bouton
- int x;         //ordonnee du coin haut-gauche
- int y;         //abscisse du coin haut-gauche
- //int w;         //largeur en pixels
- //int h;         //hauteur en pixels
- int n;         //numero de la surface SDL
-} dialogbutton;
-
-typedef struct
-{
- char name[12]; //nom du bouton
- int w;         //largeur en pixels
- int h;         //hauteur en pixels
-} button;
-
 #endif

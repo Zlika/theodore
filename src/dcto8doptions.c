@@ -23,7 +23,6 @@
 #include <SDL.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include "dcto8dglobal.h"
 #include "dcto8dinterface.h"
 #include "dcto8dmsg.h"
@@ -205,16 +204,8 @@ void Initoptions()
 {
  int r;
  char string[256];
- char currentdir[256];
  memset(string, 0, 256);
- memset(currentdir, 0, 256);
  Initdefault();
- //chemins d'acces
- if (getcwd(currentdir, 256) == NULL) return;
- strcat(currentdir, "/");
- strcpy(path[0], currentdir);
- strcpy(path[1], currentdir);
- strcpy(path[2], currentdir);
  //ouverture fichier dcto8d.ini
  fpi = fopen("dcto8d.ini", "rb+");                 //s'il existe ouverture
  if(fpi == NULL) fpi = fopen("dcto8d.ini", "wb+"); //s'il n'existe pas : creation

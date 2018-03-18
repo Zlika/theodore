@@ -21,15 +21,10 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <SDL.h>
-#include <stdio.h>
-#include <string.h>
-#include "dcto8dglobal.h"
+#include "dc6809dass.h"
 #include "dcto8dinterface.h"
 #include "dcto8dmsg.h"
-#include "dcto8dmain.h"
 #include "dcto8dvideo.h"
-#include "dc6809emul.h"
-#include "dc6809dass.h"
 
 int startaddress;         //adresse de debut du desassemblage
 int nextaddress;          //adresse de la deuxieme instruction desassemblee
@@ -49,7 +44,7 @@ const dialogeditbox desasseditbox[DESASSEDITBOX_MAX] = {
 };
 
 //Affichage du desassemblage a l'adresse startaddress /////////////////////////
-void Displaydesass(int x)
+static void Displaydesass(int x)
 {
  SDL_Rect rect;
  int i;
@@ -80,7 +75,6 @@ void Drawdesassbox()
 {
  SDL_Rect rect;
  int i;
- pause6809 = 1;
  if(dialog != 5)
  {
   Createdialogbox(290, 365);
@@ -100,11 +94,10 @@ void Drawdesassbox()
  //affichage du desassemblage
  Displaydesass(startaddress);
  dialog = 5;
- pause6809 = 0;
 }
 
 //Traitement des clics dans une editbox de la boite de dialogue////////////////
-void Desasseditboxclick(int editbox)
+static void Desasseditboxclick(int editbox)
 {
  focus = &desasseditbox[editbox];
  xcursor = 0;
@@ -112,7 +105,7 @@ void Desasseditboxclick(int editbox)
 }
 
 //Traitement des clics dans un bouton de la boite de dialogue//////////////////
-void Desassbuttonclick(int button)
+static void Desassbuttonclick(int button)
 {
  int i, x;
  unsigned int address;

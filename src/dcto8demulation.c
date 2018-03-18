@@ -25,8 +25,6 @@
 #include "dcto8demulation.h"
 #include "to8dbasic.h"
 #include "to8dmoniteur.h"
-#include "dcto8dglobal.h"
-#include "dcto8dmain.h"
 #include "dcto8ddevices.h"
 #include "dcto8dkeyb.h"
 #include "dc6809emul.h"
@@ -78,9 +76,7 @@ int timer_irqcount;  //nombre de cycles avant la fin de l'irq timer
 //Acces memoire
 char Mgetto8d(unsigned short a);
 void Mputto8d(unsigned short a, char c);
-char (*Mgetc)(unsigned short);       //pointeur fonction courante
 short Mgetw(unsigned short a) {return (Mgetc(a) << 8 | (Mgetc(a+1) & 0xff));}
-void (*Mputc)(unsigned short, char); //pointeur fonction courante
 void Mputw(unsigned short a, short w) {Mputc(a, w >> 8); Mputc(++a, w);}
 
 //affichage
@@ -319,7 +315,6 @@ void Joysmove(int n, int x, int y)
 void Initprog()
 {
  int i;
- void Reset6809();
  for(i = 0; i < KEYBOARDKEY_MAX; i++) touche[i] = 0x80; //touches relachees
  joysposition = 0xff;                      //manettes au centre
  joysaction = 0xc0;                        //boutons relaches
@@ -354,7 +349,6 @@ void Hardreset()
  int i;
  time_t curtime;
  struct tm *loctime;
- pause6809 = 1;
  for(i = 0; i < sizeof(ram); i++)
  {
   ram[i] = -((i & 0x80) >> 7);
@@ -398,7 +392,6 @@ void Hardreset()
  mute = 0;
  penbutton = 0;
  capslock = 1;
- pause6809 = 0;
 }
 
 // Timer control /////////////////////////////////////////////////////////////
@@ -429,7 +422,6 @@ void Entreesortie(int io)
 int Run(int ncyclesmax)
 {
  int ncycles, opcycles;
- int Run6809();
  void Displaysegment();
  void Nextline();
  void Displayscreen();

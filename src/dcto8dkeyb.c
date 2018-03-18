@@ -31,9 +31,10 @@
 #include "dcto8dinterface.h"
 #include "dcto8dmsg.h"
 #include "dcto8demulation.h"
-#include "dcto8dmain.h"
 #include "dcto8doptions.h"
 #include "dcto8dvideo.h"
+
+#define JOYSTICKKEY_MAX 10    //nombre total de contacts des deux manettes
 
 //variables globales
 char to8dkeycode[256]; //scancode to8d en fonction du scancode pc

@@ -22,17 +22,10 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <ctype.h>
-#include "dcto8dglobal.h"
-#include "dcto8demulation.h"
 #include "dc6809emul.h"
-#include "dcto8dinterface.h"
-#include "dcto8dmain.h"
+#include "dcto8demulation.h"
 
-// Variable globales /////////////////////////////////////////////////////////
-DIR *dmemo = NULL;  // pointeur directory pour recherche memo7
+// Variables globales ////////////////////////////////////////////////////////
 FILE *ffd = NULL;   // pointeur fichier disquette
 FILE *fk7 = NULL;   // pointeur fichier k7
 FILE *fprn = NULL;  // pointeur fichier imprimante
@@ -42,9 +35,10 @@ int k7index;        // compteur du lecteur de cassette
 int k7indexmax;     // compteur du lecteur de cassette en fin de bande
 int k7protection;   // indicateur lecture seule pour la cassette
 int fdprotection;   // indicateur lecture seule pour la disquette
-char k7name[100];   // nom du fichier cassette
-char fdname[100];   // nom du fichier disquette
-char memoname[100]; // nom du fichier cartouche
+char k7name[100] = {0};   // nom du fichier cassette
+char fdname[100] = {0};   // nom du fichier disquette
+char memoname[100] = {0}; // nom du fichier cartouche
+void (*UpdateK7IndexCallback)() = NULL; // Callback appellee quand k7index est modifie
 
 //6809 registers
 #define CC dc6809_cc
@@ -62,7 +56,7 @@ void Imprime()
 }
 
 // Erreur lecture/ecriture fichier qd ou fd //////////////////////////////////
-void Diskerror(int n)
+static void Diskerror(int n)
 {
  Mputc(0x604e, n - 1); //erreur 53 = erreur entree/sortie
  CC |= 0x01; //indicateur d'erreur
@@ -138,90 +132,79 @@ void Formatdisk()
  if(fwrite(buffer, 256, 1, ffd) == 0) {Diskerror(53); return;}
 }
 
-// Chargement d'un fichier fd /////////////////////////////////////////////////
-void Loadfd(char *name)
+void UnloadFd()
 {
- char filename[256];
+ if(ffd) {fclose(ffd); ffd = NULL;}
+}
+
+// Chargement d'un fichier fd /////////////////////////////////////////////////
+static void Loadfd(char *filename)
+{
  //fermeture disquette eventuellement ouverte
- if(ffd) {fclose(ffd); ffd = NULL; fdname[0] = 0;}
- if(name[0] == 0) return;
+ UnloadFd();
+ if(filename[0] == '\0') return;
  //ouverture de la nouvelle disquette
- strcpy(fdname, name);
- strcpy(filename, path[1]);
- strcat(filename, name);
  ffd = fopen(filename, "rb+");
- if(ffd == NULL) {fdname[0] = 0; return;}
+ if(ffd == NULL) return;
  //fdprotection = 1;
 }
 
 // Emulation cassette ////////////////////////////////////////////////////////
+static void UpdateK7Index()
+{
+ if (UpdateK7IndexCallback != NULL) (*UpdateK7IndexCallback)();
+}
+
 void Readoctetk7()
 {
  int byte = 0;
- if(fk7 == NULL) {Initprog(); Erreur(__func__, "fk7 == NULL"); return;}
+ if(fk7 == NULL) {Initprog(); return;}
  byte = fgetc(fk7);
  if(byte == EOF)
  {
-  Initprog(); Erreur(__func__, "byte == EOF");
-  fseek(fk7, 0, SEEK_SET); k7index = 0; Drawk7index(); return;
+  Initprog();
+  fseek(fk7, 0, SEEK_SET); k7index = 0; UpdateK7Index(); return;
  }
  A = k7octet = byte; Mputc(0x2045, byte); k7bit = 0;
- if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; Drawk7index();}
-}
-
-void Readbitk7()
-{
- int octet = Mgetc(0x2045) << 1;
- if(k7bit == 0) {Readoctetk7(); k7bit = 0x80;}
- if((k7octet & k7bit)) {octet |= 0x01; A = 0xff;} else A = 0;
- Mputc(0x2045, octet); k7bit >>= 1;
+ if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; UpdateK7Index();}
 }
 
 void Writeoctetk7()
 {
- if(fk7 == NULL) {Initprog(); Erreur(__func__, "fk7 == NULL"); return;}
- if(k7protection) {Initprog(); Erreur(__func__, "k7protection"); return;}
- if(fputc(A, fk7) == EOF) {Initprog(); Erreur(__func__, "fputc(A, fk7) == EOF"); return;}
+ if(fk7 == NULL) {Initprog(); return;}
+ if(k7protection) {Initprog(); return;}
+ if(fputc(A, fk7) == EOF) {Initprog(); return;}
  Mputc(0x2045, 0);
- if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; Drawk7index();}
+ if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; UpdateK7Index();}
 }
 
-void Loadk7(char *name)
+void UnloadK7()
 {
- char filename[256];
- if(fk7) {fclose(fk7); fk7 = NULL; k7name[0] = 0;} //fermeture cassette eventuellement ouverte
- if(name[0] == 0) return;
- strcpy(k7name, name);
- strcpy(filename, path[0]);
- strcat(filename, name);
+ if(fk7) {fclose(fk7); fk7 = NULL;}
+}
+
+static void Loadk7(char *filename)
+{
+ UnloadK7(); //fermeture cassette eventuellement ouverte
+ if(filename[0] == '\0') return;
  fk7 = fopen(filename, "rb+");
- if(fk7 == NULL) {k7name[0] = 0; return;}
+ if(fk7 == NULL) return;
  k7index = 0;
  fseek(fk7, 0, SEEK_END);
  k7indexmax = ftell(fk7) >> 9;
  fseek(fk7, 0, SEEK_SET);
- Drawk7index();
+ UpdateK7Index();
  //k7protection = 1;
 }
 
-void Rewindk7()
-{
- if(fk7 == NULL) return;
- fseek(fk7, 0, SEEK_SET);
-}
-
 // Emulation cartouche memo7 /////////////////////////////////////////////////
-void Loadmemo(char *name)
+static void Loadmemo(char *filename)
 {
  FILE *fp = NULL;
  int i, c, carsize;
- char filename[256];
- strcpy(memoname, name);
- strcpy(filename, path[2]);
- strcat(filename, name);
  //ouverture du fichier memo7
  fp = fopen(filename, "rb");
- if(fp == NULL) {carflags = 0; memoname[0] = 0; Hardreset(); return;}
+ if(fp == NULL) {carflags = 0; Hardreset(); return;}
  //chargement
  carsize = 0;
  while(((c = fgetc(fp)) != EOF) && (carsize < 0x10000)) car[carsize++] = c;
@@ -233,15 +216,32 @@ void Loadmemo(char *name)
  Initprog();   //initialisation pour lancer la cartouche
 }
 
-// Initialisation noms de fichiers et pointeur de fonction de chargement //////
-void Initfilenames()
+void UnloadMemo()
 {
- k7name[0] = 0;
- fdname[0] = 0;
- memoname[0] = 0;
- Load[0] = Loadk7;
- Load[1] = Loadfd;
- Load[2] = Loadmemo;
+ carflags = 0;
+ Hardreset();
+}
+
+// Chargement d'un fichier k7, fd ou memo7////////////////////////////////////
+void Load(char *filename)
+{
+ if(strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".k7"))
+ {
+  Loadk7(filename);
+ }
+ else if(strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".fd"))
+ {
+  Loadfd(filename);
+ }
+ else if(strlen(filename) > 4 && !strcmp(filename + strlen(filename) - 4, ".rom"))
+ {
+  Loadmemo(filename);
+ }
+}
+
+void PrintK7Index(char *index)
+{
+ if(fk7 != NULL) sprintf(index, "%03d/%03d", k7index, k7indexmax);
 }
 
 // Lecture boutons souris ////////////////////////////////////////////////////

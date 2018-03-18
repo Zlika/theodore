@@ -23,6 +23,11 @@
 #ifndef __DC6809EMUL_H
 #define __DC6809EMUL_H
 
+//pointeurs vers fonctions d'acces memoire
+extern char (*Mgetc)(unsigned short a);
+extern void (*Mputc)(unsigned short a, char c);
+
+//6809 registers
 //condition code
 extern char  dc6809_cc;
 //X register
@@ -38,9 +43,16 @@ extern char *dc6809_b;
 //irq trigger  (0=inactif)
 int dc6809_irq;
 
-// Processor initialisation //////////////////////////////////////////////////
+// Processor initialisation
 void Init6809();
-
-void (*Mputc)(unsigned short a, char c);
+// Processor reset
+void Reset6809();
+// Execute one operation at pc address and set pc to next opcode address
+/*
+Return value is set to :
+- cycle count for the executed instruction when operation code is legal
+- negative value (-code) when operation code is illegal
+*/
+int Run6809();
 
 #endif /* __DC6809EMUL_H */

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <math.h>
+#include <unistd.h>
 #include "dcto8dinterface.h"
 #include "dcto8dglobal.h"
 #include "dcto8dfont.h"
@@ -32,12 +33,13 @@
 #include "dcto8dvideo.h"
 #include "dcto8doptions.h"
 #include "dcto8ddesass.h"
-#include "dcto8dmain.h"
 #include "dcto8dkeyb.h"
 
 #define DIRLIST_LENGTH 32
 #define DIRLIST_NMAX 500
 #define POPUPTABLE_NMAX 10
+#define BOUTON_MAX 104        //nombre de boutons differents
+#define FLAGS 0   // flags in SDL_CreateRGBSurface are unused and should be set to 0
 
 //masques et couleurs
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -209,11 +211,54 @@ int xcursor = 0;               //position du curseur dans la chaine de caractere
 char dirlist[DIRLIST_NMAX][DIRLIST_LENGTH]; //liste des fichiers du repertoire
 const char *popuptabletext[POPUPTABLE_NMAX];  //pointeur vers lignes de la popup table
 char path[3][TEXT_MAXLENGTH];   //repertoires des fichiers k7, fd, memo
-
-void (*Load[3])(char *name);   //pointeur fonction de chargement de fichier
+char k7name[100];               // nom du fichier cassette
+char fdname[100];               // nom du fichier disquette
+char memoname[100];             // nom du fichier cartouche
+char* devname[] = { k7name, fdname, memoname };
+int pause6809;                  //processor pause state
 
 //Forward declarations
 void Menuclick();
+
+// Message d'erreur SDL //////////////////////////////////////////////////////
+void SDL_error(const char* function, const char* message)
+{
+ char string[256];
+ sprintf(string, "%s : %s\n%s", function, message, SDL_GetError());
+ SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                          "SDL Error",
+                          string,
+                          NULL);
+ SDL_Delay(1000);
+}
+
+// Message d'erreur emulateur ////////////////////////////////////////////////
+void Erreur(const char* function, const char* message)
+{
+ char string[256];
+ sprintf(string, "%s : %s", function, message);
+ SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                          "Emulator Error",
+                          string,
+                          NULL);
+}
+
+// About message box /////////////////////////////////////////////////////////
+void About()
+{
+ SDL_version linked;
+ char message[1024];
+
+ message[0] = '\0';
+ sprintf(message + strlen(message), "\n%s", _(MSG_ABOUT));
+ SDL_GetVersion(&linked);
+ sprintf(message + strlen(message), "\n\nSDL %d.%d.%d", linked.major, linked.minor, linked.patch);
+
+ SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                          _(MSG_ABOUT_TITLE),
+                          message,
+                          NULL);
+}
 
 //Creation d'une surface contenant un texte////////////////////////////////////
 SDL_Surface *Rendertext(const char *string, int color, int background)
@@ -540,7 +585,7 @@ void Drawk7index()
  SDL_Rect rect;
  char index[10];
  index[0] = 0;
- if(fk7 != NULL) sprintf(index, "%03d/%03d", k7index, k7indexmax);
+ PrintK7Index(index);
  rect.x = 2; rect.w = 52; rect.y = 2; rect.h = 15;
  Drawtextbox(statusbar, index, rect, 0, blanc, -1);
 }
@@ -581,9 +626,22 @@ void Drawstatusbar()
  }
 }
 
+void InitPaths()
+{
+ char currentdir[256];
+ memset(currentdir, 0, 256);
+ if (getcwd(currentdir, 256) == NULL) currentdir[0] = '\0';
+ strcat(currentdir, "/");
+ strcpy(path[0], currentdir);
+ strcpy(path[1], currentdir);
+ strcpy(path[2], currentdir);
+}
+
 //Init status bar ////////////////////////////////////////////////////////////
 void Initstatusbar()
 {
+ InitPaths();
+ UpdateK7IndexCallback = &Drawk7index;
  statusbar = SDL_CreateRGBSurface(FLAGS, 2048, YSTATUS, 32, rmask, gmask, bmask, amask);
  if(statusbar == NULL) SDL_error(__func__, "statusbar == NULL");
  Drawstatusbar();
@@ -841,6 +899,9 @@ void Drawpopupdirectory(int n)
 void Menuclick()
 {
  int i, j, n;
+ char filename[TEXT_MAXLENGTH];
+ filename[0] = '\0';
+
  n = dialog - 1000;
 
  if(n == 3) //clic dans le menu options
@@ -849,7 +910,7 @@ void Menuclick()
   if(ymouse < (YSTATUS + 20)) {Drawoptionbox(); return;}
   if(ymouse < (YSTATUS + 36)) {Drawkeyboardbox(); return;}
   if(ymouse < (YSTATUS + 52)) {Drawjoystickbox(); return;}
-  if(ymouse < (YSTATUS + 68)) {Drawdesassbox(); return;}
+  if(ymouse < (YSTATUS + 68)) {pause6809 = 1; Drawdesassbox(); pause6809 = 0; return;}
   return;
  }
  if((n < 0) || (n > 2)) return;
@@ -858,7 +919,8 @@ void Menuclick()
  i = dirmin - 1 + (ymouse - YSTATUS - 4) / 16;
  if(i < dirmin) //[decharger]
  {
-  Load[n]("");
+  devname[n][0] = '\0';
+  if (n == 0) UnloadK7(); else if (n == 1) UnloadFd(); else UnloadMemo();
   dialog = 0;
   Drawstatusbar();
   return;
@@ -890,7 +952,10 @@ void Menuclick()
  }
  if(dirlist[i][0] > 15) //ouverture fichier
  {
-  Load[n](dirlist[i]);
+  strcpy(devname[n], dirlist[i]);
+  strcpy(filename, path[n]);
+  strcat(filename, dirlist[i]);
+  Load(filename);
   Drawstatusbar();
   dialog = 0;
   return;

@@ -172,7 +172,7 @@ void Init6809()
 }
 
 // Get memory (indexed) //////////////////////////////////////////////////////
-void Mgeti()
+static void Mgeti()
 {
  int i;
  short *r;
@@ -226,7 +226,7 @@ void Mgeti()
 }
 
 // PSH, PUL, EXG, TFR /////////////////////////////////////////////////////////
-void Pshs(char c)
+static void Pshs(char c)
 {
  if(c & 0x80) {PUTC(--S,PCL); PUTC(--S,PCH); N += 2;}
  if(c & 0x40) {PUTC(--S, UL); PUTC(--S, UH); N += 2;}
@@ -238,7 +238,7 @@ void Pshs(char c)
  if(c & 0x01) {PUTC(--S, CC); N += 1;}
 }
 
-void Pshu(char c)
+static void Pshu(char c)
 {
  if(c & 0x80) {PUTC(--U,PCL); PUTC(--U,PCH); N += 2;}
  if(c & 0x40) {PUTC(--U, SL); PUTC(--U, SH); N += 2;}
@@ -250,7 +250,7 @@ void Pshu(char c)
  if(c & 0x01) {PUTC(--U, CC); N += 1;}
 }
 
-void Puls(char c)
+static void Puls(char c)
 {
  if(c & 0x01) {CC = GETC(S); S++; N += 1;}
  if(c & 0x02) { A = GETC(S); S++; N += 1;}
@@ -262,7 +262,7 @@ void Puls(char c)
  if(c & 0x80) {PCH= GETC(S); S++; PCL= GETC(S); S++; N += 2;}
 }
 
-void Pulu(char c)
+static void Pulu(char c)
 {
  if(c & 0x01) {CC = GETC(U); U++; N += 1;}
  if(c & 0x02) { A = GETC(U); U++; N += 1;}
@@ -274,7 +274,7 @@ void Pulu(char c)
  if(c & 0x80) {PCH= GETC(U); U++; PCL= GETC(U); U++; N += 2;}
 }
 
-void Exg(char c)
+static void Exg(char c)
 {
  switch(c & 0xff)
  {
@@ -323,7 +323,7 @@ void Exg(char c)
  }
 }
 
-void Tfr(char c)
+static void Tfr(char c)
 {
  switch(c & 0xff)
  {
@@ -373,14 +373,14 @@ void Tfr(char c)
 }
 
 // CLR, NEG, COM, INC, DEC  (CC=EFHINZVC) /////////////////////////////////////
-char Clr()
+static char Clr()
 {
  CC &= 0xf0;
  CC |= CC_Z;
  return 0;
 }
 
-char Neg(char c)
+static char Neg(char c)
 {
  CC &= 0xf0;
  if(c == -128) CC |= CC_V;
@@ -391,7 +391,7 @@ char Neg(char c)
  return c;
 }
 
-char Com(char c)
+static char Com(char c)
 {
  CC &= 0xf0;
  c = ~c;
@@ -401,7 +401,7 @@ char Com(char c)
  return c;
 }
 
-char Inc(char c)
+static char Inc(char c)
 {
  CC &= 0xf1;
  if(c == 127) CC |= CC_V;
@@ -411,7 +411,7 @@ char Inc(char c)
  return c;
 }
 
-char Dec(char c)
+static char Dec(char c)
 {
  CC &= 0xf1;
  if(c == -128) CC |= CC_V;
@@ -422,7 +422,7 @@ char Dec(char c)
 }
 
 // Registers operations  (CC=EFHINZVC) ////////////////////////////////////////
-void Mul()
+static void Mul()
 {
  D = (A & 0xff) * (B & 0xff);
  CC &= 0xf2;
@@ -430,7 +430,7 @@ void Mul()
  if(D == 0) CC |= CC_Z;
 }
 
-void Addc(char *r, char c)
+static void Addc(char *r, char c)
 {
  int i = *r + c;
  CC &= 0xd0;
@@ -442,7 +442,7 @@ void Addc(char *r, char c)
  if(*r == 0) CC |= CC_Z;
 }
 
-void Adc(char *r, char c)
+static void Adc(char *r, char c)
 {
  int carry = (CC & CC_C);
  int i = *r + c + carry;
@@ -455,7 +455,7 @@ void Adc(char *r, char c)
  if(*r == 0) CC |= CC_Z;
 }
 
-void Addw(short *r, short word)
+static void Addw(short *r, short word)
 {
  int i = *r + word;
  CC &= 0xf0;
@@ -466,7 +466,7 @@ void Addw(short *r, short word)
  if(*r == 0) CC |= CC_Z;
 }
 
-void Subc(char *r, char c)
+static void Subc(char *r, char c)
 {
  int i = *r - c;
  CC &= 0xf0;
@@ -477,7 +477,7 @@ void Subc(char *r, char c)
  if(*r == 0) CC |= CC_Z;
 }
 
-void Sbc(char *r, char c)
+static void Sbc(char *r, char c)
 {
  int carry = (CC & CC_C);
  int i = *r - c - carry;
@@ -489,7 +489,7 @@ void Sbc(char *r, char c)
  if(*r == 0) CC |= CC_Z;
 }
 
-void Subw(short *r, short word)
+static void Subw(short *r, short word)
 {
  int i = *r - word;
  CC &= 0xf0;
@@ -500,7 +500,7 @@ void Subw(short *r, short word)
  if(*r == 0) CC |= CC_Z;
 }
 
-void Daa()
+static void Daa()
 {
  int i = A & 0xff;
  if((CC & CC_H) || ((i & 0x00f) > 0x09)) i += 0x06;
@@ -515,7 +515,7 @@ void Daa()
 }
 
 // Shift and rotate  (CC=EFHINZVC) ////////////////////////////////////////////
-char Lsr(char c)
+static char Lsr(char c)
 {
  CC &= 0xf2;
  if(c & 1) CC |= CC_C;
@@ -524,7 +524,7 @@ char Lsr(char c)
  return c;
 }
 
-char Ror(char c)
+static char Ror(char c)
 {
  int carry = CC & CC_C;
  CC &= 0xf2;
@@ -535,7 +535,7 @@ char Ror(char c)
  return c;
 }
 
-char Rol(char c)
+static char Rol(char c)
 {
  int carry = CC & CC_C;
  CC &= 0xf0;
@@ -547,7 +547,7 @@ char Rol(char c)
  return c;
 }
 
-char Asr(char c)
+static char Asr(char c)
 {
  CC &= 0xf2;
  if(c & 1) CC |= CC_C;
@@ -557,7 +557,7 @@ char Asr(char c)
  return c;
 }
 
-char Asl(char c)
+static char Asl(char c)
 {
  CC &= 0xf0;
  if(c < 0) CC |= CC_C;
@@ -569,21 +569,21 @@ char Asl(char c)
 }
 
 // Test and compare  (CC=EFHINZVC) ////////////////////////////////////////////
-void Tstc(char c)
+static void Tstc(char c)
 {
  CC &= 0xf1;
  if(c < 0) CC |= CC_N;
  if(c == 0) CC |= CC_Z;
 }
 
-void Tstw(short word)
+static void Tstw(short word)
 {
  CC &= 0xf1;
  if(word < 0) CC |= CC_N;
  if(word == 0) CC |= CC_Z;
 }
 
-void Cmpc(char *reg, char c)
+static void Cmpc(char *reg, char c)
 {
  char r = *reg;
  int i = *reg - c;
@@ -595,7 +595,7 @@ void Cmpc(char *reg, char c)
  if(r == 0) CC |= CC_Z;
 }
 
-void Cmpw(short *reg, short word)
+static void Cmpw(short *reg, short word)
 {
  short r = *reg;
  int i = *reg - word;
@@ -608,7 +608,7 @@ void Cmpw(short *reg, short word)
 }
 
 // Interrupt requests  (CC=EFHINZVC) //////////////////////////////////////////
-int Nmi()  //non masquable interrupt     a verifier !!!!
+static int Nmi()  //non masquable interrupt     a verifier !!!!
 {
  CC |= CC_E;
  Pshs(0xff);
@@ -618,7 +618,7 @@ int Nmi()  //non masquable interrupt     a verifier !!!!
  return 1;
 }
 
-int Firq() //fast interrupt request
+static int Firq() //fast interrupt request
 {
  if((CC & CC_F) == 0)          //si les FIRQs ne sont pas masquees
  {
@@ -632,7 +632,7 @@ int Firq() //fast interrupt request
  else return 0;
 }
 
-int Irq() //interrupt request
+static int Irq() //interrupt request
 {
  if(dc6809_sync == 1) dc6809_sync = 2; //si attente synchro, indicateur d'interruption
  if((CC & CC_I) == 0)          //si les IRQs ne sont pas masquees
@@ -646,7 +646,7 @@ int Irq() //interrupt request
  else return 0;
 }
 
-void Swi(int n) //software interrupt
+static void Swi(int n) //software interrupt
 {
  CC |= CC_E;
  Pshs(0xff);
@@ -657,14 +657,14 @@ void Swi(int n) //software interrupt
 }
 
 // RTI ////////////////////////////////////////////////////////////////////////
-void Rti()
+static void Rti()
 {
  Puls(0x01);
  if(CC & CC_E) Puls(0xfe); else Puls(0x80);
 }
 
 // SYNC ///////////////////////////////////////////////////////////////////////
-void Sync()
+static void Sync()
 {
  //positionner le flag d'attente de synchronisation
  if(dc6809_sync == 0) dc6809_sync = 1;
@@ -675,12 +675,12 @@ void Sync()
 }
 
 // Execute one operation at pc address and set pc to next opcode address //////
-int Run6809()
 /*
 Return value is set to :
 - cycle count for the executed instruction when operation code is legal
 - negative value (-code) when operation code is illegal
 */
+int Run6809()
 {
  int precode, code;
 

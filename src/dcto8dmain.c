@@ -36,7 +36,6 @@
 
 // global variables //////////////////////////////////////////////////////////
 SDL_AudioSpec audio;
-int pause6809;        //processor pause state
 int report;           //nombre de milliemes de cycle a reporter
 
 unsigned char cursor[] = {
@@ -44,46 +43,6 @@ unsigned char cursor[] = {
  137,0,152,128,164,128,196,64,130,64,2,32,1,32,1,16,0,176,0,192,0,0,0,0,128,0,
  192,0,224,0,240,0,248,0,252,0,254,0,255,0,255,128,255,192,255,224,255,240,255,
  0,231,128,199,128,131,192,3,192,3,224,1,224,1,240,0,240,0,192,0,0,0,0};
-
-// About message box /////////////////////////////////////////////////////////
-void About()
-{
- SDL_version linked;
- char message[1024];
-
- message[0] = '\0';
- sprintf(message + strlen(message), "\n%s", _(MSG_ABOUT));
- SDL_GetVersion(&linked);
- sprintf(message + strlen(message), "\n\nSDL %d.%d.%d", linked.major, linked.minor, linked.patch);
-
- SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                          _(MSG_ABOUT_TITLE),
-                          message,
-                          NULL);
-}
-
-// Message d'erreur SDL //////////////////////////////////////////////////////
-void SDL_error(const char* function, const char* message)
-{
- char string[256];
- sprintf(string, "%s : %s\n%s", function, message, SDL_GetError());
- SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                          "SDL Error",
-                          string,
-                          NULL);
- SDL_Delay(1000);
-}
-
-// Message d'erreur emulateur ////////////////////////////////////////////////
-void Erreur(const char* function, const char* message)
-{
- char string[256];
- sprintf(string, "%s : %s", function, message);
- SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                          "Emulator Error",
-                          string,
-                          NULL);
-}
 
 // Joysticks initialization //////////////////////////////////////////////////
 void Joyinit()
@@ -175,10 +134,11 @@ int main(int argc, char *argv[])
  //initialisations
  Joyinit();                        //Joysticks initialization
  Initoptions();                    //Option initialization
- Initfilenames();
  Init6809();
  Keyboardinit();                   //Keyboard initialization
- Hardreset();                      //MO5 initialization
+ pause6809 = 1;
+ Hardreset();                      //TO8 initialization
+ pause6809 = 0;
 
  //initialize SDL video and keyboard
  if(SDL_Init(SDL_INIT_VIDEO) < 0) SDL_error(__func__, "SDL_Init");

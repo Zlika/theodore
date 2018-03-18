@@ -22,7 +22,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "dc6809dass.h"
 #include "dcto8demulation.h"
 
 #define GETBYTE i=Mgetc(pc)&0x00ff;pc+=1;sprintf(w,"%02X",i);strcat(hexa,w)
@@ -1143,10 +1142,11 @@ static void Indexed()
 }
 
 // Desassembly ///////////////////////////////////////////////////////////////
+// string = pointeur vers une chaine recevant la ligne desassemblee
+//      a = adresse des caracteres a desassembler
+// retour = adresse de l'instruction suivante
 int Dasm6809(char *string, int a)
-{// string = pointeur vers une chaine recevant la ligne desassemblee
- //      a = adresse des caracteres a desassembler
- // retour = adresse de l'instruction suivante
+{
  int i, precode, code;
  //initialisations
  pc = a; //adresse de desassemblage

@@ -20,6 +20,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+#include "../config.h"
 #include "dcto8dmsg.h"
 
 // Renvoie la chaine de caracteres en fonction de la langue selectionnee.

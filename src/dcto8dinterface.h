@@ -26,6 +26,32 @@
 #include <SDL.h>
 #include "dcto8dglobal.h"
 
+typedef struct
+{
+ int x;         //ordonnee du coin haut-gauche
+ int y;         //abscisse du coin haut-gauche
+ int w;         //largeur en pixels
+ int h;         //hauteur en pixels
+ char *text;    //texte a editer
+} dialogeditbox;
+
+typedef struct
+{
+ //char name[12]; //nom du bouton
+ int x;         //ordonnee du coin haut-gauche
+ int y;         //abscisse du coin haut-gauche
+ //int w;         //largeur en pixels
+ //int h;         //hauteur en pixels
+ int n;         //numero de la surface SDL
+} dialogbutton;
+
+typedef struct
+{
+ char name[12]; //nom du bouton
+ int w;         //largeur en pixels
+ int h;         //hauteur en pixels
+} button;
+
 //surface d'affichage dialogbox
 extern SDL_Surface *dialogbox;
 //surface de la barre de statut
@@ -35,7 +61,7 @@ extern int dialog;
 extern const int blanc;
 extern const int bleu;
 extern const int gris0;
-extern button bouton[BOUTON_MAX];
+extern button bouton[];
 //editbox ayant le focus
 extern const dialogeditbox *focus;
 //position du curseur dans la chaine de caracteres
@@ -52,12 +78,18 @@ extern const char *popuptabletext[];
 //repertoires des fichiers k7, fd, memo
 extern char path[3][TEXT_MAXLENGTH];
 
-//pointeur fonction de chargement de fichier
-extern void (*Load[3])(char *name);
-
 //flag de clignotement du curseur
 extern int blink;
 
+//processor pause state
+extern int pause6809;
+
+// Message d'erreur SDL //////////////////////////////////////////////////////
+void SDL_error(const char* function, const char* message);
+// Message d'erreur emulateur ////////////////////////////////////////////////
+void Erreur(const char* function, const char* message);
+// Boite de dialogue 'A propos'///////////////////////////////////////////////
+void About();
 void Drawtextbox(SDL_Surface *s, const char *txt, SDL_Rect rect, int t, int b, int r);
 void Drawbutton(const dialogbutton *bouton, int push);
 void Draweditbox(const dialogeditbox *box);

@@ -27,7 +27,6 @@
 #include "dcto8dicon.h"
 #include "dcto8dmsg.h"
 #include "dcto8demulation.h"
-#include "dcto8dmain.h"
 #include "dcto8doptions.h"
 #include "dcto8dinterface.h"
 
@@ -279,7 +278,7 @@ void Resizescreen(int x, int y)
  renderer = SDL_CreateRenderer(window, -1, 0);
  SDL_RenderSetLogicalSize(renderer, xclient, yclient + YSTATUS);
  if (renderer == NULL) { SDL_error(__func__, "SDL_CreateRenderer"); return; }
- screen = SDL_CreateRGBSurface(FLAGS, xclient, yclient + YSTATUS, 32,
+ screen = SDL_CreateRGBSurface(0, xclient, yclient + YSTATUS, 32,
                                          0x00FF0000,
                                          0x0000FF00,
                                          0x000000FF,

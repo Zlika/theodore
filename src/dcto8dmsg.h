@@ -23,8 +23,6 @@
 #ifndef __DCTO8DMSG_H
 #define __DCTO8DMSG_H
 
-#include "../config.h"
-
 //2 langues : 0=francais 1=anglais
 extern int language;
 

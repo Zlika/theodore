@@ -23,8 +23,6 @@
 #ifndef __DCTO8DDEVICES_H
 #define __DCTO8DDEVICES_H
 
-#include <stdio.h>
-
 void Readoctetk7();
 void Writeoctetk7();
 void Readsector();
@@ -34,24 +32,19 @@ void Imprime();
 void Readmousebutton();
 void Readpenxy(int device);
 
-// Initialisation noms de fichiers et pointeur de fonction de chargement //////
-void Initfilenames();
+// Chargement d'un fichier k7 (*.k7), fd (*.fd) ou memo7 (*.rom)
+void Load(char *filename);
+void UnloadK7();
+void UnloadFd();
+void UnloadMemo();
+void PrintK7Index(char *index);
 
-// pointeur fichier k7
-extern FILE *fk7;
-// compteur du lecteur de cassette
-extern int k7index;
-// compteur du lecteur de cassette en fin de bande
-extern int k7indexmax;
+// Callback appellee quand k7index est modifie
+extern void (*UpdateK7IndexCallback)();
+
 // indicateur lecture seule pour la cassette
 extern int k7protection;
 // indicateur lecture seule pour la disquette
 extern int fdprotection;
-// nom du fichier cassette
-extern char k7name[100];
-// nom du fichier disquette
-extern char fdname[100];
-// nom du fichier cartouche
-extern char memoname[100];
 
 #endif /* __DCTO8DDEVICES_H */
