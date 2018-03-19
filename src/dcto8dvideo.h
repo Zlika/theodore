@@ -23,14 +23,16 @@
 #ifndef __DCTO8DVIDEO_H
 #define __DCTO8DVIDEO_H
 
+#define XBITMAP 672
+#define YBITMAP 216
+#define YSTATUS 20
+
 //surface d'affichage de l'ecran
 extern SDL_Surface *screen;
 //largeur fenetre utilisateur
 extern int xclient;
 //hauteur ecran dans fenetre utilisateur
 extern int yclient;
-//nbre ecrans affiches entre 2 affichages status
-extern int screencount;
 
 //abscisse souris dans fenetre utilisateur
 extern int xmouse;

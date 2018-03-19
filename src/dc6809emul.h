@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////
-// DC6809EMUL.H - Motorola 6809 micropocessor emulation
+// DC6809EMUL.H - Motorola 6809 microprocessor emulation
 // Author   : Daniel Coulom - danielcoulom@gmail.com
 // Web site : http://dcto8.free.fr
 //
@@ -41,7 +41,7 @@ extern char *dc6809_a;
 extern char *dc6809_b;
 
 //irq trigger  (0=inactif)
-int dc6809_irq;
+extern int dc6809_irq;
 
 // Processor initialisation
 void Init6809();

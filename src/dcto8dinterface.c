@@ -23,10 +23,8 @@
 #include <SDL.h>
 #include <string.h>
 #include <dirent.h>
-#include <math.h>
 #include <unistd.h>
 #include "dcto8dinterface.h"
-#include "dcto8dglobal.h"
 #include "dcto8dfont.h"
 #include "dcto8dmsg.h"
 #include "dcto8ddevices.h"
@@ -39,6 +37,8 @@
 #define DIRLIST_NMAX 500
 #define POPUPTABLE_NMAX 10
 #define BOUTON_MAX 104        //nombre de boutons differents
+#define TEXT_MAXLENGTH 256
+#define PATH_MAX 256
 #define FLAGS 0   // flags in SDL_CreateRGBSurface are unused and should be set to 0
 
 //masques et couleurs
@@ -207,18 +207,18 @@ int dircount;                  //nombre de fichiers dans le repertoire
 int dirmin, dirmax;            //plage de numeros de fichiers affiches
 int blink = -1;                //flag de clignotement du curseur
 int xcursor = 0;               //position du curseur dans la chaine de caracteres
-//char editboxtext[EDITBOX_MAX][TEXT_MAXLENGTH]; //zones texte des editbox
 char dirlist[DIRLIST_NMAX][DIRLIST_LENGTH]; //liste des fichiers du repertoire
 const char *popuptabletext[POPUPTABLE_NMAX];  //pointeur vers lignes de la popup table
-char path[3][TEXT_MAXLENGTH];   //repertoires des fichiers k7, fd, memo
+char path[3][PATH_MAX];   //repertoires des fichiers k7, fd, memo
 char k7name[100];               // nom du fichier cassette
 char fdname[100];               // nom du fichier disquette
 char memoname[100];             // nom du fichier cartouche
 char* devname[] = { k7name, fdname, memoname };
+// pointeurs fonctions de chargement de fichier
+void (*LoadFunc[3])(char *filename) = { Loadk7, Loadfd, Loadmemo };
+// pointeurs fonctions de déchargement
+void (*UnloadFunc[3])() = { Unloadk7, Unloadfd, Unloadmemo };
 int pause6809;                  //processor pause state
-
-//Forward declarations
-void Menuclick();
 
 // Message d'erreur SDL //////////////////////////////////////////////////////
 void SDL_error(const char* function, const char* message)
@@ -232,19 +232,8 @@ void SDL_error(const char* function, const char* message)
  SDL_Delay(1000);
 }
 
-// Message d'erreur emulateur ////////////////////////////////////////////////
-void Erreur(const char* function, const char* message)
-{
- char string[256];
- sprintf(string, "%s : %s", function, message);
- SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                          "Emulator Error",
-                          string,
-                          NULL);
-}
-
 // About message box /////////////////////////////////////////////////////////
-void About()
+static void About()
 {
  SDL_version linked;
  char message[1024];
@@ -261,7 +250,7 @@ void About()
 }
 
 //Creation d'une surface contenant un texte////////////////////////////////////
-SDL_Surface *Rendertext(const char *string, int color, int background)
+static SDL_Surface *Rendertext(const char *string, int color, int background)
 {
  //color
  //0 = noir largeur variable
@@ -333,7 +322,7 @@ SDL_Surface *Rendertext(const char *string, int color, int background)
 }
 
 //Initialisation image de fond d'un bouton relache ////////////////////////////
-void Initbuttonup(SDL_Surface *s, int w, int h)
+static void Initbuttonup(SDL_Surface *s, int w, int h)
 {
  SDL_Rect r;
  r.x = 0; r.y = 0; r.w = w;     r.h = h;     SDL_FillRect(s, &r, gris1);
@@ -357,7 +346,7 @@ void Initbuttonup(SDL_Surface *s, int w, int h)
 }
 
 //Initialisation image de fond d'un bouton enfonce ////////////////////////////
-void Initbuttondown(SDL_Surface *s, int w, int h)
+static void Initbuttondown(SDL_Surface *s, int w, int h)
 {
  SDL_Rect r;
  r.x = 0; r.y = 0; r.w = w;     r.h = h;     SDL_FillRect(s, &r, noir);
@@ -452,12 +441,12 @@ void Initbuttonsurfaces()
 }
 
 //Tri du repertoire path /////////////////////////////////////////////////////
-void Sortdirectory(char *path)
+static void Sortdirectory(char *path)
 {
  DIR *dir;
  DIR *dummy;
  struct dirent *entry;
- char name[TEXT_MAXLENGTH];
+ char name[PATH_MAX];
  dircount = 0;
  if((dir = opendir(path)) == NULL) return;
  while((entry = readdir(dir)))
@@ -465,13 +454,13 @@ void Sortdirectory(char *path)
   if(!strcasecmp(entry->d_name, ".")) continue;
   strcpy(name, path);
   strcat(name, entry->d_name);
-  dirlist[dircount][0] = 0;
+  dirlist[dircount][0] = '\0';
   dummy = opendir(name);
   if(dummy) {closedir(dummy); strcpy(dirlist[dircount], " ""\xa4"": ");}
   if(!strcmp(entry->d_name, "..")) strcpy(dirlist[dircount], " ""\xa4""9 ");
-  if(strlen(dirlist[dircount]) > 0) dirlist[dircount][0] = 15; //caractere nul
+  if(strlen(dirlist[dircount]) > 0) dirlist[dircount][0] = 15;
   strncat(dirlist[dircount], entry->d_name, DIRLIST_LENGTH);
-  dirlist[dircount][DIRLIST_LENGTH - 1] = 0;
+  dirlist[dircount][DIRLIST_LENGTH - 1] = '\0';
   if(++dircount >= DIRLIST_NMAX) break;
  }
  closedir(dir);
@@ -518,37 +507,6 @@ void Drawtextbox(SDL_Surface *surf, const char *string, SDL_Rect rect,
  if(r < 0) SDL_error(__func__, "r < 0");
 }
 
-//Draw message box ////////////////////////////////////////////////////////////
-void Drawmessagebox(char *titre, char *text1[], char *text2[])
-//text1 est affiche sur fond gris et text2 sur fond blanc
-//le dernier des deux textes doit etre une chaine de longueur nulle
-{
- SDL_Rect rect;
- int i;
- dialog = 1;
-
- //titre
- rect.x = 10; rect.w = dialogbox->w - 32;
- rect.y = 5; rect.h = 15;
- Drawtextbox(dialogbox, titre, rect, 1, bleu, 0);
- //texte sur fond gris
- rect.x = 10; rect.w = dialogbox->w - 20;
- rect.y += 24;
- i = 0;
- while(text1[i][0] != 0)
- {
-  Drawtextbox(dialogbox, text1[i], rect, 0, gris0, 0);
-  rect.y += 14; i++;
- }
- rect.y += 12;
- i = 0;
- while(text2[i][0] != 0)
- {
-  Drawtextbox(dialogbox, text2[i], rect, 0, blanc, 1);
-  rect.y += 14; i++;
- }
-}
-
 //Dessin d'un bouton///////////////////////////////////////////////////////////
 void Drawbutton(const dialogbutton *bouton, int push)
 {
@@ -580,7 +538,7 @@ void Draweditbox(const dialogeditbox *box)
 }
 
 //Index cassette /////////////////////////////////////////////////////////////
-void Drawk7index()
+static void Drawk7index()
 {
  SDL_Rect rect;
  char index[10];
@@ -626,7 +584,7 @@ void Drawstatusbar()
  }
 }
 
-void InitPaths()
+static void InitPaths()
 {
  char currentdir[256];
  memset(currentdir, 0, 256);
@@ -641,14 +599,14 @@ void InitPaths()
 void Initstatusbar()
 {
  InitPaths();
- UpdateK7IndexCallback = &Drawk7index;
+ SetUpdateK7IndexCallback(&Drawk7index);
  statusbar = SDL_CreateRGBSurface(FLAGS, 2048, YSTATUS, 32, rmask, gmask, bmask, amask);
  if(statusbar == NULL) SDL_error(__func__, "statusbar == NULL");
  Drawstatusbar();
 }
 
 //Create box /////////////////////////////////////////////////////////////////
-void Createbox(int color)
+static void Createbox(int color)
 {
  SDL_Rect rect;
  SDL_Delay(100);
@@ -701,8 +659,65 @@ void Createdialogbox(int w, int h)
  if(r < 0) SDL_error(__func__, "r < 0");
 }
 
+//Draw menu box ////////////////////////////////////////////////////////////
+static void Drawmenubox()
+{
+ SDL_Rect rect;
+ char string[50];
+ dialogrect.x = xclient - 122; dialogrect.w = 120;
+ dialogrect.y = YSTATUS; dialogrect.h = 4 * 16 + 10;
+ Createbox(gris0);
+ rect.x = 10; rect.w = 105; rect.y = 4; rect.h = 14;
+
+ sprintf(string, "%s...", _(MSG_MENU_SETTINGS));
+ Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
+ rect.y += 16;
+ sprintf(string, "%s...", _(MSG_MENU_KEYBOARD));
+ Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
+ rect.y += 16;
+ sprintf(string, "%s...", _(MSG_MENU_JOYSTICKS));
+ Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
+ rect.y += 16;
+ sprintf(string, "%s...", _(MSG_MENU_DISASSEMBLY));
+ Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
+ rect.y += 16;
+
+ dialog = 1003;
+}
+
+//Draw popup directory ////////////////////////////////////////////////////////
+static void Drawpopupdirectory(int n)
+{
+ SDL_Rect rect;
+ int i;
+ const char *string;
+ Sortdirectory(path[n]);
+ if(dircount <= 0) return;
+ dirmax = dirmin + 20;
+ if(dirmax > dircount) dirmax = dircount;
+ dialogrect.x = statusbutton[n].x; dialogrect.w = 200;
+ dialogrect.y = YSTATUS; dialogrect.h = 16 * (dirmax - dirmin) + 26;
+ if((dirmax < dircount) || (dirmin > 0)) dialogrect.h += 16; //[suite]/[debut]
+ Createbox(gris0);
+ rect.x = 10; rect.w = dialogrect.w - 12;
+ rect.y = 4; rect.h = 14;
+ Drawtextbox(dialogbox, _(MSG_UNLOAD), rect, 0, gris0, 0);
+ for(i = dirmin; i < dirmax; i++)
+ {
+  rect.y += 16;
+  Drawtextbox(dialogbox, dirlist[i], rect, 0, gris0, 0);
+ }
+ if((dirmax < dircount) || (dirmin > 0))
+ {
+  rect.y += 16;
+  string = (dirmax == dircount) ? _(MSG_BACK_TO_FIRST) : _(MSG_NEXT);
+  Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
+ }
+ dialog = 1000 + n;
+}
+
 //Traitement des clics souris dans la barre de statut ////////////////////////
-void Statusclick()
+static void Statusclick()
 {
  SDL_Rect rect;
  int i, r, x, y;
@@ -754,7 +769,7 @@ void Dialogmove()
 }
 
 //Traitement des clics souris dans la boite de dialogue //////////////////////
-void Dialogclick()
+static void Dialogclick()
 {
  int x, y;
 
@@ -781,6 +796,73 @@ void Dialogclick()
  if(dialog == 3) Keyclick();     //boite de dialogue Clavier
  if(dialog == 4) Joyclick();     //boite de dialogue Manettes
  if(dialog == 5) Desassclick();  //boite de dialogue Desassemblage
+}
+
+//Traitement des clics dans un menu deroulant /////////////////////////////////
+static void Menuclick()
+{
+ int i, j, n;
+ char filename[PATH_MAX];
+ filename[0] = '\0';
+
+ n = dialog - 1000;
+
+ if(n == 3) //clic dans le menu options
+ {
+  //if(ymouse < (YSTATUS + 20)) {Options(); return;}
+  if(ymouse < (YSTATUS + 20)) {Drawoptionbox(); return;}
+  if(ymouse < (YSTATUS + 36)) {Drawkeyboardbox(); return;}
+  if(ymouse < (YSTATUS + 52)) {Drawjoystickbox(); return;}
+  if(ymouse < (YSTATUS + 68)) {pause6809 = 1; Drawdesassbox(); pause6809 = 0; return;}
+  return;
+ }
+ if((n < 0) || (n > 2)) return;
+
+ //clic dans une popupdirectory
+ i = dirmin - 1 + (ymouse - YSTATUS - 4) / 16;
+ if(i < dirmin) //[decharger]
+ {
+  devname[n][0] = '\0';
+  UnloadFunc[n]();
+  dialog = 0;
+  Drawstatusbar();
+  return;
+ }
+ if(i == dirmax) //[suite] ou [debut]
+ {
+  dirmin += 20; if(dirmin >= dircount) dirmin = 0;
+  Drawpopupdirectory(n);
+  return;
+ }
+ if(dirlist[i][2] == '9') //ouverture repertoire niveau superieur
+ {
+  for(j = strlen(path[n]) - 2; j > 0; j--)
+  {
+   if(path[n][j] == '/') {path[n][j + 1] = 0; break;}
+   if(path[n][j] == '\\') {path[n][j + 1] = 0; break;}
+  }
+  dirmin = 0;
+  Drawpopupdirectory(n);
+  return;
+ }
+ if(dirlist[i][2] == ':') //ouverture sous-repertoire
+ {
+  strcat(path[n], dirlist[i] + 4);
+  strcat(path[n], "/");
+  dirmin = 0;
+  Drawpopupdirectory(n);
+  return;
+ }
+ if(dirlist[i][0] > 15) //ouverture fichier
+ {
+  strcpy(devname[n], dirlist[i]);
+  strcpy(filename, path[n]);
+  strcat(filename, dirlist[i]);
+  LoadFunc[n](filename);
+  Drawstatusbar();
+  dialog = 0;
+  return;
+ }
 }
 
 //Traitement des clics souris ////////////////////////////////////////////////
@@ -835,129 +917,5 @@ void Drawpopuptable(int n, int x, int y)
   Drawtextbox(dialogbox, popuptabletext[i], rect, 0, blanc, 1);
   popuptablerect.h += 15;
   rect.y += 15;
- }
-}
-
-//Draw menu box ////////////////////////////////////////////////////////////
-void Drawmenubox()
-{
- SDL_Rect rect;
- char string[50];
- dialogrect.x = xclient - 122; dialogrect.w = 120;
- dialogrect.y = YSTATUS; dialogrect.h = 4 * 16 + 10;
- Createbox(gris0);
- rect.x = 10; rect.w = 105; rect.y = 4; rect.h = 14;
-
- sprintf(string, "%s...", _(MSG_MENU_SETTINGS));
- Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
- rect.y += 16;
- sprintf(string, "%s...", _(MSG_MENU_KEYBOARD));
- Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
- rect.y += 16;
- sprintf(string, "%s...", _(MSG_MENU_JOYSTICKS));
- Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
- rect.y += 16;
- sprintf(string, "%s...", _(MSG_MENU_DISASSEMBLY));
- Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
- rect.y += 16;
-
- dialog = 1003;
-}
-
-//Draw popup directory ////////////////////////////////////////////////////////
-void Drawpopupdirectory(int n)
-{
- SDL_Rect rect;
- int i;
- const char *string;
- Sortdirectory(path[n]);
- if(dircount <= 0) return;
- dirmax = dirmin + 20;
- if(dirmax > dircount) dirmax = dircount;
- dialogrect.x = statusbutton[n].x; dialogrect.w = 200;
- dialogrect.y = YSTATUS; dialogrect.h = 16 * (dirmax - dirmin) + 26;
- if((dirmax < dircount) || (dirmin > 0)) dialogrect.h += 16; //[suite]/[debut]
- Createbox(gris0);
- rect.x = 10; rect.w = dialogrect.w - 12;
- rect.y = 4; rect.h = 14;
- Drawtextbox(dialogbox, _(MSG_UNLOAD), rect, 0, gris0, 0);
- for(i = dirmin; i < dirmax; i++)
- {
-  rect.y += 16;
-  Drawtextbox(dialogbox, dirlist[i], rect, 0, gris0, 0);
- }
- if((dirmax < dircount) || (dirmin > 0))
- {
-  rect.y += 16;
-  string = (dirmax == dircount) ? _(MSG_BACK_TO_FIRST) : _(MSG_NEXT);
-  Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
- }
- dialog = 1000 + n;
-}
-
-//Traitement des clics dans un menu deroulant /////////////////////////////////
-void Menuclick()
-{
- int i, j, n;
- char filename[TEXT_MAXLENGTH];
- filename[0] = '\0';
-
- n = dialog - 1000;
-
- if(n == 3) //clic dans le menu options
- {
-  //if(ymouse < (YSTATUS + 20)) {Options(); return;}
-  if(ymouse < (YSTATUS + 20)) {Drawoptionbox(); return;}
-  if(ymouse < (YSTATUS + 36)) {Drawkeyboardbox(); return;}
-  if(ymouse < (YSTATUS + 52)) {Drawjoystickbox(); return;}
-  if(ymouse < (YSTATUS + 68)) {pause6809 = 1; Drawdesassbox(); pause6809 = 0; return;}
-  return;
- }
- if((n < 0) || (n > 2)) return;
-
- //clic dans une popupdirectory
- i = dirmin - 1 + (ymouse - YSTATUS - 4) / 16;
- if(i < dirmin) //[decharger]
- {
-  devname[n][0] = '\0';
-  if (n == 0) UnloadK7(); else if (n == 1) UnloadFd(); else UnloadMemo();
-  dialog = 0;
-  Drawstatusbar();
-  return;
- }
- if(i == dirmax) //[suite] ou [debut]
- {
-  dirmin += 20; if(dirmin >= dircount) dirmin = 0;
-  Drawpopupdirectory(n);
-  return;
- }
- if(dirlist[i][2] == '9') //ouverture repertoire niveau superieur
- {
-  for(j = strlen(path[n]) - 2; j > 0; j--)
-  {
-   if(path[n][j] == '/') {path[n][j + 1] = 0; break;}
-   if(path[n][j] == '\\') {path[n][j + 1] = 0; break;}
-  }
-  dirmin = 0;
-  Drawpopupdirectory(n);
-  return;
- }
- if(dirlist[i][2] == ':') //ouverture sous-repertoire
- {
-  strcat(path[n], dirlist[i] + 4);
-  strcat(path[n], "/");
-  dirmin = 0;
-  Drawpopupdirectory(n);
-  return;
- }
- if(dirlist[i][0] > 15) //ouverture fichier
- {
-  strcpy(devname[n], dirlist[i]);
-  strcpy(filename, path[n]);
-  strcat(filename, dirlist[i]);
-  Load(filename);
-  Drawstatusbar();
-  dialog = 0;
-  return;
  }
 }

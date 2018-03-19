@@ -21,9 +21,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <SDL.h>
-#include <string.h>
 #include <stdbool.h>
-#include "dcto8dglobal.h"
+#include "dcto8dvideo.h"
 #include "dcto8dicon.h"
 #include "dcto8dmsg.h"
 #include "dcto8demulation.h"
@@ -47,7 +46,7 @@ int *pcurrentpixel;            //pointeur ecran : pixel courant
 int *pcurrentline;             //pointeur ecran : debut ligne courante
 int *pmin;                     //pointeur ecran : premier pixel
 int *pmax;                     //pointeur ecran : dernier pixel + 1
-int screencount;               //nbre ecrans affiches entre 2 affichages status
+int screencount = 0;           //nbre ecrans affiches entre 2 affichages status
 int xpixel[XBITMAP + 1];       //abscisse des pixels dans la ligne
 void (*Decodevideo)();         //pointeur fonction decodage memoire video
 bool is_fullscreen = false;    //true when emulator runs in fullscreen

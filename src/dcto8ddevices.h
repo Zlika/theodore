@@ -32,15 +32,17 @@ void Imprime();
 void Readmousebutton();
 void Readpenxy(int device);
 
-// Chargement d'un fichier k7 (*.k7), fd (*.fd) ou memo7 (*.rom)
+void Loadk7(char *filename);
+void Loadfd(char *filename);
+void Loadmemo(char *filename);
+void Unloadk7();
+void Unloadfd();
+void Unloadmemo();
+// Chargement d'un fichier avec auto-detection du type : k7 (*.k7), fd (*.fd) ou memo7 (*.rom)
 void Load(char *filename);
-void UnloadK7();
-void UnloadFd();
-void UnloadMemo();
 void PrintK7Index(char *index);
-
 // Callback appellee quand k7index est modifie
-extern void (*UpdateK7IndexCallback)();
+void SetUpdateK7IndexCallback(void (*callback)());
 
 // indicateur lecture seule pour la cassette
 extern int k7protection;

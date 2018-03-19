@@ -23,6 +23,9 @@
 #ifndef __DCTO8DEMULATION_H
 #define __DCTO8DEMULATION_H
 
+// nombre de touches du clavier TO8D
+#define KEYBOARDKEY_MAX 84
+
 // pointer to function to read 1 byte from address
 extern char (*Mgetc)(unsigned short);
 // function to read 2 bytes from address

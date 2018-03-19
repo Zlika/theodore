@@ -23,7 +23,6 @@
 #include <SDL.h>
 #include <stdio.h>
 #include <string.h>
-#include "dcto8dglobal.h"
 #include "dcto8dinterface.h"
 #include "dcto8dmsg.h"
 #include "dcto8ddevices.h"

@@ -26,7 +26,6 @@
 #ifdef WIN32
  #include <windows.h>
 #endif
-#include "dcto8dglobal.h"
 #include "dcto8dkeyb.h"
 #include "dcto8dinterface.h"
 #include "dcto8dmsg.h"
@@ -35,6 +34,7 @@
 #include "dcto8dvideo.h"
 
 #define JOYSTICKKEY_MAX 10    //nombre total de contacts des deux manettes
+#define TEXT_MAXLENGTH 256
 
 //variables globales
 char to8dkeycode[256]; //scancode to8d en fonction du scancode pc
@@ -256,7 +256,7 @@ const dialogbutton joystickbutton[JOYSTICKBUTTON_MAX] = {
 };
 
 //Emulation clavier : affichage du nom de la derniere touche pressee //////////
-void Displaykey()
+static void Displaykey()
 {
  SDL_Rect rect;
  int i;
@@ -265,7 +265,7 @@ void Displaykey()
  rect.x = 56; rect.y = 194; rect.w = 140; rect.h = 15;
  sprintf(string, "0x%02x = %s", lastkeycode, SDL_GetKeyName(lastkeysym));
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
- //code et nom de la touche MO5
+ //code et nom de la touche TO8
  rect.x = 321; rect.y = 194; rect.w = 185;
  rect.h = 15;
  i = to8dkeycode[lastkeycode & 0xff];
@@ -275,7 +275,7 @@ void Displaykey()
 }
 
 //Emulation manettes : affichage du nom de la derniere touche pressee /////////
-void Displayjoy()
+static void Displayjoy()
 {
  SDL_Rect rect;
  int i;
@@ -356,7 +356,7 @@ void Drawjoystickbox()
 }
 
 // Restauration de la configuration par defaut des touches ///////////////////
-void Restorekeydefault()
+static void Restorekeydefault()
 {
  int i, j;
  for(i = 0; i < 256; i++)
@@ -367,7 +367,7 @@ void Restorekeydefault()
 }
 
 // Restauration de la configuration par defaut des manettes //////////////////
-void Restorejoydefault()
+static void Restorejoydefault()
 {
  int i, j;
  for(i = 0; i < 256; i++)
@@ -378,14 +378,14 @@ void Restorejoydefault()
 }
 
 // Sauvegarde de la configuration du clavier /////////////////////////////////
-void Savekeyfile()
+static void Savekeyfile()
 {
  fseek(fpi, 0x40, SEEK_SET);
  fwrite(to8dkeycode, 256, 1, fpi);
 }
 
 // Sauvegarde de la configuration des manettes ///////////////////////////////
-void Savejoyfile()
+static void Savejoyfile()
 {
  fseek(fpi, 0x140, SEEK_SET);
  fwrite(to8djoycode, 256, 1, fpi);

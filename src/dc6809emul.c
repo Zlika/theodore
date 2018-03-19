@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////
-// DC6809EMUL.C - Motorola 6809 micropocessor emulation
+// DC6809EMUL.C - Motorola 6809 microprocessor emulation
 // Author   : Daniel Coulom - danielcoulom@gmail.com
 // Web site : http://dcto8.free.fr
 //

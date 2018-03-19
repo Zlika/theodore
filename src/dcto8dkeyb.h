@@ -24,8 +24,6 @@
 #ifndef __DCTO8DKEYB_H
 #define __DCTO8DKEYB_H
 
-#define KEYBOARDKEY_MAX 84    //nombre de touches du clavier TO8D
-
 //Traitement des clics boite de dialogue clavier /////////////////////////////
 void Keyclick();
 //Traitement des clics boite de dialogue manettes ////////////////////////////

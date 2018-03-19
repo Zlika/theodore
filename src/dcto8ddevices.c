@@ -132,16 +132,16 @@ void Formatdisk()
  if(fwrite(buffer, 256, 1, ffd) == 0) {Diskerror(53); return;}
 }
 
-void UnloadFd()
+void Unloadfd()
 {
  if(ffd) {fclose(ffd); ffd = NULL;}
 }
 
 // Chargement d'un fichier fd /////////////////////////////////////////////////
-static void Loadfd(char *filename)
+void Loadfd(char *filename)
 {
  //fermeture disquette eventuellement ouverte
- UnloadFd();
+ Unloadfd();
  if(filename[0] == '\0') return;
  //ouverture de la nouvelle disquette
  ffd = fopen(filename, "rb+");
@@ -178,14 +178,14 @@ void Writeoctetk7()
  if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; UpdateK7Index();}
 }
 
-void UnloadK7()
+void Unloadk7()
 {
  if(fk7) {fclose(fk7); fk7 = NULL;}
 }
 
-static void Loadk7(char *filename)
+void Loadk7(char *filename)
 {
- UnloadK7(); //fermeture cassette eventuellement ouverte
+ Unloadk7(); //fermeture cassette eventuellement ouverte
  if(filename[0] == '\0') return;
  fk7 = fopen(filename, "rb+");
  if(fk7 == NULL) return;
@@ -197,14 +197,20 @@ static void Loadk7(char *filename)
  //k7protection = 1;
 }
 
+void Unloadmemo()
+{
+ carflags = 0;
+ Hardreset();
+}
+
 // Emulation cartouche memo7 /////////////////////////////////////////////////
-static void Loadmemo(char *filename)
+void Loadmemo(char *filename)
 {
  FILE *fp = NULL;
  int i, c, carsize;
  //ouverture du fichier memo7
  fp = fopen(filename, "rb");
- if(fp == NULL) {carflags = 0; Hardreset(); return;}
+ if(fp == NULL) {Unloadmemo(); return;}
  //chargement
  carsize = 0;
  while(((c = fgetc(fp)) != EOF) && (carsize < 0x10000)) car[carsize++] = c;
@@ -214,12 +220,6 @@ static void Loadmemo(char *filename)
  if(carsize > 0x4000) cartype = 1;   //bank switch system
  carflags = 4; //cartridge enabled, write disabled, bank 0;
  Initprog();   //initialisation pour lancer la cartouche
-}
-
-void UnloadMemo()
-{
- carflags = 0;
- Hardreset();
 }
 
 // Chargement d'un fichier k7, fd ou memo7////////////////////////////////////
@@ -242,6 +242,11 @@ void Load(char *filename)
 void PrintK7Index(char *index)
 {
  if(fk7 != NULL) sprintf(index, "%03d/%03d", k7index, k7indexmax);
+}
+
+void SetUpdateK7IndexCallback(void (*callback)())
+{
+ UpdateK7IndexCallback = callback;
 }
 
 // Lecture boutons souris ////////////////////////////////////////////////////

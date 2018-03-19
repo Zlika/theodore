@@ -23,7 +23,10 @@
 #ifndef __DCTO8DMSG_H
 #define __DCTO8DMSG_H
 
-//2 langues : 0=francais 1=anglais
+// Nombre de langues differentes
+#define LANGUAGE_MAX 2
+
+// 2 langues : 0=francais 1=anglais
 extern int language;
 
 #define _(X) gettext(X)

@@ -21,14 +21,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <SDL.h>
-#include "dcto8dglobal.h"
-#include "dcto8dmsg.h"
 #include "dcto8dinterface.h"
 #include "dcto8demulation.h"
 #include "dcto8doptions.h"
 #include "dcto8dvideo.h"
 #include "dc6809emul.h"
-#include "dcto8ddevices.h"
 #include "dcto8dkeyb.h"
 
 #define SDL_main main    //indispensable pour eviter l'erreur
@@ -44,18 +41,8 @@ unsigned char cursor[] = {
  192,0,224,0,240,0,248,0,252,0,254,0,255,0,255,128,255,192,255,224,255,240,255,
  0,231,128,199,128,131,192,3,192,3,224,1,224,1,240,0,240,0,192,0,0,0,0};
 
-// Joysticks initialization //////////////////////////////////////////////////
-void Joyinit()
-{
- //int i = 0;
- //if(joySetCapture(hwndmain, JOYSTICKID1, 0, TRUE)) i += 1;
- //if(joySetCapture(hwndmain, JOYSTICKID2, 0, TRUE)) i += 2;
- //joySetThreshold(JOYSTICKID1, 2000); //10 trop peu pour Trust Predator
- //joySetThreshold(JOYSTICKID2, 2000); //2000 semble correct
-}
-
 // Play sound ////////////////////////////////////////////////////////////////
-void Playsound(void *udata, Uint8 *stream, int bufferlength)
+static void Playsound(void *udata, Uint8 *stream, int bufferlength)
 {
  int i;
  int mcycles; //nombre de milliemes de cycles entre deux echantillons
@@ -78,7 +65,7 @@ void Playsound(void *udata, Uint8 *stream, int bufferlength)
 }
 
 //Event loop /////////////////////////////////////////////////////////////////
-void Eventloop()
+static void Eventloop()
 {
  SDL_Event event;
 
@@ -132,7 +119,6 @@ void Eventloop()
 int main(int argc, char *argv[])
 {
  //initialisations
- Joyinit();                        //Joysticks initialization
  Initoptions();                    //Option initialization
  Init6809();
  Keyboardinit();                   //Keyboard initialization
@@ -149,7 +135,6 @@ int main(int argc, char *argv[])
  Initfontsurfaces();   //Initialisation des surfaces des polices
  Initbuttonsurfaces(); //Initialisation des surfaces des boutons
  Initstatusbar();      //Initialisation de la surface de la barre de statut
- screencount = 0;
  Displayscreen();
 
  //initialize SDL audio

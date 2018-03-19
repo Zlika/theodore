@@ -24,7 +24,6 @@
 #define __DCTO8DINTERFACE_H
 
 #include <SDL.h>
-#include "dcto8dglobal.h"
 
 typedef struct
 {
@@ -37,11 +36,8 @@ typedef struct
 
 typedef struct
 {
- //char name[12]; //nom du bouton
  int x;         //ordonnee du coin haut-gauche
  int y;         //abscisse du coin haut-gauche
- //int w;         //largeur en pixels
- //int h;         //hauteur en pixels
  int n;         //numero de la surface SDL
 } dialogbutton;
 
@@ -75,9 +71,6 @@ extern int popuptable;
 //pointeur vers lignes de la popup table
 extern const char *popuptabletext[];
 
-//repertoires des fichiers k7, fd, memo
-extern char path[3][TEXT_MAXLENGTH];
-
 //flag de clignotement du curseur
 extern int blink;
 
@@ -86,23 +79,13 @@ extern int pause6809;
 
 // Message d'erreur SDL //////////////////////////////////////////////////////
 void SDL_error(const char* function, const char* message);
-// Message d'erreur emulateur ////////////////////////////////////////////////
-void Erreur(const char* function, const char* message);
-// Boite de dialogue 'A propos'///////////////////////////////////////////////
-void About();
 void Drawtextbox(SDL_Surface *s, const char *txt, SDL_Rect rect, int t, int b, int r);
 void Drawbutton(const dialogbutton *bouton, int push);
 void Draweditbox(const dialogeditbox *box);
 //Draw status bar ////////////////////////////////////////////////////////////
 void Drawstatusbar();
-//Index cassette /////////////////////////////////////////////////////////////
-void Drawk7index();
-//Draw popup directory ////////////////////////////////////////////////////////
-void Drawpopupdirectory(int n);
 //Draw popup table ////////////////////////////////////////////////////////////
 void Drawpopuptable(int n, int x, int y);
-//Draw menu box ////////////////////////////////////////////////////////////
-void Drawmenubox();
 //Create dialog box //////////////////////////////////////////////////////////
 void Createdialogbox(int w, int h);
 

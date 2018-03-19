@@ -22,12 +22,11 @@
 
 #include <string.h>
 #include <time.h>
+#include "dc6809emul.h"
+#include "dcto8ddevices.h"
 #include "dcto8demulation.h"
 #include "to8dbasic.h"
 #include "to8dmoniteur.h"
-#include "dcto8ddevices.h"
-#include "dcto8dkeyb.h"
-#include "dc6809emul.h"
 
 // memory
 char car[0x10000];   //espace cartouche 4x16K
@@ -163,7 +162,7 @@ void TO8key(int n)
 }
 
 // Selection de banques memoire //////////////////////////////////////////////
-void TO8videoram()
+static void TO8videoram()
 {
  nvideopage = port[0x03] & 1;
  ramvideo = ram - 0x4000 + (nvideopage << 13);
@@ -171,7 +170,7 @@ void TO8videoram()
  romsys = to8dmoniteur - 0xe000 + (nsystbank << 13);
 }
 
-void TO8rambank()
+static void TO8rambank()
 {
  //mode TO8 par e7e5
  if(port[0x27] & 0x10)
@@ -194,7 +193,7 @@ void TO8rambank()
  rambank = ram - 0x2000 + (nrambank << 14);
 }
 
-void TO8rombank()
+static void TO8rombank()
 {
  //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
  //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
@@ -220,13 +219,7 @@ void TO8rombank()
  }
 }
 
-void Switchmemo7(int a)
-{
- carflags = (carflags & 0xfc) | (a & 3);
- rombank = car + ((carflags & 3) << 14);
-}
-
-void Videopage_bordercolor(char c)
+static void Videopage_bordercolor(char c)
 {
  port[0x1d] = c;
  pagevideo = ram + ((c & 0xc0) << 8);
@@ -234,7 +227,7 @@ void Videopage_bordercolor(char c)
 }
 
 // Selection video ////////////////////////////////////////////////////////////
-void TO8videomode(char c)
+static void TO8videomode(char c)
 {
  port[0x1c] = c;
  switch(c)
@@ -248,7 +241,7 @@ void TO8videomode(char c)
 }
 
 // Selection d'une couleur de palette /////////////////////////////////////////
-void Palettecolor(char c)
+static void Palettecolor(char c)
 {
  int i = port[0x1b];
  void Palette(int n, int r, int v, int b);
@@ -262,14 +255,14 @@ void Palettecolor(char c)
 }
 
 // Signaux de synchronisation ligne et trame /////////////////////////////////
-int Iniln()
+static int Iniln()
 {//11 microsecondes - 41 microsecondes - 12 microsecondes
  if(videolinecycle < 11) return 0;
  if(videolinecycle > 51) return 0;
  return 0x20;
 }
 
-int Initn()
+static int Initn()
 {//debut a 12 microsecondes ligne 56, fin a 51 microsecondes ligne 255
  if(videolinenumber < 56) return 0;
  if(videolinenumber > 255) return 0;
@@ -301,16 +294,6 @@ void Joysemul(int i, int state)
  if(n > 0) {if(state) joysposition |= n; else joysposition &= (~n);}
 }
 
-// Joystick move /////////////////////////////////////////////////////////////
-void Joysmove(int n, int x, int y)
-{
- n <<= 2;
- Joysemul(n++, (y < 27768) ? 0 : 0x80);
- Joysemul(n++, (y > 37767) ? 0 : 0x80);
- Joysemul(n++, (x < 27768) ? 0 : 0x80);
- Joysemul(n++, (x > 37767) ? 0 : 0x80);
-}
-
 // Initialisation programme de l'ordinateur emule ////////////////////////////
 void Initprog()
 {
@@ -331,7 +314,7 @@ void Initprog()
 }
 
 // Patch de la rom ////////////////////////////////////////////////////////////
-void TO8dpatch(char rom[], int patch[])
+static void TO8dpatch(char rom[], int patch[])
 {
  int i, j, a, n;
  i = 0;
@@ -395,13 +378,13 @@ void Hardreset()
 }
 
 // Timer control /////////////////////////////////////////////////////////////
-void Timercontrol()
+static void Timercontrol()
 {
  if(port[0x05] & 0x01) timer6846 = latch6846 << 3;
 }
 
 // Traitement des entrees-sorties ////////////////////////////////////////////
-void Entreesortie(int io)
+static void Entreesortie(int io)
 {
  switch(io)
  {
