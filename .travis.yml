@@ -1,0 +1,12 @@
+language: c
+compiler: gcc
+dist: trusty
+
+addons:
+  apt:
+    packages:
+    - libsdl2-dev
+
+before_script: autoreconf -i
+script: ./configure && make
+
