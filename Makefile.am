@@ -1,4 +1,4 @@
-AM_CFLAGS = --pedantic -Wall -Wno-overflow -std=c99 -O2 -fsigned-char -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIE -pie
+AM_CFLAGS = --pedantic -Wall -Wno-overflow -std=c99 -O2 -fsigned-char -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2 $(STACKPROTECT_FLAG) -fPIE -pie
 AM_LDFLAGS = -z relro -z now
 dcto8d_CFLAGS = $(SDL2_CFLAGS) $(AM_CFLAGS)
 dcto8d_LDFLAGS = $(SDL2_LIBS) $(AM_LDFLAGS)

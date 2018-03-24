@@ -20,9 +20,19 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([string.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_HEADER_STDBOOL
+# -fstack-protector-strong only exists since GCC 4.9, use -fstack-protector as fallback
+AC_MSG_CHECKING(whether compiler understands -fstack-protector-strong)
+old_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -fstack-protector-strong"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+	AC_MSG_RESULT(yes); STACKPROTECT_FLAG="-fstack-protector-strong",
+	AC_MSG_RESULT(no); STACKPROTECT_FLAG="-fstack-protector")
+CFLAGS="$old_CFLAGS"
+AC_SUBST(STACKPROTECT_FLAG)
 
 # Checks for library functions.
-AC_CHECK_FUNCS([atexit getcwd strcasecmp strtol])
+AC_CHECK_FUNCS([atexit getcwd memset strcasecmp strtol])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
