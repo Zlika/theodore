@@ -48,12 +48,18 @@ typedef struct
  int h;         //hauteur en pixels
 } button;
 
+typedef enum
+{
+ //0=rien 1=message, 2=options 3=clavier 4=joystick, 5=desassembleur
+ DIALOG_NOTHING, DIALOG_MESSAGE, DIALOG_OPTIONS, DIALOG_KEYBOARD, DIALOG_JOYSTICK, DIALOG_DISASM
+} currentdialog;
+
 //surface d'affichage dialogbox
 extern SDL_Surface *dialogbox;
 //surface de la barre de statut
 extern SDL_Surface *statusbar;
-//0=rien 1=message, 2=options 3=clavier 4=menu
-extern int dialog;
+//boite de dialogue affichee
+extern currentdialog dialog;
 extern const int blanc;
 extern const int bleu;
 extern const int gris0;
@@ -88,6 +94,8 @@ void Drawstatusbar();
 void Drawpopuptable(int n, int x, int y);
 //Create dialog box //////////////////////////////////////////////////////////
 void Createdialogbox(int w, int h);
+//Draw option box ////////////////////////////////////////////////////////////
+void Drawoptionbox();
 
 //Traitement des clics souris ////////////////////////////////////////////////
 void Mouseclick();

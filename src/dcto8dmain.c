@@ -30,6 +30,7 @@
 
 #define SDL_main main    //indispensable pour eviter l'erreur
                          //undefined reference to `WinMain@16'
+#define OPTIONS_FILENAME "dcto8d.ini"
 
 // global variables //////////////////////////////////////////////////////////
 SDL_AudioSpec audio;
@@ -54,7 +55,7 @@ static void Playsound(void *udata, Uint8 *stream, int bufferlength)
   //calcul et execution du nombre de cycles entre deux echantillons
   //nbre de cycles theoriques pour la periode en cours =
   //nbre theorique + relicat arrondi precedent - cycles en trop precedent
-  mcycles = frequency * 100000 / 2205;   //milliemes de cycles theoriques
+  mcycles = options.frequency * 100000 / 2205;   //milliemes de cycles theoriques
   mcycles += report;                     //milliemes de cycles corriges
   icycles = mcycles / 1000;              //nbre entier de cycles a effectuer
   report = mcycles - 1000 * icycles;     //relicat de l'arrondi a reporter
@@ -92,8 +93,8 @@ static void Eventloop()
     case SDL_MOUSEMOTION:
          xmouse = event.motion.x;
          ymouse = event.motion.y;
-         xpen = xmouse * XBITMAP / xclient - 16;
-         ypen = (ymouse - YSTATUS) * YBITMAP / yclient - 8;
+         xpen = xmouse * XBITMAP / options.xclient - 16;
+         ypen = (ymouse - YSTATUS) * YBITMAP / options.yclient - 8;
          if(xmove && ymove)
          {
            Dialogmove();
@@ -119,9 +120,9 @@ static void Eventloop()
 int main(int argc, char *argv[])
 {
  //initialisations
- Initoptions();                    //Option initialization
+ Keyboardinit();
+ Loadoptions(OPTIONS_FILENAME);
  Init6809();
- Keyboardinit();                   //Keyboard initialization
  pause6809 = 1;
  Hardreset();                      //TO8 initialization
  pause6809 = 0;
@@ -131,7 +132,7 @@ int main(int argc, char *argv[])
  atexit(SDL_Quit);
 
  SDL_SetCursor(SDL_CreateCursor(cursor, cursor + 48, 16, 24, 0, 0)); //curseur
- Resizescreen(xclient, yclient + YSTATUS);
+ Resizescreen(options.xclient, options.yclient + YSTATUS);
  Initfontsurfaces();   //Initialisation des surfaces des polices
  Initbuttonsurfaces(); //Initialisation des surfaces des boutons
  Initstatusbar();      //Initialisation de la surface de la barre de statut
@@ -154,7 +155,7 @@ int main(int argc, char *argv[])
  //quit
  pause6809 = 1;
  SDL_PauseAudio(1);
- Saveoptions();
+ Saveoptions(OPTIONS_FILENAME);
  SDL_Delay(100);
  SDL_Quit();
  return 0;

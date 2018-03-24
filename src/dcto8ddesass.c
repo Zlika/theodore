@@ -75,13 +75,13 @@ void Drawdesassbox()
 {
  SDL_Rect rect;
  int i;
- if(dialog != 5)
+ if(dialog != DIALOG_DISASM)
  {
   Createdialogbox(290, 365);
   rect.x = 10; rect.w = dialogbox->w - 32;
   rect.y = 5; rect.h = 15;
   Drawtextbox(dialogbox, _(MSG_MENU_DISASSEMBLY), rect, 1, bleu, 0); //titre
-  dialog = 5;
+  dialog = DIALOG_DISASM;
   startaddress = 0xf000;
   sprintf(startaddresshexa, "%04X", startaddress);
   focus = &desasseditbox[0]; //toujours le focus
@@ -93,7 +93,7 @@ void Drawdesassbox()
  for(i = 0; i < DESASSEDITBOX_MAX; i++) Draweditbox(&desasseditbox[i]);
  //affichage du desassemblage
  Displaydesass(startaddress);
- dialog = 5;
+ dialog = DIALOG_DISASM;
 }
 
 //Traitement des clics dans une editbox de la boite de dialogue////////////////

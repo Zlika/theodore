@@ -23,22 +23,34 @@
 #ifndef __DCTO8DOPTIONS_H
 #define __DCTO8DOPTIONS_H
 
-//Draw option box ////////////////////////////////////////////////////////////
-void Drawoptionbox();
-//Traitement des clics des boutons d'options /////////////////////////////////
-void Optionclick();
+// Initialize default values for to8dkeycode and to8djoycode
+void Initoptions(char defaultto8dkeycode[256], char defaultto8djoycode[256]);
+// Load options
+void Loadoptions(char *filename);
+// Save options
+void Saveoptions(char *filename);
+// Reset to default values
+void Resetoptions();
 
-//Option initialization //////////////////////////////////////////////////////
-void Initoptions();
-//Option save ////////////////////////////////////////////////////////////////
-void Saveoptions();
-//Mise a jour d'un parametre avec la valeur i de la popuptable////////////////
-void Setoption(int i);
+typedef struct
+{
+ int language;     //0=francais 1=anglais
+ int frequency;    //frequence 6809 en kHz
+ int xclient;      //largeur fenetre utilisateur
+ int yclient;      //hauteur ecran dans fenetre utilisateur
+ int vblnumbermax; //nombre de vbl entre deux affichages
+ int k7protection; // indicateur lecture seule pour la cassette
+ int fdprotection; // indicateur lecture seule pour la disquette
+ int keybpriority; // indicateur lecture seule pour la disquette
+ int reserved1;
+ int reserved2;
+ int reserved3;
+ int reserved4;
+ int reserved5;
+ char to8dkeycode[256]; //scancode to8d en fonction du scancode pc
+ char to8djoycode[256]; //numero bouton joystick en fonction du scancode pc
+} Options;
 
-//fichier dcto8d.ini
-extern FILE *fpi;
-
-//frequence 6809 en kHz
-extern int frequency;
+extern Options options;
 
 #endif /* __DCTO8DOPTIONS_H */

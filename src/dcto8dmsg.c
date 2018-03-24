@@ -22,11 +22,16 @@
 
 #include "../config.h"
 #include "dcto8dmsg.h"
+#include "dcto8doptions.h"
 
 // Renvoie la chaine de caracteres en fonction de la langue selectionnee.
 const char* gettext(const char *msg[2])
 {
- return msg[language];
+ if ((options.language < 0) || (options.language >= LANGUAGE_MAX))
+ {
+  return msg[0];
+ }
+ return msg[options.language];
 }
 
 const char* MSG_ABOUT_TITLE[] = { "A propos de DCTO8D", "About DCTO8D" };

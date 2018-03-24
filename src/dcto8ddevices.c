@@ -24,6 +24,7 @@
 #include <string.h>
 #include "dc6809emul.h"
 #include "dcto8demulation.h"
+#include "dcto8doptions.h"
 
 // Variables globales ////////////////////////////////////////////////////////
 FILE *ffd = NULL;   // pointeur fichier disquette
@@ -33,8 +34,6 @@ int k7bit = 0;      // puissance de 2 designant le bit k7 en cours
 int k7octet;        // octet de la cassette en cours de traitement
 int k7index;        // compteur du lecteur de cassette
 int k7indexmax;     // compteur du lecteur de cassette en fin de bande
-int k7protection;   // indicateur lecture seule pour la cassette
-int fdprotection;   // indicateur lecture seule pour la disquette
 char k7name[100] = {0};   // nom du fichier cassette
 char fdname[100] = {0};   // nom du fichier disquette
 char memoname[100] = {0}; // nom du fichier cartouche
@@ -90,7 +89,7 @@ void Writesector()
  int i, j, u, p, s;
  if(ffd == NULL) {Diskerror(71); return;}
  //erreur 72 = protection ecriture
- if(fdprotection == 1) {Diskerror(72); return;}
+ if(options.fdprotection == 1) {Diskerror(72); return;}
  u = Mgetc(0x6049) & 0xff; if(u > 03) {Diskerror(53); return;}
  p = Mgetc(0x604a) & 0xff; if(p != 0) {Diskerror(53); return;}
  p = Mgetc(0x604b) & 0xff; if(p > 79) {Diskerror(53); return;}
@@ -109,7 +108,7 @@ void Formatdisk()
  int i, u, fatlength;
  if(ffd == NULL) {Diskerror(71); return;}
  //erreur 72 = protection ecriture
- if(fdprotection == 1) {Diskerror(72); return;}
+ if(options.fdprotection == 1) {Diskerror(72); return;}
  u = Mgetc(0x6049) & 0xff; if(u > 03) return; //unite
  u = (1280 * u) << 8; //debut de l'unite dans le fichier .fd
  fatlength = 160;     //80=160Ko, 160=320Ko
@@ -146,7 +145,6 @@ void Loadfd(char *filename)
  //ouverture de la nouvelle disquette
  ffd = fopen(filename, "rb+");
  if(ffd == NULL) return;
- //fdprotection = 1;
 }
 
 // Emulation cassette ////////////////////////////////////////////////////////
@@ -172,7 +170,7 @@ void Readoctetk7()
 void Writeoctetk7()
 {
  if(fk7 == NULL) {Initprog(); return;}
- if(k7protection) {Initprog(); return;}
+ if(options.k7protection) {Initprog(); return;}
  if(fputc(A, fk7) == EOF) {Initprog(); return;}
  Mputc(0x2045, 0);
  if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; UpdateK7Index();}
@@ -194,7 +192,6 @@ void Loadk7(char *filename)
  k7indexmax = ftell(fk7) >> 9;
  fseek(fk7, 0, SEEK_SET);
  UpdateK7Index();
- //k7protection = 1;
 }
 
 void Unloadmemo()

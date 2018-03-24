@@ -37,9 +37,6 @@
 #define TEXT_MAXLENGTH 256
 
 //variables globales
-char to8dkeycode[256]; //scancode to8d en fonction du scancode pc
-char to8djoycode[256]; //numero bouton joystick en fonction du scancode pc
-int keybpriority;      //0=manettes prioritaires 1=clavier prioritaire
 int lastkeycode;       //keycode derniere touche enfoncee
 int lastkeysym;        //keysym derniere touche enfoncee
 
@@ -268,7 +265,7 @@ static void Displaykey()
  //code et nom de la touche TO8
  rect.x = 321; rect.y = 194; rect.w = 185;
  rect.h = 15;
- i = to8dkeycode[lastkeycode & 0xff];
+ i = options.to8dkeycode[lastkeycode & 0xff];
  sprintf(string, "%s : %s", _(MSG_EMULATED_KEY),
   (i < KEYBOARDKEY_MAX) ? bouton[keyboardbutton[i].n].name : _(MSG_BTN_NONE));
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
@@ -286,7 +283,7 @@ static void Displayjoy()
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
  //code et nom de la fonction manette
  rect.x = 230; rect.y = 154; rect.w = 180; rect.h = 15;
- i = to8djoycode[lastkeycode & 0xff];
+ i = options.to8djoycode[lastkeycode & 0xff];
  sprintf(string, "%s : %s", _(MSG_EMULATED_FUNC),
   (i < JOYSTICKKEY_MAX) ? bouton[joystickbutton[i].n].name : _(MSG_BTN_NONE));
  Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
@@ -301,13 +298,13 @@ void Drawkeyboardbox()
  pause6809 = 1;
  lastkeycode = 0;
  lastkeysym = 0;
- if(dialog != 3)
+ if(dialog != DIALOG_KEYBOARD)
  {
   Createdialogbox(546, 292);
   rect.x = 10; rect.w = dialogbox->w - 32;
   rect.y = 5; rect.h = 15;
   Drawtextbox(dialogbox, _(MSG_KEYBOARD_LAYOUT), rect, 1, bleu, 0); //titre
-  dialog = 3;
+  dialog = DIALOG_KEYBOARD;
  }
  //message d'aide
  rect.x = 126; rect.y = 215; rect.w = 370;
@@ -330,13 +327,13 @@ void Drawjoystickbox()
  pause6809 = 1;
  lastkeycode = 0;
  lastkeysym = 0;
- if(dialog != 4)
+ if(dialog != DIALOG_JOYSTICK)
  {
   Createdialogbox(454, 252);
   rect.x = 10; rect.w = dialogbox->w - 32;
   rect.y = 5; rect.h = 15;
   Drawtextbox(dialogbox, _(MSG_JOY_EMULATION), rect, 1, bleu, 0); //titre
-  dialog = 4;
+  dialog = DIALOG_JOYSTICK;
  }
  //message d'aide
  rect.x = 80; rect.y = 175; rect.w = 370;
@@ -362,7 +359,7 @@ static void Restorekeydefault()
  for(i = 0; i < 256; i++)
  {
   for(j = 0; j < KEYBOARDKEY_MAX; j++) if(pckeycode[j] == i) break;
-  to8dkeycode[i] = j;
+  options.to8dkeycode[i] = j;
  }
 }
 
@@ -373,22 +370,18 @@ static void Restorejoydefault()
  for(i = 0; i < 256; i++)
  {
   for(j = 0; j < JOYSTICKKEY_MAX; j++) if(pcjoycode[j] == i) break;
-  to8djoycode[i] = j;
+  options.to8djoycode[i] = j;
  }
 }
 
 // Sauvegarde de la configuration du clavier /////////////////////////////////
 static void Savekeyfile()
 {
- fseek(fpi, 0x40, SEEK_SET);
- fwrite(to8dkeycode, 256, 1, fpi);
 }
 
 // Sauvegarde de la configuration des manettes ///////////////////////////////
 static void Savejoyfile()
 {
- fseek(fpi, 0x140, SEEK_SET);
- fwrite(to8djoycode, 256, 1, fpi);
 }
 
 //Traitement des clics boite de dialogue clavier /////////////////////////////
@@ -414,9 +407,9 @@ void Keyclick()
  if(n == 16) {Restorekeydefault(); return;}
  if(n == 17) {Savekeyfile(); return;}
  //suppression de l'ancienne affectation de la touche
- for(j = 0; j < 256; j++) if(to8dkeycode[j] == i) to8dkeycode[j] = KEYBOARDKEY_MAX;
+ for(j = 0; j < 256; j++) if(options.to8dkeycode[j] == i) options.to8dkeycode[j] = KEYBOARDKEY_MAX;
  //ajout de la nouvelle affectation
- if(lastkeycode != 0) to8dkeycode[lastkeycode & 0xff] = i;
+ if(lastkeycode != 0) options.to8dkeycode[lastkeycode & 0xff] = i;
  Displaykey();
 }
 
@@ -443,33 +436,27 @@ void Joyclick()
  if(n == 16) {Restorejoydefault(); return;}
  if(n == 17) {Savejoyfile(); return;}
  //suppression de l'ancienne affectation de la touche
- for(j = 0; j < 256; j++) if(to8djoycode[j] == i) to8djoycode[j] = JOYSTICKKEY_MAX;
+ for(j = 0; j < 256; j++) if(options.to8djoycode[j] == i) options.to8djoycode[j] = JOYSTICKKEY_MAX;
  //ajout de la nouvelle affectation
- if(lastkeycode != 0) to8djoycode[lastkeycode & 0xff] = i;
+ if(lastkeycode != 0) options.to8djoycode[lastkeycode & 0xff] = i;
  Displayjoy();
 }
 
 // Initialisation du clavier /////////////////////////////////////////////////
 void Keyboardinit()
 {
+ char default_keycode[256];
+ char default_joycode[256];
  int i, j;
  //initialisation des tables par defaut
  for(i = 0; i < 256; i++)
  {
   for(j = 0; j < KEYBOARDKEY_MAX; j++) if(pckeycode[j] == i) break;
-  to8dkeycode[i] = j;
+  default_keycode[i] = j;
   for(j = 0; j < JOYSTICKKEY_MAX; j++) if(pcjoycode[j] == i) break;
-  to8djoycode[i] = j;
+  default_joycode[i] = j;
  }
- //recuperation des valeurs de dcto8d.ini (0x40=touches 0x140=joysticks)
- fseek(fpi, 0, SEEK_END);
- i = (int)ftell(fpi);
- if(i < 0x140) return;
- fseek(fpi, 0x40, SEEK_SET); j = fgetc(fpi); fseek(fpi, 0x40, SEEK_SET);
- if(j == KEYBOARDKEY_MAX) fread(to8dkeycode, 256, 1, fpi);
- if(i < 0x240) return;
- fseek(fpi, 0x140, SEEK_SET); j = fgetc(fpi); fseek(fpi, 0x140, SEEK_SET);
- if(j == JOYSTICKKEY_MAX) fread(to8djoycode, 256, 1, fpi);
+ Initoptions(default_keycode, default_joycode);
 }
 
 // Key up ////////////////////////////////////////////////////////////////////
@@ -484,22 +471,22 @@ void Keyup(int keysym, int scancode)
  if((keysym & 0xff0) == 0x100) keycode += 0x40; //autres touches numpad
 
  //emulation joystick
- ijoy = to8djoycode[keycode & 0xff];
- ikey = to8dkeycode[keycode & 0xff];
+ ijoy = options.to8djoycode[keycode & 0xff];
+ ikey = options.to8dkeycode[keycode & 0xff];
 
- if(ijoy < JOYSTICKKEY_MAX) if((ikey == KEYBOARDKEY_MAX) || (keybpriority == 0))
+ if(ijoy < JOYSTICKKEY_MAX) if((ikey == KEYBOARDKEY_MAX) || (options.keybpriority == 0))
  {
   Joysemul(ijoy, 0x80);
-  if(dialog == 4) Drawbutton(&joystickbutton[ijoy], 0);
+  if(dialog == DIALOG_JOYSTICK) Drawbutton(&joystickbutton[ijoy], 0);
  }
 
  //emulation clavier
- if(ikey < KEYBOARDKEY_MAX) if((ijoy == JOYSTICKKEY_MAX) || (keybpriority == 1))
+ if(ikey < KEYBOARDKEY_MAX) if((ijoy == JOYSTICKKEY_MAX) || (options.keybpriority == 1))
  {
   touche[ikey] = 0x80;
   TO8key(ikey);
   //dessin de la touche relachee
-  if(dialog == 3) Drawbutton(&keyboardbutton[ikey], 0);
+  if(dialog == DIALOG_KEYBOARD) Drawbutton(&keyboardbutton[ikey], 0);
  }
 }
 
@@ -567,23 +554,23 @@ void Keydown(int sym, int scancode)
  pause6809 = 0;  //l'appui sur une touche arrete la pause
 
  //emulation joystick
- ijoy = to8djoycode[keycode & 0xff];
- ikey = to8dkeycode[keycode & 0xff];
- if(dialog == 3) Displaykey();
- if(dialog == 4) Displayjoy();
+ ijoy = options.to8djoycode[keycode & 0xff];
+ ikey = options.to8dkeycode[keycode & 0xff];
+ if(dialog == DIALOG_KEYBOARD) Displaykey();
+ if(dialog == DIALOG_JOYSTICK) Displayjoy();
 
 
- if(ijoy < JOYSTICKKEY_MAX) if((ikey == KEYBOARDKEY_MAX) || (keybpriority == 0))
+ if(ijoy < JOYSTICKKEY_MAX) if((ikey == KEYBOARDKEY_MAX) || (options.keybpriority == 0))
  {
   Joysemul(ijoy, 0x00);
-  if(dialog == 4) Drawbutton(&joystickbutton[ijoy], 1);
+  if(dialog == DIALOG_JOYSTICK) Drawbutton(&joystickbutton[ijoy], 1);
  }
 
  //emulation clavier
- if(ikey < KEYBOARDKEY_MAX) if((ijoy == JOYSTICKKEY_MAX) || (keybpriority == 1))
+ if(ikey < KEYBOARDKEY_MAX) if((ijoy == JOYSTICKKEY_MAX) || (options.keybpriority == 1))
  {
   touche[ikey] = 0x00; TO8key(ikey);
-  if(dialog == 3) Drawbutton(&keyboardbutton[ikey], 1);
+  if(dialog == DIALOG_KEYBOARD) Drawbutton(&keyboardbutton[ikey], 1);
  }
 }
 

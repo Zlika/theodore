@@ -24,6 +24,8 @@
 #ifndef __DCTO8DKEYB_H
 #define __DCTO8DKEYB_H
 
+// Initialisation du clavier /////////////////////////////////////////////////
+void Keyboardinit();
 //Traitement des clics boite de dialogue clavier /////////////////////////////
 void Keyclick();
 //Traitement des clics boite de dialogue manettes ////////////////////////////
@@ -32,24 +34,11 @@ void Joyclick();
 void Keydown(int sym, int scancode);
 // Key up ////////////////////////////////////////////////////////////////////
 void Keyup(int keysym, int scancode);
-// Initialisation du clavier /////////////////////////////////////////////////
-void Keyboardinit();
 //Creation de la boite de dialogue du clavier ////////////////////////////////
 void Drawkeyboardbox();
 //Creation de la boite de dialogue des manettes //////////////////////////////
 void Drawjoystickbox();
 // Test touches SHIFT, ALT et CTRL gauche et droite //////////////////////////
 void Testshiftkey();
-
-//0=manettes prioritaires 1=clavier prioritaire
-extern int keybpriority;
-
-//scancode du clavier pour chaque touche du TO8
-//(+ 0x40 pour les touches du pave numerique pour les distinguer des autres)
-extern int pckeycode[];
-
-//scancode du clavier pour chaque fonction des manettes du T08
-//(+ 0x40 pour les touches du pave numerique pour les distinguer des autres)
-extern int pcjoycode[];
 
 #endif

@@ -25,6 +25,7 @@
 #include "dc6809emul.h"
 #include "dcto8ddevices.h"
 #include "dcto8demulation.h"
+#include "dcto8doptions.h"
 #include "to8dbasic.h"
 #include "to8dmoniteur.h"
 
@@ -61,7 +62,6 @@ int penbutton;       //lightpen button state
 int videolinecycle;  //compteur ligne (0-63)
 int videolinenumber; //numero de ligne video affichee (0-311)
 int vblnumber;       //compteur du nombre de vbl avant affichage
-int vblnumbermax;    //nombre de vbl entre deux affichages
 int displayflag;     //indicateur pour l'affichage
 int bordercolor;     //couleur de la bordure de l'écran
 //divers
@@ -429,7 +429,7 @@ int Run(int ncyclesmax)
    {
     videolinenumber -= 312;
     if(vblnumber == 0) Displayscreen();
-    if(++vblnumber >= vblnumbermax) vblnumber = 0;
+    if(++vblnumber >= options.vblnumbermax) vblnumber = 0;
    }
    displayflag = 0;
    if(vblnumber == 0)

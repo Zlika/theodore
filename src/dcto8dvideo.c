@@ -34,8 +34,6 @@ SDL_Window *window = NULL;     //fenetre d'affichage de l'ecran
 SDL_Renderer *renderer = NULL;
 SDL_Texture *texture = NULL;   //texture mise à jour a partir de screen
 SDL_Surface *screen = NULL;    //surface d'affichage de l'ecran
-int xclient;                   //largeur fenetre utilisateur
-int yclient;                   //hauteur ecran dans fenetre utilisateur
 int xmouse;                    //abscisse souris dans fenetre utilisateur
 int ymouse;                    //ordonnee souris dans fenetre utilisateur
 struct pix {char b, g, r, a;}; //structure pixel BGRA
@@ -205,14 +203,14 @@ void Nextline()
  int *p0, *p1;
  if(SDL_MUSTLOCK(screen))
    if(SDL_LockSurface(screen) < 0) {SDL_error(__func__, "SDL_LockSurface"); return;}
- p1 = pmin + (videolinenumber - 47) * yclient / YBITMAP * xclient;
+ p1 = pmin + (videolinenumber - 47) * options.yclient / YBITMAP * options.xclient;
  if(videolinenumber == 263) p1 = pmax;
  p0 = pcurrentline;
- pcurrentline += xclient;
+ pcurrentline += options.xclient;
  while(pcurrentline < p1)
  {
-  memcpy(pcurrentline, p0, 4 * xclient);
-  pcurrentline += xclient;
+  memcpy(pcurrentline, p0, 4 * options.xclient);
+  pcurrentline += options.xclient;
  }
  if(p1 == pmax)
  {
@@ -264,20 +262,20 @@ void Resizescreen(int x, int y)
  SDL_DestroyRenderer(renderer);
  SDL_DestroyWindow(window);
  y -= YSTATUS;
- xclient = (x < 336) ? 336 : x;
- yclient = (y < 216) ? 216 : y;
- KeepAspectRatio(&xclient, &yclient);
+ options.xclient = (x < XBITMAP/2) ? XBITMAP/2 : x;
+ options.yclient = (y < YBITMAP) ? YBITMAP : y;
+ KeepAspectRatio(&options.xclient, &options.yclient);
  window = SDL_CreateWindow(_(MSG_PROGNAME),
                            SDL_WINDOWPOS_UNDEFINED,
                            SDL_WINDOWPOS_UNDEFINED,
-                           xclient, yclient + YSTATUS,
+                           options.xclient, options.yclient + YSTATUS,
                            is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
  if (window == NULL) { SDL_error(__func__, "SDL_CreateWindow"); return; }
  SDL_SetWindowIcon(window, SDL_LoadBMP_RW(SDL_RWFromMem(dcto8dicon, sizeof(dcto8dicon)), 1));
  renderer = SDL_CreateRenderer(window, -1, 0);
- SDL_RenderSetLogicalSize(renderer, xclient, yclient + YSTATUS);
+ SDL_RenderSetLogicalSize(renderer, options.xclient, options.yclient + YSTATUS);
  if (renderer == NULL) { SDL_error(__func__, "SDL_CreateRenderer"); return; }
- screen = SDL_CreateRGBSurface(0, xclient, yclient + YSTATUS, 32,
+ screen = SDL_CreateRGBSurface(0, options.xclient, options.yclient + YSTATUS, 32,
                                          0x00FF0000,
                                          0x0000FF00,
                                          0x000000FF,
@@ -286,22 +284,22 @@ void Resizescreen(int x, int y)
  texture = SDL_CreateTexture(renderer,
                                 SDL_PIXELFORMAT_ARGB8888,
                                 SDL_TEXTUREACCESS_STREAMING,
-                                xclient, yclient + YSTATUS);
+                                options.xclient, options.yclient + YSTATUS);
  if (texture == NULL) { SDL_error(__func__, "SDL_CreateTexture"); return; }
- pmin = (int*)(screen->pixels) + YSTATUS * xclient;
- pmax = pmin + yclient * xclient;
+ pmin = (int*)(screen->pixels) + YSTATUS * options.xclient;
+ pmax = pmin + options.yclient * options.xclient;
  //rafraichissement de l'ecran
  pcurrentline = pmin;    //initialisation pointeur ligne courante
  pcurrentpixel = pmin;   //initialisation pointeur pixel courant
  currentlinesegment = 0; //initialisation numero d'octet dans la ligne
  currentvideomemory = 0; //initialisation index en memoire video thomson
- for(i = 0; i <= XBITMAP; i++) xpixel[i] = i * xclient / XBITMAP;
+ for(i = 0; i <= XBITMAP; i++) xpixel[i] = i * options.xclient / XBITMAP;
  videolinecycle = 52;
  for(videolinenumber = 48; videolinenumber < 264; videolinenumber++)
  {Displaysegment(); Nextline();}
  videolinecycle = 0; videolinenumber = 0;
  Drawstatusbar();
- if(dialog == 2) Drawoptionbox();
+ if(dialog == DIALOG_OPTIONS) Drawoptionbox();
  screencount = 0;
  Displayscreen();
  pause6809 = savepause6809;

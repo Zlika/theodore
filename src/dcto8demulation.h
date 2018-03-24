@@ -62,8 +62,6 @@ extern int mute;
 extern int videolinecycle;
 //numero de ligne video affichee (0-311)
 extern int videolinenumber;
-//nombre de vbl entre deux affichages
-extern int vblnumbermax;
 //couleur de la bordure de l'écran
 extern int bordercolor;
 //pointeur page video affichee

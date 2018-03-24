@@ -191,6 +191,18 @@ const dialogbutton statusbutton[STATUSBUTTON_MAX] = {
 {-20,  2,  9}  //0x04 "?",
 };
 
+#define OPTIONBUTTON_MAX 8   //nombre de boutons boite de dialogue options
+const dialogbutton optionbutton[OPTIONBUTTON_MAX] = {
+{108,  32,  3}, //langue
+{108,  52,  3}, //zoom
+{108,  72,  3}, //processeur
+{108,  92,  3}, //affichage
+{108, 112,  3}, //protection k7
+{108, 132,  3}, //protection fd
+{108, 152,  3}, //emulation manettes
+{ 10, 180, 18}  //valeurs par defaut
+};
+
 SDL_Surface *buttonup[BOUTON_MAX][LANGUAGE_MAX];
 SDL_Surface *buttondown[BOUTON_MAX][LANGUAGE_MAX];
 SDL_Surface *fontsurface[2];   //0=noir 1=blanc
@@ -199,7 +211,7 @@ SDL_Surface *dialogbox = NULL; //surface d'affichage dialogbox
 SDL_Surface *statusbar = NULL; //surface de la barre de statut
 SDL_Rect dialogrect;           //position dialogbox
 SDL_Rect popuptablerect;       //position popup table
-int dialog = 0;                //0=rien 1=message, 2=options 3=clavier 4=menu
+currentdialog dialog = DIALOG_NOTHING;
 int popuptable = 0;            //pouptable inactive par defaut
 const dialogeditbox *focus = NULL;   //editbox ayant le focus
 int xmove, ymove;              //position souris dans dialogbox deplacee
@@ -219,6 +231,9 @@ void (*LoadFunc[3])(char *filename) = { Loadk7, Loadfd, Loadmemo };
 // pointeurs fonctions de déchargement
 void (*UnloadFunc[3])() = { Unloadk7, Unloadfd, Unloadmemo };
 int pause6809;                  //processor pause state
+
+static void Optionclick();
+static void Setoption(int i);
 
 // Message d'erreur SDL //////////////////////////////////////////////////////
 void SDL_error(const char* function, const char* message)
@@ -515,8 +530,8 @@ void Drawbutton(const dialogbutton *bouton, int push)
  n = bouton->n;
  rect.x = bouton->x;
  rect.y = bouton->y;
- if(push) SDL_BlitSurface(buttondown[n][language], NULL, dialogbox, &rect);
- else SDL_BlitSurface(buttonup[n][language], NULL, dialogbox, &rect);
+ if(push) SDL_BlitSurface(buttondown[n][options.language], NULL, dialogbox, &rect);
+ else SDL_BlitSurface(buttonup[n][options.language], NULL, dialogbox, &rect);
 }
 
 //Dessin d'une editbox/////////////////////////////////////////////////////////
@@ -558,7 +573,7 @@ void Drawstatusbar()
  if(statusbar == NULL) return;
 
  //fond
- rect.x = 0; rect.w = xclient;
+ rect.x = 0; rect.w = options.xclient;
  rect.y = 0; rect.h = YSTATUS - 1;
  SDL_FillRect(statusbar, &rect, gris0);
  rect.y = YSTATUS - 1; rect.h = 1;
@@ -576,9 +591,9 @@ void Drawstatusbar()
  //boutons
  for(i = 0; i < STATUSBUTTON_MAX; i++)
  {
-  rect.x = statusbutton[i].x; if(rect.x < 0) rect.x += xclient;
-  rect.y = statusbutton[i].y; if(rect.y < 0) rect.y += yclient;
-  surf = buttonup[statusbutton[i].n][language];
+  rect.x = statusbutton[i].x; if(rect.x < 0) rect.x += options.xclient;
+  rect.y = statusbutton[i].y; if(rect.y < 0) rect.y += options.yclient;
+  surf = buttonup[statusbutton[i].n][options.language];
   r = SDL_BlitSurface(surf, NULL, statusbar, &rect);
   if(r < 0) {SDL_error(__func__, "r < 0"); return;}
  }
@@ -655,7 +670,7 @@ void Createdialogbox(int w, int h)
  //bouton de fermeture
  rect.x = closebutton.x + dialogbox->w;
  rect.y = closebutton.y;
- r = SDL_BlitSurface(buttonup[closebutton.n][language], NULL, dialogbox, &rect);
+ r = SDL_BlitSurface(buttonup[closebutton.n][options.language], NULL, dialogbox, &rect);
  if(r < 0) SDL_error(__func__, "r < 0");
 }
 
@@ -664,7 +679,7 @@ static void Drawmenubox()
 {
  SDL_Rect rect;
  char string[50];
- dialogrect.x = xclient - 122; dialogrect.w = 120;
+ dialogrect.x = options.xclient - 122; dialogrect.w = 120;
  dialogrect.y = YSTATUS; dialogrect.h = 4 * 16 + 10;
  Createbox(gris0);
  rect.x = 10; rect.w = 105; rect.y = 4; rect.h = 14;
@@ -725,18 +740,18 @@ static void Statusclick()
  //recherche du bouton concerne par le clic
  for(i = 0; i < STATUSBUTTON_MAX; i++)
  {
-  x = statusbutton[i].x; if(x < 0) x += xclient;
-  y = statusbutton[i].y; if(y < 0) y += yclient;
+  x = statusbutton[i].x; if(x < 0) x += options.xclient;
+  y = statusbutton[i].y; if(y < 0) y += options.yclient;
   if(xmouse > x) if(xmouse < (x + bouton[statusbutton[i].n].w))
   if(ymouse > y) if(ymouse < (y + bouton[statusbutton[i].n].h))
   break;
  }
- if(i >= STATUSBUTTON_MAX) {dialog = 0; return;}
+ if(i >= STATUSBUTTON_MAX) {dialog = DIALOG_NOTHING; return;}
 
  //dessin du bouton enfonce
- rect.x = statusbutton[i].x; if(rect.x < 0) rect.x += xclient;
- rect.y = statusbutton[i].y; if(rect.y < 0) rect.y += yclient;
- r = SDL_BlitSurface(buttondown[statusbutton[i].n][language], NULL, screen, &rect);
+ rect.x = statusbutton[i].x; if(rect.x < 0) rect.x += options.xclient;
+ rect.y = statusbutton[i].y; if(rect.y < 0) rect.y += options.yclient;
+ r = SDL_BlitSurface(buttondown[statusbutton[i].n][options.language], NULL, screen, &rect);
  if(r < 0) {SDL_error(__func__, "r < 0"); return;}
 
  //traitement
@@ -755,11 +770,11 @@ static void Statusclick()
 void Dialogmove()
 {
  int ytotal;
- ytotal = yclient + YSTATUS;
+ ytotal = options.yclient + YSTATUS;
  dialogrect.x = xmouse - xmove;
  dialogrect.y = ymouse - ymove;
- if(dialogrect.x > (xclient - dialogrect.w))
-   dialogrect.x = xclient - dialogrect.w;
+ if(dialogrect.x > (options.xclient - dialogrect.w))
+   dialogrect.x = options.xclient - dialogrect.w;
  if(dialogrect.y > (ytotal - dialogrect.h))
     dialogrect.y = ytotal - dialogrect.h;
  if(dialogrect.x < 0)
@@ -781,7 +796,7 @@ static void Dialogclick()
  y = dialogrect.y + closebutton.y;
  if(xmouse > x) if(xmouse < (x + bouton[closebutton.n].w))
  if(ymouse > y) if(ymouse < (y + bouton[closebutton.n].h))
- {dialog = 0; xmove = ymove = 0; return;}
+ {dialog = DIALOG_NOTHING; xmove = ymove = 0; return;}
 
  //clic bandeau superieur
  if(ymouse < (dialogrect.y + 22))
@@ -792,10 +807,10 @@ static void Dialogclick()
  }
 
  //traitements particuliers
- if(dialog == 2) Optionclick();  //boite de dialogue Parametres
- if(dialog == 3) Keyclick();     //boite de dialogue Clavier
- if(dialog == 4) Joyclick();     //boite de dialogue Manettes
- if(dialog == 5) Desassclick();  //boite de dialogue Desassemblage
+ if(dialog == DIALOG_OPTIONS) Optionclick();  //boite de dialogue Parametres
+ if(dialog == DIALOG_KEYBOARD) Keyclick();     //boite de dialogue Clavier
+ if(dialog == DIALOG_JOYSTICK) Joyclick();     //boite de dialogue Manettes
+ if(dialog == DIALOG_DISASM) Desassclick();  //boite de dialogue Desassemblage
 }
 
 //Traitement des clics dans un menu deroulant /////////////////////////////////
@@ -824,7 +839,7 @@ static void Menuclick()
  {
   devname[n][0] = '\0';
   UnloadFunc[n]();
-  dialog = 0;
+  dialog = DIALOG_NOTHING;
   Drawstatusbar();
   return;
  }
@@ -860,7 +875,7 @@ static void Menuclick()
   strcat(filename, dirlist[i]);
   LoadFunc[n](filename);
   Drawstatusbar();
-  dialog = 0;
+  dialog = DIALOG_NOTHING;
   return;
  }
 }
@@ -880,7 +895,7 @@ void Mouseclick()
   if(xmouse < (dialogrect.x + popuptablerect.x + popuptablerect.w))
   if(ymouse < (dialogrect.y + popuptablerect.y + popuptablerect.h))
   i = (ymouse - dialogrect.y - popuptablerect.y) / 15;
-  if(dialog == 2) Setoption(i);
+  if(dialog == DIALOG_OPTIONS) Setoption(i);
   pause6809 = 0;
   return;
  }
@@ -918,4 +933,140 @@ void Drawpopuptable(int n, int x, int y)
   popuptablerect.h += 15;
   rect.y += 15;
  }
+}
+
+//Draw option box ////////////////////////////////////////////////////////////
+void Drawoptionbox()
+{
+ SDL_Rect rect;
+ int i;
+ char string[50];
+ if(dialog != DIALOG_OPTIONS)
+ {
+  Createdialogbox(172, 216);
+  rect.x = 10; rect.w = dialogbox->w - 32;
+  rect.y = 5; rect.h = 15;
+  Drawtextbox(dialogbox, _(MSG_MENU_SETTINGS), rect, 1, bleu, 0); //titre
+  dialog = DIALOG_OPTIONS;
+ }
+ //options
+ rect.x = 10; rect.w = 94;
+ rect.y = 32; rect.h = 15;
+ Drawtextbox(dialogbox, options.language ? _(MSG_SETTINGS_LANG_EN) : _(MSG_SETTINGS_LANG_FR), rect, 0, blanc, -1);
+ sprintf(string, "Zoom : %i%s", 100 * options.xclient / XBITMAP, "%");
+ rect.y += 20;
+ Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
+ sprintf(string, "%s : %i%s", _(MSG_SETTINGS_PROC), options.frequency / 10, "%");
+ rect.y += 20;
+ Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
+ sprintf(string, "%s : %i%s", _(MSG_SETTINGS_FPS), 100 / options.vblnumbermax, "%");
+ rect.y += 20;
+ Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
+ sprintf(string, "%s k7 : %s", _(MSG_SETTINGS_WRITE),
+         options.k7protection ? _(MSG_NO) : _(MSG_YES));
+ rect.y += 20;
+ Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
+ sprintf(string, "%s fd : %s", _(MSG_SETTINGS_WRITE),
+         options.fdprotection ? _(MSG_NO) : _(MSG_YES));
+ rect.y += 20;
+ Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
+ sprintf(string, "%s", options.keybpriority ? _(MSG_SETTINGS_NUMPAD) : _(MSG_MENU_JOYSTICKS));
+ rect.y += 20;
+ Drawtextbox(dialogbox, string, rect, 0, blanc, -1);
+ //dessin des boutons
+ for(i = 0; i < OPTIONBUTTON_MAX; i++) Drawbutton(&optionbutton[i], 0);
+}
+
+//Traitement des clics des boutons d'options /////////////////////////////////
+static void Optionclick()
+{
+ int i, x, y;
+
+ //recherche du bouton du clic
+ for(i = 0; i < OPTIONBUTTON_MAX; i++)
+ {
+  x = dialogrect.x + optionbutton[i].x;
+  y = dialogrect.y + optionbutton[i].y;
+  if(xmouse > x) if(xmouse < (x + bouton[optionbutton[i].n].w))
+  if(ymouse > y) if(ymouse < (y + bouton[optionbutton[i].n].h))
+  break;
+ }
+ if(i >= OPTIONBUTTON_MAX) return;
+ //dessin du bouton enfonce
+ Drawbutton(&optionbutton[i], 1);
+ Displayscreen(); SDL_Delay(200);
+ //traitement en fonction du bouton
+ x = optionbutton[i].x;
+ y = optionbutton[i].y;
+ switch(i)
+ {
+  case 0: popuptabletext[0] = _(MSG_SETTINGS_LANG_FR); //langue
+          popuptabletext[1] = _(MSG_SETTINGS_LANG_EN);
+          popuptabletext[2] = "";
+          Drawpopuptable(1, x, y);
+          break;
+  case 1: popuptabletext[0] = "  50%"; //zoom
+          popuptabletext[1] = "100%";
+          popuptabletext[2] = "150%";
+          popuptabletext[3] = "200%";
+          popuptabletext[4] = "";
+          Drawpopuptable(2, x, y);
+          break;
+  case 2: popuptabletext[0] = "  10%"; //processeur
+          popuptabletext[1] = "  50%";
+          popuptabletext[2] = "100%";
+          popuptabletext[3] = "200%";
+          popuptabletext[4] = "500%";
+          popuptabletext[5] = "";
+          Drawpopuptable(3, x, y);
+          break;
+  case 3: popuptabletext[0] = "  10%"; //affichage
+          popuptabletext[1] = "  25%";
+          popuptabletext[2] = "  50%";
+          popuptabletext[3] = "100%";
+          popuptabletext[4] = "";
+          Drawpopuptable(4, x, y);
+          break;
+  case 4: popuptabletext[0] = _(MSG_YES); //ecriture k7
+          popuptabletext[1] = _(MSG_NO);
+          popuptabletext[2] = "";
+          Drawpopuptable(5, x, y);
+          break;
+  case 5: popuptabletext[0] = _(MSG_YES); //ecriture fd
+          popuptabletext[1] = _(MSG_NO);
+          popuptabletext[2] = "";
+          Drawpopuptable(6, x, y);
+          break;
+  case 6: popuptabletext[0] = _(MSG_MENU_JOYSTICKS); //manettes ou clavier numerique
+          popuptabletext[1] = _(MSG_SETTINGS_NUMPAD);
+          popuptabletext[2] = "";
+          Drawpopuptable(7, x, y);
+          break;
+  case 7: Resetoptions();    //restore default values
+          Resizescreen(options.xclient, YSTATUS + options.yclient);
+          dialog = DIALOG_NOTHING;
+          Drawoptionbox();
+          break;
+ }
+ if(dialog == DIALOG_OPTIONS) if(popuptable == 0) Drawoptionbox();
+}
+
+//Mise a jour d'un parametre avec la valeur i de la popuptable////////////////
+static void Setoption(int i)
+{
+ int f[5] = {100, 500, 1000, 2000, 5000}; //frequences processeur
+ int v[4] = {10, 4, 2, 1}; //nombre de vbl entre deux trames affichees
+ if(i >= 0) switch(popuptable)
+ {
+  case 1: options.language = i; break;
+  case 2: Resizescreen(XBITMAP * (i + 1) / 2, YSTATUS + YBITMAP * (i + 1)); break;
+  case 3: options.frequency = f[i]; break;
+  case 4: options.vblnumbermax = v[i]; break;
+  case 5: options.k7protection = i; break;
+  case 6: options.fdprotection = i; break;
+  case 7: options.keybpriority = i; break;
+ }
+ dialog = DIALOG_NOTHING;
+ popuptable = 0;
+ Drawoptionbox();
 }
