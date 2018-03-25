@@ -314,7 +314,7 @@ void Drawkeyboardbox()
  Drawtextbox(dialogbox, _(MSG_CLICK_PICTURE), rect, 0, gris0, 0);
  //dessin des boutons
  for(i = 0; i < KEYBOARDBUTTON_MAX; i++) Drawbutton(&keyboardbutton[i], 0);
- Displaykey(0);  //nom de la touche lastkey
+ Displaykey();  //nom de la touche lastkey
  pause6809 = 0;
 }
 
@@ -348,7 +348,7 @@ void Drawjoystickbox()
  Drawtextbox(dialogbox, " [0]", rect, 0, blanc, 1);
  rect.x += 158;
  Drawtextbox(dialogbox, " [1]", rect, 0, blanc, 1);
- Displayjoy(0); //nom de la fonction lastjoy
+ Displayjoy(); //nom de la fonction lastjoy
  pause6809 = 0;
 }
 
