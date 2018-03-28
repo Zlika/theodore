@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <SDL.h>
-#include <stdbool.h>
 #include "dcto8dvideo.h"
 #include "dcto8dicon.h"
 #include "dcto8dmsg.h"
@@ -83,7 +82,7 @@ void Displayscreen()
    if(SDL_BlitSurface(dialogbox, NULL, screen, &dialogrect) < 0) SDL_error(__func__, "SDL_BlitSurface");
  if(--screencount < 0)  //1 fois sur 10 pour diminuer le temps d'affichage
  {
-  if(statusbar != NULL)
+  if(statusbar != NULL && !is_fullscreen)
   if(SDL_BlitSurface(statusbar, NULL, screen, NULL) < 0) SDL_error(__func__, "SDL_BlitSurface");
   screencount = 9;
  }
@@ -245,6 +244,7 @@ void KeepAspectRatio(int *x, int *y)
 void Resizescreen(int x, int y)
 {
  int i, savepause6809;
+ int ystatus;
  savepause6809 = pause6809;
  pause6809 = 1; SDL_Delay(200);
  //effacement surface de l'ecran
@@ -256,26 +256,28 @@ void Resizescreen(int x, int y)
       memcpy(pcurrentpixel, pcolor, 4);
   Render();
  }
- //creation nouvelle surface
- SDL_DestroyTexture(texture);
- SDL_FreeSurface(screen);
- SDL_DestroyRenderer(renderer);
- SDL_DestroyWindow(window);
- y -= YSTATUS;
+
+ ystatus = is_fullscreen ? 0 : YSTATUS; // Disable status bar in fullscreen mode
+ y -= ystatus;
  options.xclient = (x < XBITMAP/2) ? XBITMAP/2 : x;
  options.yclient = (y < YBITMAP) ? YBITMAP : y;
  KeepAspectRatio(&options.xclient, &options.yclient);
- window = SDL_CreateWindow(_(MSG_PROGNAME),
+
+ if (window == NULL)
+ {
+  window = SDL_CreateWindow(_(MSG_PROGNAME),
                            SDL_WINDOWPOS_UNDEFINED,
                            SDL_WINDOWPOS_UNDEFINED,
-                           options.xclient, options.yclient + YSTATUS,
-                           is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
- if (window == NULL) { SDL_error(__func__, "SDL_CreateWindow"); return; }
- SDL_SetWindowIcon(window, SDL_LoadBMP_RW(SDL_RWFromMem(dcto8dicon, sizeof(dcto8dicon)), 1));
- renderer = SDL_CreateRenderer(window, -1, 0);
- SDL_RenderSetLogicalSize(renderer, options.xclient, options.yclient + YSTATUS);
- if (renderer == NULL) { SDL_error(__func__, "SDL_CreateRenderer"); return; }
- screen = SDL_CreateRGBSurface(0, options.xclient, options.yclient + YSTATUS, 32,
+                           options.xclient, options.yclient + ystatus,
+                           is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE);
+  if (window == NULL) { SDL_error(__func__, "SDL_CreateWindow"); return; }
+  SDL_SetWindowIcon(window, SDL_LoadBMP_RW(SDL_RWFromMem(dcto8dicon, sizeof(dcto8dicon)), 1));
+  renderer = SDL_CreateRenderer(window, -1, 0);
+  if (renderer == NULL) { SDL_error(__func__, "SDL_CreateRenderer"); return; }
+ }
+ SDL_RenderSetLogicalSize(renderer, options.xclient, options.yclient + ystatus);
+ SDL_SetWindowSize(window, options.xclient, options.yclient + ystatus);
+ screen = SDL_CreateRGBSurface(0, options.xclient, options.yclient + ystatus, 32,
                                          0x00FF0000,
                                          0x0000FF00,
                                          0x000000FF,
@@ -284,9 +286,9 @@ void Resizescreen(int x, int y)
  texture = SDL_CreateTexture(renderer,
                                 SDL_PIXELFORMAT_ARGB8888,
                                 SDL_TEXTUREACCESS_STREAMING,
-                                options.xclient, options.yclient + YSTATUS);
+                                options.xclient, options.yclient + ystatus);
  if (texture == NULL) { SDL_error(__func__, "SDL_CreateTexture"); return; }
- pmin = (int*)(screen->pixels) + YSTATUS * options.xclient;
+ pmin = (int*)(screen->pixels) + ystatus * options.xclient;
  pmax = pmin + options.yclient * options.xclient;
  //rafraichissement de l'ecran
  pcurrentline = pmin;    //initialisation pointeur ligne courante
@@ -305,15 +307,15 @@ void Resizescreen(int x, int y)
  pause6809 = savepause6809;
 }
 
+// Switch between fullscreen and windowed modes
 void SwitchFullScreenMode()
 {
+ SDL_Delay(200);
  int result;
  if (is_fullscreen)
  {
   is_fullscreen = false;
   result = SDL_SetWindowFullscreen(window, 0);
-  Resizescreen(XBITMAP, YSTATUS + YBITMAP*2);
-
  }
  else
  {
@@ -324,4 +326,10 @@ void SwitchFullScreenMode()
  {
   SDL_error(__func__, "SDL_SetWindowFullscreen");
  }
+}
+
+// Returns true if fullscreen mode is enabled, false otherwise
+bool IsFullScreenMode()
+{
+ return is_fullscreen;
 }

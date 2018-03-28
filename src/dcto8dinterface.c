@@ -824,7 +824,6 @@ static void Menuclick()
 
  if(n == 3) //clic dans le menu options
  {
-  //if(ymouse < (YSTATUS + 20)) {Options(); return;}
   if(ymouse < (YSTATUS + 20)) {Drawoptionbox(); return;}
   if(ymouse < (YSTATUS + 36)) {Drawkeyboardbox(); return;}
   if(ymouse < (YSTATUS + 52)) {Drawjoystickbox(); return;}

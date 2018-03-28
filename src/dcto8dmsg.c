@@ -57,7 +57,7 @@ const char* MSG_ABOUT[] = { "Version : "VERSION"\n"
                             "- PAUSE = stop 6809 processor\n"
                             "- F6    = toggle fullscreen\n\n"
                             "Please check the documentation for more information." };
-const char* MSG_PROGNAME[] = { "DCTO8D - Emulateur TO8D Thomson", "DCTO8D - Thomson TO8D emulator" };
+const char* MSG_PROGNAME[] = { "DCTO8D - Emulateur Thomson TO8D", "DCTO8D - Thomson TO8D emulator" };
 const char* MSG_MENU_SETTINGS[] = { "Param""\xe8""tres", "Settings" };
 const char* MSG_MENU_KEYBOARD[] = { "Clavier", "Keyboard" };
 const char* MSG_MENU_JOYSTICKS[] = { "Manettes", "Joysticks" };

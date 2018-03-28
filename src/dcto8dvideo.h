@@ -24,6 +24,7 @@
 #define __DCTO8DVIDEO_H
 
 #include <SDL.h>
+#include <stdbool.h>
 #include "dcto8dglobal.h"
 
 #define YSTATUS 20
@@ -36,10 +37,13 @@ extern int xmouse;
 //ordonnee souris dans fenetre utilisateur
 extern int ymouse;
 
-void SwitchFullScreenMode();
-// Resize screen //////////////////////////////////////////////////////////////
+// Resize screen
 void Resizescreen(int x, int y);
-//Display screen /////////////////////////////////////////////////////////////
+//Display screen
 void Displayscreen();
+// Switch between fullscreen and windowed modes
+void SwitchFullScreenMode();
+// Returns true if fullscreen mode is enabled, false otherwise
+bool IsFullScreenMode();
 
 #endif /* __DCTO8DVIDEO_H */
