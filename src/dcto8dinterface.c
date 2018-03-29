@@ -225,7 +225,7 @@ char path[3][PATH_MAX];   //repertoires des fichiers k7, fd, memo
 char k7name[100];               // nom du fichier cassette
 char fdname[100];               // nom du fichier disquette
 char memoname[100];             // nom du fichier cartouche
-char* devname[] = { k7name, fdname, memoname };
+char* devnames[] = { k7name, fdname, memoname };
 // pointeurs fonctions de chargement de fichier
 void (*LoadFunc[3])(char *filename) = { Loadk7, Loadfd, Loadmemo };
 // pointeurs fonctions de déchargement
@@ -836,7 +836,7 @@ static void Menuclick()
  i = dirmin - 1 + (ymouse - YSTATUS - 4) / 16;
  if(i < dirmin) //[decharger]
  {
-  devname[n][0] = '\0';
+  devnames[n][0] = '\0';
   UnloadFunc[n]();
   dialog = DIALOG_NOTHING;
   Drawstatusbar();
@@ -869,7 +869,7 @@ static void Menuclick()
  }
  if(dirlist[i][0] > 15) //ouverture fichier
  {
-  strcpy(devname[n], dirlist[i]);
+  strcpy(devnames[n], dirlist[i]);
   strcpy(filename, path[n]);
   strcat(filename, dirlist[i]);
   LoadFunc[n](filename);

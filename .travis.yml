@@ -1,11 +1,25 @@
 language: c
-compiler: gcc
+compiler:
+  - gcc
+  - clang
+os:
+  - linux
+  - osx
 dist: trusty
 
 addons:
   apt:
     packages:
     - libsdl2-dev
+
+matrix:
+  exclude:
+  # GCC on OS X is just a frontend to LLVM
+  - os: osx
+    compiler: gcc
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install sdl2; fi
 
 before_script: autoreconf -i
 script: ./configure && make

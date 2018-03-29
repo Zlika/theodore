@@ -30,6 +30,15 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
 	AC_MSG_RESULT(no); STACKPROTECT_FLAG="-fstack-protector")
 CFLAGS="$old_CFLAGS"
 AC_SUBST(STACKPROTECT_FLAG)
+# Don't enable some hardening flags on OS X because it uses an old version of Clang
+AC_MSG_CHECKING(whether linker understands hardening flags)
+old_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -pie -z relro -z now"
+AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
+	AC_MSG_RESULT(yes); LINKER_HARDENING_FLAGS="-pie -z relro -z now",
+	AC_MSG_RESULT(no); LINKER_HARDENING_FLAGS="")
+LDFLAGS="$old_LDFLAGS"
+AC_SUBST(LINKER_HARDENING_FLAGS)
 
 # Checks for library functions.
 AC_CHECK_FUNCS([atexit getcwd memset strcasecmp strtol])
