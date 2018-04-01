@@ -48,18 +48,23 @@ typedef struct
  int h;         //hauteur en pixels
 } button;
 
-typedef enum
-{
- //0=rien 1=message, 2=options 3=clavier 4=joystick, 5=desassembleur
- DIALOG_NOTHING, DIALOG_MESSAGE, DIALOG_OPTIONS, DIALOG_KEYBOARD, DIALOG_JOYSTICK, DIALOG_DISASM
-} currentdialog;
+// Current dialog number
+//0=rien 1=message, 2=options 3=clavier 4=joystick, 5=desassembleur
+#define DIALOG_NOTHING 0
+#define DIALOG_MESSAGE 1
+#define DIALOG_OPTIONS 2
+#define DIALOG_KEYBOARD 3
+#define DIALOG_JOYSTICK 4
+#define DIALOG_DISASM 5
+#define DIALOG_POPUPDIR 1000
+#define DIALOG_MENUBOX 1003
 
 //surface d'affichage dialogbox
 extern SDL_Surface *dialogbox;
 //surface de la barre de statut
 extern SDL_Surface *statusbar;
 //boite de dialogue affichee
-extern currentdialog dialog;
+extern int dialog;
 extern const int blanc;
 extern const int bleu;
 extern const int gris0;

@@ -211,7 +211,7 @@ SDL_Surface *dialogbox = NULL; //surface d'affichage dialogbox
 SDL_Surface *statusbar = NULL; //surface de la barre de statut
 SDL_Rect dialogrect;           //position dialogbox
 SDL_Rect popuptablerect;       //position popup table
-currentdialog dialog = DIALOG_NOTHING;
+int dialog = DIALOG_NOTHING;
 int popuptable = 0;            //pouptable inactive par defaut
 const dialogeditbox *focus = NULL;   //editbox ayant le focus
 int xmove, ymove;              //position souris dans dialogbox deplacee
@@ -697,7 +697,7 @@ static void Drawmenubox()
  Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
  rect.y += 16;
 
- dialog = 1003;
+ dialog = DIALOG_MENUBOX;
 }
 
 //Draw popup directory ////////////////////////////////////////////////////////
@@ -728,7 +728,7 @@ static void Drawpopupdirectory(int n)
   string = (dirmax == dircount) ? _(MSG_BACK_TO_FIRST) : _(MSG_NEXT);
   Drawtextbox(dialogbox, string, rect, 0, gris0, 0);
  }
- dialog = 1000 + n;
+ dialog = DIALOG_POPUPDIR + n;
 }
 
 //Traitement des clics souris dans la barre de statut ////////////////////////
@@ -820,7 +820,7 @@ static void Menuclick()
  char filename[PATH_MAX];
  filename[0] = '\0';
 
- n = dialog - 1000;
+ n = dialog - DIALOG_POPUPDIR;
 
  if(n == 3) //clic dans le menu options
  {
@@ -907,7 +907,7 @@ void Mouseclick()
  if(dialog > 0)
  if(xmouse > dialogrect.x) if(xmouse < (dialogrect.x + dialogrect.w))
  if(ymouse > dialogrect.y) if(ymouse < (dialogrect.y + dialogrect.h))
- {if(dialog > 999) Menuclick(); else Dialogclick();}
+ {if(dialog >= DIALOG_POPUPDIR) Menuclick(); else Dialogclick();}
 
  //redemarrage de l'emulation, meme si elle etait arretee
  //sinon il n'y a pas d'affichage
