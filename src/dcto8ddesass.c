@@ -26,20 +26,20 @@
 #include "dcto8dmsg.h"
 #include "dcto8dvideo.h"
 
-int startaddress;         //adresse de debut du desassemblage
-int nextaddress;          //adresse de la deuxieme instruction desassemblee
-char startaddresshexa[5]; //startaddress en chaine hexadecimale
-char string[256];
+static int startaddress;         //adresse de debut du desassemblage
+static int nextaddress;          //adresse de la deuxieme instruction desassemblee
+static char startaddresshexa[5]; //startaddress en chaine hexadecimale
+static char string[256];
 
 #define DESASSBUTTON_MAX 3   //nombre de boutons boite de dialogue desass
-const dialogbutton desassbutton[DESASSBUTTON_MAX] = {
+static const dialogbutton desassbutton[DESASSBUTTON_MAX] = {
 {55, 28, 14},  //0x08 desassembler
 {135, 28, 15}, //0x09 + 1
 {170, 28, 10}  //0x09 + 10
 };
 
 #define DESASSEDITBOX_MAX 1   //nombre d'editboxes boite de dialogue desass
-const dialogeditbox desasseditbox[DESASSEDITBOX_MAX] = {
+static const dialogeditbox desasseditbox[DESASSEDITBOX_MAX] = {
 {10, 30, 38, 15, startaddresshexa}, //0x00 debut
 };
 

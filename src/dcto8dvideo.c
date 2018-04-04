@@ -28,30 +28,29 @@
 #include "dcto8doptions.h"
 #include "dcto8dinterface.h"
 
-// global variables //////////////////////////////////////////////////////////
-SDL_Window *window = NULL;     //fenetre d'affichage de l'ecran
-SDL_Renderer *renderer = NULL;
-SDL_Texture *texture = NULL;   //texture mise à jour a partir de screen
-SDL_Surface *screen = NULL;    //surface d'affichage de l'ecran
-int xmouse;                    //abscisse souris dans fenetre utilisateur
-int ymouse;                    //ordonnee souris dans fenetre utilisateur
-struct pix {char b, g, r, a;}; //structure pixel BGRA
-struct pix pcolor[20][8];      //couleurs BGRA de la palette (pour 8 pixels)
-int currentvideomemory;        //index octet courant en memoire video thomson
-int currentlinesegment;        //numero de l'octet courant dans la ligne video
-int *pcurrentpixel;            //pointeur ecran : pixel courant
-int *pcurrentline;             //pointeur ecran : debut ligne courante
-int *pmin;                     //pointeur ecran : premier pixel
-int *pmax;                     //pointeur ecran : dernier pixel + 1
-int screencount = 0;           //nbre ecrans affiches entre 2 affichages status
-int xpixel[XBITMAP + 1];       //abscisse des pixels dans la ligne
-void (*Decodevideo)();         //pointeur fonction decodage memoire video
-bool is_fullscreen = false;    //true when emulator runs in fullscreen
+struct pix {char b, g, r, a;};        //structure pixel BGRA
 
-//definition des intensites pour correction gamma anciennes valeurs dcmoto
-//const int g[16]={0,60,90,110,130,148,165,180,193,205,215,225,230,235,240,255};
+// global variables //////////////////////////////////////////////////////////
+static SDL_Window *window = NULL;     //fenetre d'affichage de l'ecran
+static SDL_Renderer *renderer = NULL;
+static SDL_Texture *texture = NULL;   //texture mise à jour a partir de screen
+SDL_Surface *screen = NULL;           //surface d'affichage de l'ecran
+int xmouse;                           //abscisse souris dans fenetre utilisateur
+int ymouse;                           //ordonnee souris dans fenetre utilisateur
+static struct pix pcolor[20][8];      //couleurs BGRA de la palette (pour 8 pixels)
+static int currentvideomemory;        //index octet courant en memoire video thomson
+static int currentlinesegment;        //numero de l'octet courant dans la ligne video
+static int *pcurrentpixel;            //pointeur ecran : pixel courant
+static int *pcurrentline;             //pointeur ecran : debut ligne courante
+static int *pmin;                     //pointeur ecran : premier pixel
+static int *pmax;                     //pointeur ecran : dernier pixel + 1
+static int screencount = 0;           //nbre ecrans affiches entre 2 affichages status
+static int xpixel[XBITMAP + 1];       //abscisse des pixels dans la ligne
+void (*Decodevideo)();                //pointeur fonction decodage memoire video
+static bool is_fullscreen = false;    //true when emulator runs in fullscreen
+
 //definition des intensites pour correction gamma de la datasheet EF9369
-int intens[16]={80,118,128,136,142,147,152,156,160,163,166,169,172,175,178,180};
+static const int intens[16]={80,118,128,136,142,147,152,156,160,163,166,169,172,175,178,180};
 
 // Modification de la palette ////////////////////////////////////////////////
 void Palette(int n, int r, int v, int b)
@@ -67,7 +66,7 @@ void Palette(int n, int r, int v, int b)
 }
 
 // Mise à jour de la fenetre graphique ///////////////////////////////////////
-void Render()
+static void Render()
 {
  SDL_UpdateTexture(texture, NULL, screen->pixels, screen->pitch);
  SDL_RenderClear(renderer);
@@ -167,7 +166,7 @@ void Decode640x2()
 }
 
 // Creation d'un segment de bordure ///////////////////////////////////////////
-void Displayborder()
+static void Displayborder()
 {
  int k;
  void *c;
@@ -222,7 +221,7 @@ void Nextline()
 }
 
 // Conserve le rapport largeur/hauteur de l'écran /////////////////////////////
-void KeepAspectRatio(int *x, int *y)
+static void KeepAspectRatio(int *x, int *y)
 {
  float expectedAspectRatio = (float)XBITMAP/(float)(2*YBITMAP);
  float aspectRatio = (float)*x/(float)*y;

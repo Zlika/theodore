@@ -37,12 +37,12 @@
 #define TEXT_MAXLENGTH 256
 
 //variables globales
-int lastkeycode;       //keycode derniere touche enfoncee
-int lastkeysym;        //keysym derniere touche enfoncee
+static int lastkeycode;       //keycode derniere touche enfoncee
+static int lastkeysym;        //keysym derniere touche enfoncee
 
 //scancode du clavier pour chaque touche du TO8
 //(+ 0x40 pour les touches du pave numerique pour les distinguer des autres)
-int pckeycode[KEYBOARDKEY_MAX]=
+static int pckeycode[KEYBOARDKEY_MAX]=
 {
 0x3b, //0x00 F2
 0x23, //0x01 6
@@ -132,7 +132,7 @@ int pckeycode[KEYBOARDKEY_MAX]=
 
 //scancode du clavier pour chaque fonction des manettes du T08
 //(+ 0x40 pour les touches du pave numerique pour les distinguer des autres)
-int pcjoycode[JOYSTICKKEY_MAX]=
+static int pcjoycode[JOYSTICKKEY_MAX]=
 {
  0x9d, //0 manette 0 HAUT
  0x9a, //1 manette 0 BAS
@@ -147,7 +147,7 @@ int pcjoycode[JOYSTICKKEY_MAX]=
 };
 
 #define KEYBOARDBUTTON_MAX 86 //nombre de boutons boite de dialogue clavier
-const dialogbutton keyboardbutton[KEYBOARDBUTTON_MAX] = {
+static const dialogbutton keyboardbutton[KEYBOARDBUTTON_MAX] = {
 { 48,  30, 20}, //0x00 "F7  F2",
 {172,  60, 21}, //0x01 " _ 6",
 {184,  86, 22}, //0x02 "  Y",
@@ -237,7 +237,7 @@ const dialogbutton keyboardbutton[KEYBOARDBUTTON_MAX] = {
 };
 
 #define JOYSTICKBUTTON_MAX 12 //nombre de boutons boite de dialogue manettes
-const dialogbutton joystickbutton[JOYSTICKBUTTON_MAX] = {
+static const dialogbutton joystickbutton[JOYSTICKBUTTON_MAX] = {
 {135,  30, 24}, //0x00 "[0] haut",
 {135,  80, 81}, //0x01 "[0] bas",
 {110,  55, 33}, //0x02 "[0] gauche",

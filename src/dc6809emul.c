@@ -25,38 +25,38 @@ char (*Mgetc)(unsigned short a);
 void (*Mputc)(unsigned short a, char c);
 
 //global variables
-int dc6809_cycles; //additional cycles
-int dc6809_sync;   //synchronisation flag
+static int dc6809_cycles; //additional cycles
+static int dc6809_sync;   //synchronisation flag
 int dc6809_irq;    //irq trigger  (0=inactif)
-int dc6809_firq;   //firq trigger (0=inactif)
-int dc6809_nmi;    //nmi trigger  (0=inactif)
-short dc6809_w;    //dc6809 work register
+static int dc6809_firq;   //firq trigger (0=inactif)
+static int dc6809_nmi;    //nmi trigger  (0=inactif)
+static short dc6809_w;    //dc6809 work register
 
 //6809 registers
 char  dc6809_cc;   //condition code
-short dc6809_pc;   //program counter
-short dc6809_d;    //D register
+static short dc6809_pc;   //program counter
+static short dc6809_d;    //D register
 short dc6809_x;    //X register
 short dc6809_y;    //Y register
-short dc6809_u;    //U register
-short dc6809_s;    //S register
-short dc6809_da;   //direct address (DP register = high byte of direct address)
+static short dc6809_u;    //U register
+static short dc6809_s;    //S register
+static short dc6809_da;   //direct address (DP register = high byte of direct address)
 
 //pointers to register bytes
 char *dc6809_a;    //pointer to A register
 char *dc6809_b;    //pointer to B register
-char *dc6809_dp;   //pointer to DP register
-char *dc6809_dd;   //pointer to direct address low byte
-char *dc6809_pch;  //pointer to PC low byte
-char *dc6809_pcl;  //pointer to PC high byte
-char *dc6809_xh;   //pointer to X low byte
-char *dc6809_xl;   //pointer to X high byte
-char *dc6809_yh;   //pointer to Y low byte
-char *dc6809_yl;   //pointer to Y high byte
-char *dc6809_uh;   //pointer to U low byte
-char *dc6809_ul;   //pointer to U high byte
-char *dc6809_sh;   //pointer to S low byte
-char *dc6809_sl;   //pointer to S high byte
+static char *dc6809_dp;   //pointer to DP register
+static char *dc6809_dd;   //pointer to direct address low byte
+static char *dc6809_pch;  //pointer to PC low byte
+static char *dc6809_pcl;  //pointer to PC high byte
+static char *dc6809_xh;   //pointer to X low byte
+static char *dc6809_xl;   //pointer to X high byte
+static char *dc6809_yh;   //pointer to Y low byte
+static char *dc6809_yl;   //pointer to Y high byte
+static char *dc6809_uh;   //pointer to U low byte
+static char *dc6809_ul;   //pointer to U high byte
+static char *dc6809_sh;   //pointer to S low byte
+static char *dc6809_sl;   //pointer to S high byte
 
 //aliases
 #define AP   dc6809_a
@@ -136,6 +136,10 @@ N BL BMI     ZC BHI BLS     NV BGE BLT     001 no  yes
 #define DIRECT *dc6809_dd=GETC(dc6809_pc);dc6809_pc++
 #define EXTENDED dc6809_w=GETW(dc6809_pc);dc6809_pc+=2
 #define SET_Z if(dc6809_w)dc6809_cc&=0xfb;else dc6809_cc|=0x04
+
+// Fonctions d'acces memoire
+short Mgetw(unsigned short a) {return (Mgetc(a) << 8 | (Mgetc(a+1) & 0xff));}
+void Mputw(unsigned short a, short w) {Mputc(a, w >> 8); Mputc(++a, w);}
 
 // Processor reset ///////////////////////////////////////////////////////////
 void Reset6809()

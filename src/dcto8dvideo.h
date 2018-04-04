@@ -37,10 +37,29 @@ extern int xmouse;
 //ordonnee souris dans fenetre utilisateur
 extern int ymouse;
 
+//pointeur fonction decodage memoire video
+extern void (*Decodevideo)();
+
 // Resize screen
 void Resizescreen(int x, int y);
 //Display screen
 void Displayscreen();
+// Creation d'un segment de ligne d'ecran
+void Displaysegment();
+// Changement de ligne ecran
+void Nextline();
+// Modification de la palette
+void Palette(int n, int r, int v, int b);
+// Decodage octet video mode 320x16 standard
+void Decode320x16();
+// Decodage octet video mode bitmap4 320x200 4 couleurs
+void Decode320x4();
+// Decodage octet video mode bitmap4 special 320x200 4 couleurs
+void Decode320x4special();
+// Decodage octet video mode bitmap16 160x200 16 couleurs
+void Decode160x16();
+// Decodage octet video mode 640x200 2 couleurs
+void Decode640x2();
 // Switch between fullscreen and windowed modes
 void SwitchFullScreenMode();
 // Returns true if fullscreen mode is enabled, false otherwise

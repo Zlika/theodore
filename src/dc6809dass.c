@@ -22,16 +22,16 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "dcto8demulation.h"
+#include "dc6809emul.h"
 
 #define GETBYTE i=Mgetc(pc)&0x00ff;pc+=1;sprintf(w,"%02X",i);strcat(hexa,w)
 #define GETWORD i=Mgetw(pc)&0xffff;pc+=2;sprintf(w,"%04X",i);strcat(hexa,w)
 
-int n;          //nombre de cycles
-int pc;         //adresse desassemblage
-char w[10];     //zone de travail
-char hexa[20];  //adresse et dump hexa
-char param[20]; //parametres
+static int n;          //nombre de cycles
+static int pc;         //adresse desassemblage
+static char w[10];     //zone de travail
+static char hexa[20];  //adresse et dump hexa
+static char param[20]; //parametres
 
 //type d'instruction
 #define INV   0x0000 //invalide
@@ -195,7 +195,7 @@ char param[20]; //parametres
 #define SWI3  0x920000
 #define SYNC  0x930000
 
-char mnemonique[152][6]={
+static char mnemonique[152][6]={
 /* *********** 8-Bit Accumulator and Memory Instructions ********** */
 /*00*/ "???",  "ADCA", "ADCB", "ADDA", "ADDB", "ANDA", "ANDB", "ASL",
 /*08*/ "ASLA", "ASLB", "ASR",  "ASRA", "ASRB", "BITA", "BITB", "CLR",
@@ -226,7 +226,7 @@ char mnemonique[152][6]={
 //- mmOOOO = index mnemonique
 //-   tt00 = type d'instruction
 //-     nn = nombre de cycles
-int instruction[0x300]=
+static int instruction[0x300]=
 {
 /*0000*/ NEG   | DIR  |  6,
 /*0001*/ BRN   | REL1 |  3,

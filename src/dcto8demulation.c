@@ -28,63 +28,54 @@
 #include "dcto8doptions.h"
 #include "to8dbasic.h"
 #include "to8dmoniteur.h"
+#include "dcto8dvideo.h"
 
 // memory
 char car[0x10000];   //espace cartouche 4x16K
 char ram[0x80000];   //ram 512K
 char port[0x40];     //ports d'entree/sortie
-char x7da[32];       //stockage de la palette de couleurs
+static char x7da[32];       //stockage de la palette de couleurs
 // pointers
 char *pagevideo;     //pointeur page video affichee
-char *ramvideo;      //pointeur couleurs ou formes
-char *ramuser;       //pointeur ram utilisateur fixe
-char *rambank;       //pointeur banque ram utilisateur
-char *romsys;        //pointeur rom systeme
-char *rombank;       //pointeur banque rom ou cartouche
+static char *ramvideo;      //pointeur couleurs ou formes
+static char *ramuser;       //pointeur ram utilisateur fixe
+static char *rambank;       //pointeur banque ram utilisateur
+static char *romsys;        //pointeur rom systeme
+static char *rombank;       //pointeur banque rom ou cartouche
 //banques
-int nvideopage;      //numero page video (00-01)
-int nvideobank;      //numero banque video (00-03)
-int nrambank;        //numero banque ram (00-1f)
-int nrombank;        //numero banque rom (00-07)
-int nsystbank;       //numero banque systeme (00-01)
-int nctrlbank;       //numero banque controleur (00-03)
+static int nvideopage;      //numero page video (00-01)
+static int nvideobank;      //numero banque video (00-03)
+static int nrambank;        //numero banque ram (00-1f)
+static int nrombank;        //numero banque rom (00-07)
+static int nsystbank;       //numero banque systeme (00-01)
+static int nctrlbank;       //numero banque controleur (00-03)
 //flags cartouche
 int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
 int carflags;        //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
 //keyboard, joysticks, mouse
 int touche[KEYBOARDKEY_MAX]; //etat touches to8d
-int capslock;        //1=capslock, 0 sinon
-int joysposition;    //position des manches
-int joysaction;      //position des boutons d'action
+static int capslock;        //1=capslock, 0 sinon
+static int joysposition;    //position des manches
+static int joysaction;      //position des boutons d'action
 int xpen, ypen;      //lightpen coordinates
 int penbutton;       //lightpen button state
 //affichage
 int videolinecycle;  //compteur ligne (0-63)
 int videolinenumber; //numero de ligne video affichee (0-311)
-int vblnumber;       //compteur du nombre de vbl avant affichage
-int displayflag;     //indicateur pour l'affichage
+static int vblnumber;       //compteur du nombre de vbl avant affichage
+static int displayflag;     //indicateur pour l'affichage
 int bordercolor;     //couleur de la bordure de l'écran
 //divers
 int sound;           //niveau du haut-parleur
 int mute;            // mute flag
-int timer6846;       //compteur du timer 6846
-int latch6846;       //registre latch du timer 6846
-int keyb_irqcount;   //nombre de cycles avant la fin de l'irq clavier
-int timer_irqcount;  //nombre de cycles avant la fin de l'irq timer
+static int timer6846;       //compteur du timer 6846
+static int latch6846;       //registre latch du timer 6846
+static int keyb_irqcount;   //nombre de cycles avant la fin de l'irq clavier
+static int timer_irqcount;  //nombre de cycles avant la fin de l'irq timer
 
-//Acces memoire
-char Mgetto8d(unsigned short a);
-void Mputto8d(unsigned short a, char c);
-short Mgetw(unsigned short a) {return (Mgetc(a) << 8 | (Mgetc(a+1) & 0xff));}
-void Mputw(unsigned short a, short w) {Mputc(a, w >> 8); Mputc(++a, w);}
-
-//affichage
-void (*Decodevideo)();     //pointeur fonction courante
-void Decode320x16();       //standard TO
-void Decode320x4();        //bitmap4
-void Decode320x4special(); //bitmap4 special
-void Decode160x16();       //bitmap16
-void Decode640x2();        //80 colonnes
+//Forward declarations
+static char Mgetto8d(unsigned short a);
+static void Mputto8d(unsigned short a, char c);
 
 // Registres du 6846 //////////////////////////////////////////////////////////
 /*
@@ -244,7 +235,6 @@ static void TO8videomode(char c)
 static void Palettecolor(char c)
 {
  int i = port[0x1b];
- void Palette(int n, int r, int v, int b);
  x7da[i] = c;
  port[0x1b] = (port[0x1b] + 1) & 0x1f;
  if((i & 1))
@@ -405,9 +395,6 @@ static void Entreesortie(int io)
 int Run(int ncyclesmax)
 {
  int ncycles, opcycles;
- void Displaysegment();
- void Nextline();
- void Displayscreen();
  ncycles = 0;
  while(ncycles < ncyclesmax)
  {
@@ -461,7 +448,7 @@ int Run(int ncyclesmax)
 }
 
 // Ecriture memoire to8d /////////////////////////////////////////////////////
-void Mputto8d(unsigned short a, char c)
+static void Mputto8d(unsigned short a, char c)
 {
  switch(a >> 12)
  {
@@ -513,7 +500,7 @@ void Mputto8d(unsigned short a, char c)
 }
 
 // Lecture memoire to8d //////////////////////////////////////////////////////
-char Mgetto8d(unsigned short a)
+static char Mgetto8d(unsigned short a)
 {
  switch(a >> 12)
  {

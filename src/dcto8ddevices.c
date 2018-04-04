@@ -27,17 +27,14 @@
 #include "dcto8doptions.h"
 
 // Variables globales ////////////////////////////////////////////////////////
-FILE *ffd = NULL;   // pointeur fichier disquette
-FILE *fk7 = NULL;   // pointeur fichier k7
-FILE *fprn = NULL;  // pointeur fichier imprimante
-int k7bit = 0;      // puissance de 2 designant le bit k7 en cours
-int k7octet;        // octet de la cassette en cours de traitement
-int k7index;        // compteur du lecteur de cassette
-int k7indexmax;     // compteur du lecteur de cassette en fin de bande
-char k7name[100] = {0};   // nom du fichier cassette
-char fdname[100] = {0};   // nom du fichier disquette
-char memoname[100] = {0}; // nom du fichier cartouche
-void (*UpdateK7IndexCallback)() = NULL; // Callback appellee quand k7index est modifie
+static FILE *ffd = NULL;   // pointeur fichier disquette
+static FILE *fk7 = NULL;   // pointeur fichier k7
+static FILE *fprn = NULL;  // pointeur fichier imprimante
+static int k7bit = 0;      // puissance de 2 designant le bit k7 en cours
+static int k7octet;        // octet de la cassette en cours de traitement
+static int k7index;        // compteur du lecteur de cassette
+static int k7indexmax;     // compteur du lecteur de cassette en fin de bande
+static void (*UpdateK7IndexCallback)() = NULL; // Callback appellee quand k7index est modifie
 
 //6809 registers
 #define CC dc6809_cc
@@ -45,7 +42,6 @@ void (*UpdateK7IndexCallback)() = NULL; // Callback appellee quand k7index est m
 #define B *dc6809_b
 #define X dc6809_x
 #define Y dc6809_y
-#define S dc6809_s
 
 // Emulation imprimante //////////////////////////////////////////////////////
 void Imprime()

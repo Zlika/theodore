@@ -28,8 +28,8 @@
 #define OPTION_FILE_ID "dcto8dini-01"
 
 Options options;
-char default_keycode[256] = { 0 };
-char default_joycode[256] = { 0 };
+static char default_keycode[256] = { 0 };
+static char default_joycode[256] = { 0 };
 
 // Initialize default values for to8dkeycode and to8djoycode ////////
 void Initoptions(char defaultto8dkeycode[256], char defaultto8djoycode[256])

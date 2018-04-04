@@ -26,11 +26,6 @@
 // nombre de touches du clavier TO8D
 #define KEYBOARDKEY_MAX 84
 
-// pointer to function to read 1 byte from address
-extern char (*Mgetc)(unsigned short);
-// function to read 2 bytes from address
-extern short Mgetw(unsigned short a);
-
 // memory
 //espace cartouche 4x16K
 extern char car[0x10000];

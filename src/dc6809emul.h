@@ -27,6 +27,11 @@
 extern char (*Mgetc)(unsigned short a);
 extern void (*Mputc)(unsigned short a, char c);
 
+// function to read 2 bytes from address
+extern short Mgetw(unsigned short a);
+// function to write 2 bytes at an address
+extern void Mputw(unsigned short a, short w);
+
 //6809 registers
 //condition code
 extern char  dc6809_cc;

@@ -43,23 +43,23 @@
 
 //masques et couleurs
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-const int rmask = 0xff000000, gmask = 0x00ff0000;
-const int bmask = 0x0000ff00, amask = 0x000000ff;
-const int blanc = 0xffffffff, noir  = 0x000000ff;
-const int bleu  = 0x306090ff, grist = 0xe0e0e0e4;
+static const int rmask = 0xff000000, gmask = 0x00ff0000;
+static const int bmask = 0x0000ff00, amask = 0x000000ff;
+const int blanc = 0xffffffff;
+static const int noir  = 0x000000ff;
+const int bleu  = 0x306090ff;
 const int gris0 = 0xe0e0e0ff;
-const int gris1 = 0xd0d0d0ff;
-const int gris2 = 0x808080ff;
-const int gris3 = 0x606060ff;
+static const int gris1 = 0xd0d0d0ff;
+static const int gris2 = 0x808080ff;
 #else
-const int rmask = 0x000000ff, gmask = 0x0000ff00;
-const int bmask = 0x00ff0000, amask = 0xff000000;
-const int blanc = 0xffffffff, noir  = 0xff000000;
-const int bleu  = 0xff906030, grist = 0xe4e0e0e0;
+static const int rmask = 0x000000ff, gmask = 0x0000ff00;
+static const int bmask = 0x00ff0000, amask = 0xff000000;
+const int blanc = 0xffffffff;
+static const int noir  = 0xff000000;
+const int bleu  = 0xff906030;
 const int gris0 = 0xffe0e0e0;
-const int gris1 = 0xffd0d0d0;
-const int gris2 = 0xff808080;
-const int gris3 = 0xff606060;
+static const int gris1 = 0xffd0d0d0;
+static const int gris2 = 0xff808080;
 #endif
 
 //definition des boutons
@@ -170,7 +170,7 @@ button bouton[BOUTON_MAX] = {
 {"CNT",       26,  24}  //0x53
 };
 
-int fontw[] = {                                    //largeur des caracteres
+static int fontw[] = {                                    //largeur des caracteres
  0,10, 7, 7,12,12, 4, 4,10,13,13, 0, 0, 0, 0, 0,   //croix et fleches
  6, 6, 6, 6, 6, 6, 4, 4, 6, 6, 6, 6, 4, 0, 0, 0,   //lettres accentuees & degre
  3, 3, 5, 7, 6, 8, 6, 2, 3, 3, 6, 6, 3, 4, 3, 5,
@@ -180,10 +180,10 @@ int fontw[] = {                                    //largeur des caracteres
  3, 6, 6, 6, 6, 6, 3, 6, 6, 2, 2, 6, 2, 8, 6, 6,
  6, 6, 3, 5, 3, 6, 6, 8, 5, 5, 5, 4, 2, 4, 7, 2};
 
-const dialogbutton closebutton = {-21, 5, 0};
+static const dialogbutton closebutton = {-21, 5, 0};
 
 #define STATUSBUTTON_MAX 5    //nombre de boutons de la barre de statut
-const dialogbutton statusbutton[STATUSBUTTON_MAX] = {
+static const dialogbutton statusbutton[STATUSBUTTON_MAX] = {
 { 56,  2, 11}, //0x00 "k7",
 {186,  2, 12}, //0x01 "fd",
 {316,  2, 13}, //0x02 "memo",
@@ -192,7 +192,7 @@ const dialogbutton statusbutton[STATUSBUTTON_MAX] = {
 };
 
 #define OPTIONBUTTON_MAX 8   //nombre de boutons boite de dialogue options
-const dialogbutton optionbutton[OPTIONBUTTON_MAX] = {
+static const dialogbutton optionbutton[OPTIONBUTTON_MAX] = {
 {108,  32,  3}, //langue
 {108,  52,  3}, //zoom
 {108,  72,  3}, //processeur
@@ -203,33 +203,33 @@ const dialogbutton optionbutton[OPTIONBUTTON_MAX] = {
 { 10, 180, 18}  //valeurs par defaut
 };
 
-SDL_Surface *buttonup[BOUTON_MAX][LANGUAGE_MAX];
-SDL_Surface *buttondown[BOUTON_MAX][LANGUAGE_MAX];
-SDL_Surface *fontsurface[2];   //0=noir 1=blanc
-SDL_Surface *textbox = NULL;   //surface d'affichage de texte
+static SDL_Surface *buttonup[BOUTON_MAX][LANGUAGE_MAX];
+static SDL_Surface *buttondown[BOUTON_MAX][LANGUAGE_MAX];
+static SDL_Surface *fontsurface[2];   //0=noir 1=blanc
+static SDL_Surface *textbox = NULL;   //surface d'affichage de texte
 SDL_Surface *dialogbox = NULL; //surface d'affichage dialogbox
 SDL_Surface *statusbar = NULL; //surface de la barre de statut
 SDL_Rect dialogrect;           //position dialogbox
-SDL_Rect popuptablerect;       //position popup table
+static SDL_Rect popuptablerect;       //position popup table
 int dialog = DIALOG_NOTHING;
 int popuptable = 0;            //pouptable inactive par defaut
 const dialogeditbox *focus = NULL;   //editbox ayant le focus
 int xmove, ymove;              //position souris dans dialogbox deplacee
-int dircount;                  //nombre de fichiers dans le repertoire
-int dirmin, dirmax;            //plage de numeros de fichiers affiches
+static int dircount;                  //nombre de fichiers dans le repertoire
+static int dirmin, dirmax;            //plage de numeros de fichiers affiches
 int blink = -1;                //flag de clignotement du curseur
 int xcursor = 0;               //position du curseur dans la chaine de caracteres
-char dirlist[DIRLIST_NMAX][DIRLIST_LENGTH]; //liste des fichiers du repertoire
+static char dirlist[DIRLIST_NMAX][DIRLIST_LENGTH]; //liste des fichiers du repertoire
 const char *popuptabletext[POPUPTABLE_NMAX];  //pointeur vers lignes de la popup table
-char path[3][PATH_MAX];   //repertoires des fichiers k7, fd, memo
-char k7name[100];               // nom du fichier cassette
-char fdname[100];               // nom du fichier disquette
-char memoname[100];             // nom du fichier cartouche
-char* devnames[] = { k7name, fdname, memoname };
+static char path[3][PATH_MAX];   //repertoires des fichiers k7, fd, memo
+static char k7name[100] = { '\0' };       // nom du fichier cassette
+static char fdname[100] = { '\0' };       // nom du fichier disquette
+static char memoname[100] = { '\0' };     // nom du fichier cartouche
+static char* devnames[] = { k7name, fdname, memoname };
 // pointeurs fonctions de chargement de fichier
-void (*LoadFunc[3])(char *filename) = { Loadk7, Loadfd, Loadmemo };
+static void (*LoadFunc[3])(char *filename) = { Loadk7, Loadfd, Loadmemo };
 // pointeurs fonctions de déchargement
-void (*UnloadFunc[3])() = { Unloadk7, Unloadfd, Unloadmemo };
+static void (*UnloadFunc[3])() = { Unloadk7, Unloadfd, Unloadmemo };
 int pause6809;                  //processor pause state
 
 static void Optionclick();

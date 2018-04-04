@@ -33,10 +33,10 @@
 #define OPTIONS_FILENAME "dcto8d.ini"
 
 // global variables //////////////////////////////////////////////////////////
-SDL_AudioSpec audio;
-int report;           //nombre de milliemes de cycle a reporter
+static SDL_AudioSpec audio;
+static int report;           //nombre de milliemes de cycle a reporter
 
-unsigned char cursor[] = {
+static unsigned char cursor[] = {
  128,0,192,0,160,0,144,0,136,0,132,0,130,0,129,0,128,128,128,64,128,32,129,240,
  137,0,152,128,164,128,196,64,130,64,2,32,1,32,1,16,0,176,0,192,0,0,0,0,128,0,
  192,0,224,0,240,0,248,0,252,0,254,0,255,0,255,128,255,192,255,224,255,240,255,
