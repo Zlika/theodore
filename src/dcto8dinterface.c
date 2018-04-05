@@ -227,7 +227,7 @@ static char fdname[100] = { '\0' };       // nom du fichier disquette
 static char memoname[100] = { '\0' };     // nom du fichier cartouche
 static char* devnames[] = { k7name, fdname, memoname };
 // pointeurs fonctions de chargement de fichier
-static void (*LoadFunc[3])(char *filename) = { Loadk7, Loadfd, Loadmemo };
+static void (*LoadFunc[3])(const char *filename) = { Loadk7, Loadfd, Loadmemo };
 // pointeurs fonctions de déchargement
 static void (*UnloadFunc[3])() = { Unloadk7, Unloadfd, Unloadmemo };
 int pause6809;                  //processor pause state

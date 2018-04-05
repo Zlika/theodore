@@ -133,7 +133,7 @@ void Unloadfd()
 }
 
 // Chargement d'un fichier fd /////////////////////////////////////////////////
-void Loadfd(char *filename)
+void Loadfd(const char *filename)
 {
  //fermeture disquette eventuellement ouverte
  Unloadfd();
@@ -177,7 +177,7 @@ void Unloadk7()
  if(fk7) {fclose(fk7); fk7 = NULL;}
 }
 
-void Loadk7(char *filename)
+void Loadk7(const char *filename)
 {
  Unloadk7(); //fermeture cassette eventuellement ouverte
  if(filename[0] == '\0') return;
@@ -197,7 +197,7 @@ void Unloadmemo()
 }
 
 // Emulation cartouche memo7 /////////////////////////////////////////////////
-void Loadmemo(char *filename)
+void Loadmemo(const char *filename)
 {
  FILE *fp = NULL;
  int i, c, carsize;
@@ -213,23 +213,6 @@ void Loadmemo(char *filename)
  if(carsize > 0x4000) cartype = 1;   //bank switch system
  carflags = 4; //cartridge enabled, write disabled, bank 0;
  Initprog();   //initialisation pour lancer la cartouche
-}
-
-// Chargement d'un fichier k7, fd ou memo7////////////////////////////////////
-void Load(char *filename)
-{
- if(strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".k7"))
- {
-  Loadk7(filename);
- }
- else if(strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".fd"))
- {
-  Loadfd(filename);
- }
- else if(strlen(filename) > 4 && !strcmp(filename + strlen(filename) - 4, ".rom"))
- {
-  Loadmemo(filename);
- }
 }
 
 void PrintK7Index(char *index)

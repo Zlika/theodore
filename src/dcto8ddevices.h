@@ -32,9 +32,9 @@ void Imprime();
 void Readmousebutton();
 void Readpenxy(int device);
 
-void Loadk7(char *filename);
-void Loadfd(char *filename);
-void Loadmemo(char *filename);
+void Loadk7(const char *filename);
+void Loadfd(const char *filename);
+void Loadmemo(const char *filename);
 void Unloadk7();
 void Unloadfd();
 void Unloadmemo();

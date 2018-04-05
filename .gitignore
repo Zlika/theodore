@@ -6,13 +6,21 @@ config.h.in
 config.log
 config.status
 configure
+libtool
 Makefile
 Makefile.in
 stamp-h1
 
 /src/.deps
 /src/.dirstamp
+/src/.libs
 /src/*.o
+/src/*.lo
+
+/libretro/.deps
+/libretro/.libs
+/libretro/*.la
+/libretro/*.lo
 
 .autotools
 .cproject
@@ -21,3 +29,5 @@ stamp-h1
 
 dcto8d
 dcto8d.ini
+
+*~
