@@ -25,14 +25,20 @@
 
 // nombre de touches du clavier TO8D
 #define KEYBOARDKEY_MAX 84
+// Size of cartridge memory space (4x16K)
+#define CARTRIDGE_MEM_SIZE 0x10000
+// Size of RAM (512K)
+#define RAM_SIZE 0x80000
+// Size of I/O ports space
+#define IO_MEM_SIZE 0x40
 
 // memory
 //espace cartouche 4x16K
-extern char car[0x10000];
+extern char car[];
 //ram 512K
-extern char ram[0x80000];
+extern char ram[];
 //ports d'entree/sortie
-extern char port[0x40];
+extern char port[];
 
 //flags cartouche
 //type de cartouche (0=simple 1=switch bank, 2=os-9)

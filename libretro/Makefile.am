@@ -1,29 +1,17 @@
-AM_CFLAGS = -shared -pedantic -Wall -Wno-overflow -std=c99 -O2 -fsigned-char -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2 $(STACKPROTECT_FLAG) -fPIC
+AM_CFLAGS = -D__LIBRETRO__ -shared -pedantic -Wall -Wno-overflow -std=c99 -O2 -fsigned-char -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2 $(STACKPROTECT_FLAG) -fPIC
 AM_LDFLAGS = $(LINKER_HARDENING_FLAGS)
 dcto8d_libretro_la_CFLAGS = $(SDL2_CFLAGS) -Ilibretro-common/include $(AM_CFLAGS)
 dcto8d_libretro_la_LDFLAGS = $(SDL2_LIBS) $(AM_LDFLAGS) -module -avoid-version -shared -no-undefined -version-script=link.T
 
 lib_LTLIBRARIES = dcto8d_libretro.la
-dcto8d_libretro_la_SOURCES = ../src/dc6809dass.c \
-				 ../src/dc6809dass.h \
+dcto8d_libretro_la_SOURCES = \
 				 ../src/dc6809emul.c \
 				 ../src/dc6809emul.h \
-				 ../src/dcto8ddesass.c \
-				 ../src/dcto8ddesass.h \
 				 ../src/dcto8ddevices.c \
 				 ../src/dcto8ddevices.h \
 				 ../src/dcto8demulation.c \
 				 ../src/dcto8demulation.h \
-				 ../src/dcto8dfont.h \
 				 ../src/dcto8dglobal.h \
-				 ../src/dcto8dicon.h \
-				 ../src/dcto8dinterface.c \
-				 ../src/dcto8dinterface.h \
-				 ../src/dcto8dkeyb.c \
-				 ../src/dcto8dkeyb.h \
-				 ../src/dcto8dmain.c \
-				 ../src/dcto8dmsg.c \
-				 ../src/dcto8dmsg.h \
 				 ../src/dcto8doptions.c \
 				 ../src/dcto8doptions.h \
 				 ../src/dcto8dvideo.c \

@@ -16,33 +16,41 @@
 #include <string.h>
 #include "libretro.h"
 #include "../config.h"
+#include "../src/dc6809emul.h"
 #include "../src/dcto8dglobal.h"
 #include "../src/dcto8ddevices.h"
 #include "../src/dcto8demulation.h"
+#include "../src/dcto8dvideo.h"
+#include "../src/dcto8doptions.h"
 
 #define MAX_CONTROLLERS 2
 
-static retro_log_printf_t log_cb;
-static retro_environment_t environ_cb;
-static retro_video_refresh_t video_cb;
-static retro_audio_sample_t audio_cb;
-static retro_audio_sample_batch_t audio_batch_cb;
-static retro_input_poll_t input_poll_cb;
-static retro_input_state_t input_state_cb;
+static retro_log_printf_t log_cb = NULL;
+static retro_environment_t environ_cb = NULL;
+static retro_video_refresh_t video_cb = NULL;
+static retro_audio_sample_t audio_cb = NULL;
+static retro_audio_sample_batch_t audio_batch_cb = NULL;
+static retro_input_poll_t input_poll_cb = NULL;
+static retro_input_state_t input_state_cb = NULL;
 
 static unsigned int input_type[MAX_CONTROLLERS];
+static uint32_t *video_buffer = NULL;
 
 void retro_set_environment(retro_environment_t env)
 {
-  environ_cb = env;
+  // Emulator can be started without loading a game
+  bool no_rom = true;
+  env(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
 
+  // Emulator's preferences
   static const struct retro_variable vars[] = {
-      { PACKAGE_NAME"_overclock", "CPU speed; 1x|0.5x|2x" },
       { PACKAGE_NAME"_fd_write", "Floppy write protection; enabled|disabled" },
       { PACKAGE_NAME"_k7_write", "Tape write protection; enabled|disabled" },
       { NULL, NULL }
   };
   env(RETRO_ENVIRONMENT_SET_VARIABLES, (void *) vars);
+
+  environ_cb = env;
 }
 
 void retro_set_video_refresh(retro_video_refresh_t video_refresh)
@@ -83,10 +91,21 @@ void retro_init(void)
     log_cb = NULL;
   }
   environ_cb(RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL, &level);
+
+  Init6809();
+  log_cb(RETRO_LOG_INFO, "Init6809 ok\n");
+  Hardreset();
+  log_cb(RETRO_LOG_INFO, "Hardreset ok\n");
+  video_buffer = CreateLibRetroVideoBuffer();
+  log_cb(RETRO_LOG_INFO, "Video buffer ok\n");
 }
 
 void retro_deinit(void)
 {
+  if (video_buffer)
+  {
+    free(video_buffer);
+  }
 }
 
 unsigned retro_api_version(void)
@@ -133,7 +152,8 @@ void retro_reset(void)
 
 void retro_run(void)
 {
-
+  Run(19845);
+  video_cb(video_buffer, XBITMAP, YBITMAP * 2, sizeof(uint32_t)*XBITMAP);
 }
 
 size_t retro_serialize_size(void)
@@ -186,8 +206,33 @@ static bool load_file(const char *filename)
   return true;
 }
 
+static void check_variables(void)
+{
+  struct retro_variable var = {0};
+
+  var.key = PACKAGE_NAME"_fd_write";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    options.fdprotection = (strcmp(var.value, "enabled") == 0);
+  }
+  var.key = PACKAGE_NAME"_k7_write";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    options.k7protection = (strcmp(var.value, "enabled") == 0);
+  }
+}
+
 bool retro_load_game(const struct retro_game_info *game)
 {
+  enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
+  if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt) && log_cb)
+  {
+    log_cb(RETRO_LOG_ERROR, "XRGB8888 is not supported.\n");
+    return false;
+  }
+
+  check_variables();
+
   if (game && game->path)
   {
     if (log_cb)
@@ -197,7 +242,7 @@ bool retro_load_game(const struct retro_game_info *game)
 
     return load_file(game->path);
   }
-  return false;
+  return true;
 }
 
 bool retro_load_game_special(
@@ -221,10 +266,20 @@ unsigned retro_get_region(void)
 
 void *retro_get_memory_data(unsigned id)
 {
+  switch (id)
+  {
+    case RETRO_MEMORY_SYSTEM_RAM:
+      return ram;
+  }
   return NULL;
 }
 
 size_t retro_get_memory_size(unsigned id)
 {
+  switch (id)
+  {
+    case RETRO_MEMORY_SYSTEM_RAM:
+      return RAM_SIZE;
+  }
   return 0;
 }

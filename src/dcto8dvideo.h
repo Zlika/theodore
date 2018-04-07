@@ -38,31 +38,36 @@ extern int xmouse;
 extern int ymouse;
 
 //pointeur fonction decodage memoire video
-extern void (*Decodevideo)();
+extern void (*Decodevideo)(void);
 
-// Resize screen
-void Resizescreen(int x, int y);
 //Display screen
-void Displayscreen();
+void Displayscreen(void);
 // Creation d'un segment de ligne d'ecran
-void Displaysegment();
+void Displaysegment(void);
 // Changement de ligne ecran
-void Nextline();
+void Nextline(void);
 // Modification de la palette
 void Palette(int n, int r, int v, int b);
 // Decodage octet video mode 320x16 standard
-void Decode320x16();
+void Decode320x16(void);
 // Decodage octet video mode bitmap4 320x200 4 couleurs
-void Decode320x4();
+void Decode320x4(void);
 // Decodage octet video mode bitmap4 special 320x200 4 couleurs
-void Decode320x4special();
+void Decode320x4special(void);
 // Decodage octet video mode bitmap16 160x200 16 couleurs
-void Decode160x16();
+void Decode160x16(void);
 // Decodage octet video mode 640x200 2 couleurs
-void Decode640x2();
+void Decode640x2(void);
+
+#ifndef __LIBRETRO__
+// Resize screen
+void Resizescreen(int x, int y);
 // Switch between fullscreen and windowed modes
-void SwitchFullScreenMode();
+void SwitchFullScreenMode(void);
 // Returns true if fullscreen mode is enabled, false otherwise
-bool IsFullScreenMode();
+bool IsFullScreenMode(void);
+#else
+uint32_t* CreateLibRetroVideoBuffer(void);
+#endif
 
 #endif /* __DCTO8DVIDEO_H */

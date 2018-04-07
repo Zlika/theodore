@@ -31,9 +31,9 @@
 #include "dcto8dvideo.h"
 
 // memory
-char car[0x10000];   //espace cartouche 4x16K
-char ram[0x80000];   //ram 512K
-char port[0x40];     //ports d'entree/sortie
+char car[CARTRIDGE_MEM_SIZE]; //espace cartouche 4x16K
+char ram[RAM_SIZE];         //ram 512K
+char port[IO_MEM_SIZE];     //ports d'entree/sortie
 static char x7da[32];       //stockage de la palette de couleurs
 // pointers
 char *pagevideo;     //pointeur page video affichee
