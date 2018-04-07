@@ -27,7 +27,9 @@
 
 #define OPTION_FILE_ID "dcto8dini-01"
 
-Options options;
+Options options = { .language = 0, .xclient = XBITMAP, .yclient = 2 * YBITMAP,
+                    .frequency = 1000, .vblnumbermax = 2,
+                    .k7protection = 1, .fdprotection = 1, .keybpriority = 0 };
 static char default_keycode[256] = { 0 };
 static char default_joycode[256] = { 0 };
 

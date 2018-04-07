@@ -92,6 +92,8 @@ void retro_init(void)
   }
   environ_cb(RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL, &level);
 
+  char dummy[256] = {0};
+  Initoptions(dummy, dummy);
   Init6809();
   log_cb(RETRO_LOG_INFO, "Init6809 ok\n");
   Hardreset();
