@@ -374,8 +374,12 @@ bool IsFullScreenMode(void)
 uint32_t* CreateLibRetroVideoBuffer()
 {
   uint32_t *video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * 2 * sizeof(uint32_t));
-  screen = SDL_CreateRGBSurfaceWithFormatFrom(video_buffer, XBITMAP, YBITMAP*2,
-      sizeof(uint32_t), sizeof(uint32_t)*XBITMAP, SDL_PIXELFORMAT_ARGB8888);
+  screen = SDL_CreateRGBSurfaceFrom(video_buffer, XBITMAP, YBITMAP*2,
+      sizeof(uint32_t), sizeof(uint32_t)*XBITMAP,
+      0x00FF0000,
+      0x0000FF00,
+      0x000000FF,
+      0xFF000000);
   pmin = (int*)(screen->pixels);
   pmax = pmin + XBITMAP * YBITMAP * 2;
   InitScreen();

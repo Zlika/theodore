@@ -22,5 +22,9 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install sdl2; fi
 
 before_script: autoreconf -i
-script: ./configure && make
+script:
+  - ./configure
+  - make
+  - cd libretro
+  - make
 

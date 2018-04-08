@@ -1,4 +1,4 @@
-AM_CFLAGS = --pedantic -Wall -Wno-overflow -std=c99 -O2 -fsigned-char -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2 $(STACKPROTECT_FLAG) -fPIE
+AM_CFLAGS = --pedantic -Wall -Wno-overflow -Werror-implicit-function-declaration -std=c99 -O2 -fsigned-char -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2 $(STACKPROTECT_FLAG) -fPIE
 AM_LDFLAGS = $(LINKER_HARDENING_FLAGS)
 dcto8d_CFLAGS = $(SDL2_CFLAGS) $(AM_CFLAGS)
 dcto8d_LDFLAGS = $(SDL2_LIBS) $(AM_LDFLAGS)
