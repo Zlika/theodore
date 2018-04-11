@@ -120,10 +120,11 @@ E7C7= registre temporisateur d'octet de poids faible (TLSB)
 */
 
 // Emulation du clavier TO8 ///////////////////////////////////////////////////
-void TO8key(int n)
+void TO8key(int scancode, bool down)
 {
  int i;
- if(touche[n]) //touche relachee
+ touche[scancode] = down ? 0x00 : 0x80;
+ if(touche[scancode]) //touche relachee
  {
   //s'il reste une touche enfoncee ne rien faire
   for(i = 0; i < 0x50; i++) if(touche[i] == 0) return;
@@ -132,19 +133,19 @@ void TO8key(int n)
   keyb_irqcount = 0; return;
  }
  //touche enfoncee
- if(n == 0x50) capslock = 1 - capslock; //capslock
- if(n > 0x4f) return;           //touches shift, ctrl et joysticks
+ if(scancode == 0x50) capslock = 1 - capslock; //capslock
+ if(scancode > 0x4f) return;           //touches shift, ctrl et joysticks
  i = 0;
  if(!touche[0x51]) i = 0x80; //SHIFT gauche
  if(!touche[0x52]) i = 0x80; //SHIFT droit
- if(capslock) switch(n)
+ if(capslock) switch(scancode)
  {
   case 0x02: case 0x03: case 0x07: case 0x0a: case 0x0b: case 0x0f: case 0x12:
   case 0x13: case 0x17: case 0x1a: case 0x1b: case 0x1f: case 0x22: case 0x23:
   case 0x27: case 0x2a: case 0x2b: case 0x2f: case 0x32: case 0x33: case 0x3a:
   case 0x3b: case 0x42: case 0x43: case 0x4a: case 0x4b: i = 0x80; break;
  }
- to8dmoniteur[0x30f8] = n | i;       //scancode + indicateur de touche SHIFT
+ to8dmoniteur[0x30f8] = scancode | i;       //scancode + indicateur de touche SHIFT
  to8dmoniteur[0x3125] = touche[0x53] ? 0 : 1;   //indicateur de touche CTRL
  port[0x08] |= 0x01; //bit 0 de E7C8 = 1 (touche enfoncee)
  port[0x00] |= 0x82; //bit CP1 = interruption clavier

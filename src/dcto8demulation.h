@@ -23,6 +23,8 @@
 #ifndef __DCTO8DEMULATION_H
 #define __DCTO8DEMULATION_H
 
+#include <stdbool.h>
+
 // nombre de touches du clavier TO8D
 #define KEYBOARDKEY_MAX 84
 // Size of cartridge memory space (4x16K)
@@ -46,8 +48,6 @@ extern int cartype;
 //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
 extern int carflags;
 
-//etat touches to8d
-extern int touche[];
 //lightpen coordinates
 extern int xpen, ypen;
 //lightpen button state
@@ -71,7 +71,7 @@ extern char *pagevideo;
 // Joystick emulation ////////////////////////////////////////////////////////
 void Joysemul(int i, int state);
 // Emulation du clavier TO8 ///////////////////////////////////////////////////
-void TO8key(int n);
+void TO8key(int scancode, bool down);
 // Initialisation programme de l'ordinateur emule ////////////////////////////
 void Initprog();
 // Execution n cycles processeur 6809 ////////////////////////////////////////

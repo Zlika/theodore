@@ -483,8 +483,7 @@ void Keyup(int keysym, int scancode)
  //emulation clavier
  if(ikey < KEYBOARDKEY_MAX) if((ijoy == JOYSTICKKEY_MAX) || (options.keybpriority == 1))
  {
-  touche[ikey] = 0x80;
-  TO8key(ikey);
+  TO8key(ikey, false);
   //dessin de la touche relachee
   if(dialog == DIALOG_KEYBOARD) Drawbutton(&keyboardbutton[ikey], 0);
  }
@@ -569,7 +568,7 @@ void Keydown(int sym, int scancode)
  //emulation clavier
  if(ikey < KEYBOARDKEY_MAX) if((ijoy == JOYSTICKKEY_MAX) || (options.keybpriority == 1))
  {
-  touche[ikey] = 0x00; TO8key(ikey);
+  TO8key(ikey, true);
   if(dialog == DIALOG_KEYBOARD) Drawbutton(&keyboardbutton[ikey], 1);
  }
 }

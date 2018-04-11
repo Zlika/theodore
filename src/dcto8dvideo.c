@@ -368,9 +368,7 @@ bool IsFullScreenMode(void)
 {
  return is_fullscreen;
 }
-#endif
-
-#ifdef __LIBRETRO__
+#else
 uint32_t* CreateLibRetroVideoBuffer()
 {
   uint32_t *video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * 2 * sizeof(uint32_t));

@@ -22,6 +22,7 @@
 #include "../src/dcto8demulation.h"
 #include "../src/dcto8dvideo.h"
 #include "../src/dcto8doptions.h"
+#include "keymap.h"
 
 #define MAX_CONTROLLERS 2
 
@@ -224,6 +225,50 @@ static void check_variables(void)
   }
 }
 
+static void keyboard_cb(bool down, unsigned keycode,
+    uint32_t character, uint16_t key_modifiers)
+{
+  //printf( "Down: %s, Code: %d, Char: %u, Mod: %u.\n",
+  //        down ? "yes" : "no", keycode, character, key_modifiers);
+
+  // Thomson <-> PC keyboard mapping for special keys
+  // STOP <-> TAB
+  // CNT <-> CTRL
+  // CAPSLOCK <-> CAPSLOCK
+  // ACC <-> ALT
+  // HOME <-> HOME
+  // Arrows <-> arrows
+  // INS <-> INSERT
+  // EFF <-> DEL
+  // F1-F5 <-> F1-F5
+  // F6-F10 <-> SHIFT+F1-F5
+  if (key_modifiers & RETROKMOD_SHIFT)
+  {
+    TO8key(THOMSON_LEFT_SHIFT, down);
+  }
+  if (key_modifiers & RETROKMOD_CTRL)
+  {
+    TO8key(THOMSON_CNT, down);
+  }
+  if (key_modifiers & RETROKMOD_ALT)
+  {
+    TO8key(THOMSON_ACC, down);
+  }
+  if (key_modifiers & RETROKMOD_CAPSLOCK)
+  {
+    TO8key(THOMSON_CAPSLOCK, down);
+  }
+
+  if (keycode < 320)
+  {
+    unsigned char scancode = libretroKeyCodeToThomsonScanCode[keycode];
+    if (scancode != 0xFF)
+    {
+      TO8key(scancode, down);
+    }
+  }
+}
+
 bool retro_load_game(const struct retro_game_info *game)
 {
   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
@@ -232,6 +277,9 @@ bool retro_load_game(const struct retro_game_info *game)
     log_cb(RETRO_LOG_ERROR, "XRGB8888 is not supported.\n");
     return false;
   }
+
+  struct retro_keyboard_callback cb = { keyboard_cb };
+  environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &cb);
 
   check_variables();
 
