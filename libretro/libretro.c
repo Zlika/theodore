@@ -24,7 +24,10 @@
 #include "../src/dcto8doptions.h"
 #include "keymap.h"
 
-#define MAX_CONTROLLERS 2
+#define MAX_CONTROLLERS   2
+#define VIDEO_FPS         50
+#define AUDIO_SAMPLE_RATE 22050
+#define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -36,6 +39,10 @@ static retro_input_state_t input_state_cb = NULL;
 
 static unsigned int input_type[MAX_CONTROLLERS];
 static uint32_t *video_buffer = NULL;
+static int16_t audio_buffer[AUDIO_SAMPLE_RATE / VIDEO_FPS];
+static int16_t audio_stereo_buffer[2*(AUDIO_SAMPLE_RATE / VIDEO_FPS)];
+
+static int report;           //nombre de milliemes de cycle a reporter
 
 void retro_set_environment(retro_environment_t env)
 {
@@ -128,8 +135,8 @@ void retro_get_system_info(struct retro_system_info *info)
 void retro_get_system_av_info(struct retro_system_av_info *info)
 {
   memset(info, 0, sizeof(*info));
-  info->timing.fps = 50.0;
-  info->timing.sample_rate = 22050;
+  info->timing.fps = VIDEO_FPS;
+  info->timing.sample_rate = AUDIO_SAMPLE_RATE;
   info->geometry.base_width = XBITMAP;
   info->geometry.base_height = YBITMAP * 2;
   info->geometry.max_width = XBITMAP;
@@ -153,9 +160,34 @@ void retro_reset(void)
   Hardreset();
 }
 
+// Converts an 8-bit unsigned audio sample (as produced by the emulator)
+// into a 16-bit signed audio sample (as expected by the libretro audio callback).
+static int16_t u8toS16_audio_sample(uint8_t sample)
+{
+  return (sample * 65535 / 255) - (65536 / 2);
+}
+
 void retro_run(void)
 {
-  Run(19845);
+  int i;
+  int mcycles; // nb of thousandths of cycles between 2 samples
+  int icycles; // integer number of cycles between 2 samples
+  // 45 cycles of the 6809 at 992250 Hz = one sample at 22050 Hz
+  for(i = 0; i < AUDIO_SAMPLE_PER_FRAME; i++)
+  {
+    // Computes the nb of cycles between 2 samples and runs the emulation for this nb of cycles
+    // Nb of theoretical cycles for this period of time =
+    // theoretical number + previous remaining - cycles in excess during the previous period
+    mcycles = options.frequency * 100000 / 2205;   // theoretical thousandths of cycles
+    mcycles += report;                     // corrected thousandths of cyces
+    icycles = mcycles / 1000;              // integer number of cycles to run
+    report = mcycles - 1000 * icycles;     // remaining to do the next time
+    report -= 1000 * Run(icycles);         // remove thousandths in excess
+    audio_buffer[i] = u8toS16_audio_sample(sound + 96);
+    audio_stereo_buffer[(i << 1) + 0] = audio_stereo_buffer[(i << 1) + 1] = audio_buffer[i];
+  }
+
+  audio_batch_cb(audio_stereo_buffer, AUDIO_SAMPLE_PER_FRAME);
   video_cb(video_buffer, XBITMAP, YBITMAP * 2, sizeof(uint32_t)*XBITMAP);
 }
 
