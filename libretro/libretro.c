@@ -39,10 +39,9 @@ static retro_input_state_t input_state_cb = NULL;
 
 static unsigned int input_type[MAX_CONTROLLERS];
 static uint32_t *video_buffer = NULL;
-static int16_t audio_buffer[AUDIO_SAMPLE_RATE / VIDEO_FPS];
 static int16_t audio_stereo_buffer[2*(AUDIO_SAMPLE_RATE / VIDEO_FPS)];
 
-static int report;           //nombre de milliemes de cycle a reporter
+static int excess;           // nb of thousandth of cycles in excess to run the next time
 
 void retro_set_environment(retro_environment_t env)
 {
@@ -100,14 +99,9 @@ void retro_init(void)
   }
   environ_cb(RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL, &level);
 
-  char dummy[256] = {0};
-  Initoptions(dummy, dummy);
   Init6809();
-  log_cb(RETRO_LOG_INFO, "Init6809 ok\n");
   Hardreset();
-  log_cb(RETRO_LOG_INFO, "Hardreset ok\n");
   video_buffer = CreateLibRetroVideoBuffer();
-  log_cb(RETRO_LOG_INFO, "Video buffer ok\n");
 }
 
 void retro_deinit(void)
@@ -128,8 +122,9 @@ void retro_get_system_info(struct retro_system_info *info)
   memset(info, 0, sizeof(*info));
   info->library_name = PACKAGE_NAME;
   info->library_version = PACKAGE_VERSION;
-  info->need_fullpath = true;
   info->valid_extensions = "fd|k7|rom";
+  info->need_fullpath = true;
+  info->block_extract = false;
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
@@ -154,10 +149,24 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_reset(void)
 {
-  Unloadk7();
-  Unloadfd();
-  Unloadmemo();
+  retro_unload_game();
   Hardreset();
+}
+
+static void check_variables(void)
+{
+  struct retro_variable var = {0};
+
+  var.key = PACKAGE_NAME"_fd_write";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    options.fdprotection = (strcmp(var.value, "enabled") == 0);
+  }
+  var.key = PACKAGE_NAME"_k7_write";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    options.k7protection = (strcmp(var.value, "enabled") == 0);
+  }
 }
 
 // Converts an 8-bit unsigned audio sample (as produced by the emulator)
@@ -172,6 +181,7 @@ void retro_run(void)
   int i;
   int mcycles; // nb of thousandths of cycles between 2 samples
   int icycles; // integer number of cycles between 2 samples
+  int16_t audio_sample;
   // 45 cycles of the 6809 at 992250 Hz = one sample at 22050 Hz
   for(i = 0; i < AUDIO_SAMPLE_PER_FRAME; i++)
   {
@@ -179,12 +189,18 @@ void retro_run(void)
     // Nb of theoretical cycles for this period of time =
     // theoretical number + previous remaining - cycles in excess during the previous period
     mcycles = options.frequency * 100000 / 2205;   // theoretical thousandths of cycles
-    mcycles += report;                     // corrected thousandths of cyces
+    mcycles += excess;                     // corrected thousandths of cyces
     icycles = mcycles / 1000;              // integer number of cycles to run
-    report = mcycles - 1000 * icycles;     // remaining to do the next time
-    report -= 1000 * Run(icycles);         // remove thousandths in excess
-    audio_buffer[i] = u8toS16_audio_sample(sound + 96);
-    audio_stereo_buffer[(i << 1) + 0] = audio_stereo_buffer[(i << 1) + 1] = audio_buffer[i];
+    excess = mcycles - 1000 * icycles;     // remaining to do the next time
+    excess -= 1000 * Run(icycles);         // remove thousandths in excess
+    audio_sample = u8toS16_audio_sample(sound + 96);
+    audio_stereo_buffer[(i << 1) + 0] = audio_stereo_buffer[(i << 1) + 1] = audio_sample;
+  }
+
+  bool updated = false;
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
+  {
+    check_variables();
   }
 
   audio_batch_cb(audio_stereo_buffer, AUDIO_SAMPLE_PER_FRAME);
@@ -239,22 +255,6 @@ static bool load_file(const char *filename)
     return false;
   }
   return true;
-}
-
-static void check_variables(void)
-{
-  struct retro_variable var = {0};
-
-  var.key = PACKAGE_NAME"_fd_write";
-  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
-  {
-    options.fdprotection = (strcmp(var.value, "enabled") == 0);
-  }
-  var.key = PACKAGE_NAME"_k7_write";
-  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
-  {
-    options.k7protection = (strcmp(var.value, "enabled") == 0);
-  }
 }
 
 static void keyboard_cb(bool down, unsigned keycode,
