@@ -27,25 +27,25 @@
 
 typedef struct
 {
- int x;         //ordonnee du coin haut-gauche
- int y;         //abscisse du coin haut-gauche
- int w;         //largeur en pixels
- int h;         //hauteur en pixels
- char *text;    //texte a editer
+  int x;         //ordonnee du coin haut-gauche
+  int y;         //abscisse du coin haut-gauche
+  int w;         //largeur en pixels
+  int h;         //hauteur en pixels
+  char *text;    //texte a editer
 } dialogeditbox;
 
 typedef struct
 {
- int x;         //ordonnee du coin haut-gauche
- int y;         //abscisse du coin haut-gauche
- int n;         //numero de la surface SDL
+  int x;         //ordonnee du coin haut-gauche
+  int y;         //abscisse du coin haut-gauche
+  int n;         //numero de la surface SDL
 } dialogbutton;
 
 typedef struct
 {
- char name[12]; //nom du bouton
- int w;         //largeur en pixels
- int h;         //hauteur en pixels
+  char name[12]; //nom du bouton
+  int w;         //largeur en pixels
+  int h;         //hauteur en pixels
 } button;
 
 // Current dialog number

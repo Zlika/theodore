@@ -53,11 +53,9 @@ void Init6809();
 // Processor reset
 void Reset6809();
 // Execute one operation at pc address and set pc to next opcode address
-/*
-Return value is set to :
-- cycle count for the executed instruction when operation code is legal
-- negative value (-code) when operation code is illegal
-*/
+// Return value is set to :
+// - cycle count for the executed instruction when operation code is legal
+// - negative value (-code) when operation code is illegal
 int Run6809();
 
 #endif /* __DC6809EMUL_H */

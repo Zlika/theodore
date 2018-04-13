@@ -33,131 +33,131 @@ static char string[256];
 
 #define DESASSBUTTON_MAX 3   //nombre de boutons boite de dialogue desass
 static const dialogbutton desassbutton[DESASSBUTTON_MAX] = {
-{55, 28, 14},  //0x08 desassembler
-{135, 28, 15}, //0x09 + 1
-{170, 28, 10}  //0x09 + 10
+    {55, 28, 14},  //0x08 desassembler
+    {135, 28, 15}, //0x09 + 1
+    {170, 28, 10}  //0x09 + 10
 };
 
 #define DESASSEDITBOX_MAX 1   //nombre d'editboxes boite de dialogue desass
 static const dialogeditbox desasseditbox[DESASSEDITBOX_MAX] = {
-{10, 30, 38, 15, startaddresshexa}, //0x00 debut
+    {10, 30, 38, 15, startaddresshexa}, //0x00 debut
 };
 
 //Affichage du desassemblage a l'adresse startaddress /////////////////////////
 static void Displaydesass(int x)
 {
- SDL_Rect rect;
- int i;
- SDL_Surface *Rendertext(const char *string, int color, int background);
- //desassemblage
- rect.x = 10; rect.y = 35; rect.w = 368; rect.h = 15;
- for(i = 0; i < 20; i++)
- {
-  rect.y += 15;
-  x = Dasm6809(string, x) & 0xffff;
-  if(i == 0) nextaddress = x;
-  string[4] = 0; rect.w = 90;
-  Drawtextbox(dialogbox, string, rect, 0, blanc, 0);      //adresse hexa
-  string[15] = 0; rect.x += 32;
-  Drawtextbox(dialogbox, string + 5, rect, 0, blanc, 0);  //contenu hexa
-  string[22] = 0; rect.x += 75;
-  Drawtextbox(dialogbox, string + 16, rect, 0, blanc, 0); //mnemonique
-  string[40] = 0; rect.x += 40;
-  Drawtextbox(dialogbox, string + 23, rect, 0, blanc, 0); //operandes
-  rect.x += 90; rect.w = 30;
-  Drawtextbox(dialogbox, string + 41, rect, 0, blanc, 0); //cycles
-  rect.x = 10;
- }
+  SDL_Rect rect;
+  int i;
+  SDL_Surface *Rendertext(const char *string, int color, int background);
+  //desassemblage
+  rect.x = 10; rect.y = 35; rect.w = 368; rect.h = 15;
+  for(i = 0; i < 20; i++)
+  {
+    rect.y += 15;
+    x = Dasm6809(string, x) & 0xffff;
+    if(i == 0) nextaddress = x;
+    string[4] = 0; rect.w = 90;
+    Drawtextbox(dialogbox, string, rect, 0, blanc, 0);      //adresse hexa
+    string[15] = 0; rect.x += 32;
+    Drawtextbox(dialogbox, string + 5, rect, 0, blanc, 0);  //contenu hexa
+    string[22] = 0; rect.x += 75;
+    Drawtextbox(dialogbox, string + 16, rect, 0, blanc, 0); //mnemonique
+    string[40] = 0; rect.x += 40;
+    Drawtextbox(dialogbox, string + 23, rect, 0, blanc, 0); //operandes
+    rect.x += 90; rect.w = 30;
+    Drawtextbox(dialogbox, string + 41, rect, 0, blanc, 0); //cycles
+    rect.x = 10;
+  }
 }
 
 //Creation de la boite de dialogue du desassembleur ///////////////////////////
 void Drawdesassbox()
 {
- SDL_Rect rect;
- int i;
- if(dialog != DIALOG_DISASM)
- {
-  Createdialogbox(290, 365);
-  rect.x = 10; rect.w = dialogbox->w - 32;
-  rect.y = 5; rect.h = 15;
-  Drawtextbox(dialogbox, _(MSG_MENU_DISASSEMBLY), rect, 1, bleu, 0); //titre
+  SDL_Rect rect;
+  int i;
+  if(dialog != DIALOG_DISASM)
+  {
+    Createdialogbox(290, 365);
+    rect.x = 10; rect.w = dialogbox->w - 32;
+    rect.y = 5; rect.h = 15;
+    Drawtextbox(dialogbox, _(MSG_MENU_DISASSEMBLY), rect, 1, bleu, 0); //titre
+    dialog = DIALOG_DISASM;
+    startaddress = 0xf000;
+    sprintf(startaddresshexa, "%04X", startaddress);
+    focus = &desasseditbox[0]; //toujours le focus
+    xcursor = 4;
+  }
+  //dessin des boutons
+  for(i = 0; i < DESASSBUTTON_MAX; i++) Drawbutton(&desassbutton[i], 0);
+  //dessin des editboxes
+  for(i = 0; i < DESASSEDITBOX_MAX; i++) Draweditbox(&desasseditbox[i]);
+  //affichage du desassemblage
+  Displaydesass(startaddress);
   dialog = DIALOG_DISASM;
-  startaddress = 0xf000;
-  sprintf(startaddresshexa, "%04X", startaddress);
-  focus = &desasseditbox[0]; //toujours le focus
-  xcursor = 4;
- }
- //dessin des boutons
- for(i = 0; i < DESASSBUTTON_MAX; i++) Drawbutton(&desassbutton[i], 0);
- //dessin des editboxes
- for(i = 0; i < DESASSEDITBOX_MAX; i++) Draweditbox(&desasseditbox[i]);
- //affichage du desassemblage
- Displaydesass(startaddress);
- dialog = DIALOG_DISASM;
 }
 
 //Traitement des clics dans une editbox de la boite de dialogue////////////////
 static void Desasseditboxclick(int editbox)
 {
- focus = &desasseditbox[editbox];
- xcursor = 0;
- Draweditbox(&desasseditbox[editbox]);
+  focus = &desasseditbox[editbox];
+  xcursor = 0;
+  Draweditbox(&desasseditbox[editbox]);
 }
 
 //Traitement des clics dans un bouton de la boite de dialogue//////////////////
 static void Desassbuttonclick(int button)
 {
- int i, x;
- unsigned int address;
- //dessin du bouton enfonce
- Drawbutton(&desassbutton[button], 1);
- Displayscreen();
- //traitement en fonction du bouton
- x = 0;
- switch(button)
- {
-  case  0: sscanf(startaddresshexa, "%x", &address);
-           startaddress = address & 0xffff;
-           x = startaddress;
-           break;
-  case  1: x = nextaddress;
-           break;
-  case  2: x = nextaddress;
-           for(i = 0; i < 9; i++) x = Dasm6809(string, x) & 0xffff;
-           break;
- }
- sprintf(startaddresshexa, "%04X", startaddress);
- Draweditbox(&desasseditbox[0]);
- //dessin du bouton relache
- Displaydesass(x); SDL_Delay(200);
- Drawbutton(&desassbutton[button], 0);
+  int i, x;
+  unsigned int address;
+  //dessin du bouton enfonce
+  Drawbutton(&desassbutton[button], 1);
+  Displayscreen();
+  //traitement en fonction du bouton
+  x = 0;
+  switch(button)
+  {
+    case  0: sscanf(startaddresshexa, "%x", &address);
+    startaddress = address & 0xffff;
+    x = startaddress;
+    break;
+    case  1: x = nextaddress;
+    break;
+    case  2: x = nextaddress;
+    for(i = 0; i < 9; i++) x = Dasm6809(string, x) & 0xffff;
+    break;
+  }
+  sprintf(startaddresshexa, "%04X", startaddress);
+  Draweditbox(&desasseditbox[0]);
+  //dessin du bouton relache
+  Displaydesass(x); SDL_Delay(200);
+  Drawbutton(&desassbutton[button], 0);
 }
 
 //Traitement des clics dans la boite de dialogue de desassemblage /////////////
 void Desassclick()
 {
- int i, x, y;
+  int i, x, y;
 
- //focus dans l'adresse de debut du desassemblage
- focus = &desasseditbox[0];
+  //focus dans l'adresse de debut du desassemblage
+  focus = &desasseditbox[0];
 
- //recherche clic sur un bouton
- for(i = 0; i < DESASSBUTTON_MAX; i++)
- {
-  x = dialogrect.x + desassbutton[i].x;
-  y = dialogrect.y + desassbutton[i].y;
-  if(xmouse > x) if(xmouse < (x + bouton[desassbutton[i].n].w))
-  if(ymouse > y) if(ymouse < (y + bouton[desassbutton[i].n].h))
-  {Desassbuttonclick(i); return;}
- }
+  //recherche clic sur un bouton
+  for(i = 0; i < DESASSBUTTON_MAX; i++)
+  {
+    x = dialogrect.x + desassbutton[i].x;
+    y = dialogrect.y + desassbutton[i].y;
+    if(xmouse > x) if(xmouse < (x + bouton[desassbutton[i].n].w))
+      if(ymouse > y) if(ymouse < (y + bouton[desassbutton[i].n].h))
+      {Desassbuttonclick(i); return;}
+  }
 
- //recherche clic dans une editbox
- for(i = 0; i < DESASSEDITBOX_MAX; i++)
- {
-  x = dialogrect.x + desasseditbox[i].x;
-  y = dialogrect.y + desasseditbox[i].y;
-  if(xmouse > x) if(xmouse < (x + desasseditbox[i].w))
-  if(ymouse > y) if(ymouse < (y + desasseditbox[i].h))
-  {Desasseditboxclick(i); return;}
- }
+  //recherche clic dans une editbox
+  for(i = 0; i < DESASSEDITBOX_MAX; i++)
+  {
+    x = dialogrect.x + desasseditbox[i].x;
+    y = dialogrect.y + desasseditbox[i].y;
+    if(xmouse > x) if(xmouse < (x + desasseditbox[i].w))
+      if(ymouse > y) if(ymouse < (y + desasseditbox[i].h))
+      {Desasseditboxclick(i); return;}
+  }
 }

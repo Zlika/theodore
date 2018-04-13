@@ -27,36 +27,36 @@
 // Renvoie la chaine de caracteres en fonction de la langue selectionnee.
 const char* gettext(const char *msg[2])
 {
- if ((options.language < 0) || (options.language >= LANGUAGE_MAX))
- {
-  return msg[0];
- }
- return msg[options.language];
+  if ((options.language < 0) || (options.language >= LANGUAGE_MAX))
+  {
+    return msg[0];
+  }
+  return msg[options.language];
 }
 
 const char* MSG_ABOUT_TITLE[] = { "A propos de DCTO8D", "About DCTO8D" };
 const char* MSG_ABOUT[] = { "Version : "VERSION"\n"
-                            "Auteur : Daniel Coulom\n"
-                            "Site internet : http://dcto8.free.fr\n\n"
-                            "Ce programme est diffusé SANS AUCUNE GARANTIE.\n"
-                            "C'est un logiciel libre, et vous êtes encouragés à le redistribuer\n"
-                            "sous certaines conditions. Lire les détails dans dcto8d-licence.txt\n\n"
-                            "Raccourcis clavier :\n"
-                            "- ECHAP = initialisation programme\n"
-                            "- PAUSE = arrêt processeur 6809\n"
-                            "- F6    = plein écran\n\n"
-                            "Lire la documentation pour d'autres informations..."
-                          , "Version : "VERSION"\n"
-                            "Author : Daniel Coulom\n"
-                            "Web site : http://dcto8.free.fr\n\n"
-                            "This program comes with ABSOLUTELY NO WARRANTY.\n"
-                            "This is free software, and you are welcome to redistribute it under\n"
-                            "certain conditions. More details in dcto8d-licence.txt\n\n"
-                            "Raccourcis clavier :\n"
-                            "- ESC   = reset TO8D program\n"
-                            "- PAUSE = stop 6809 processor\n"
-                            "- F6    = toggle fullscreen\n\n"
-                            "Please check the documentation for more information." };
+    "Auteur : Daniel Coulom\n"
+    "Site internet : http://dcto8.free.fr\n\n"
+    "Ce programme est diffusé SANS AUCUNE GARANTIE.\n"
+    "C'est un logiciel libre, et vous êtes encouragés à le redistribuer\n"
+    "sous certaines conditions. Lire les détails dans dcto8d-licence.txt\n\n"
+    "Raccourcis clavier :\n"
+    "- ECHAP = initialisation programme\n"
+    "- PAUSE = arrêt processeur 6809\n"
+    "- F6    = plein écran\n\n"
+    "Lire la documentation pour d'autres informations..."
+    , "Version : "VERSION"\n"
+    "Author : Daniel Coulom\n"
+    "Web site : http://dcto8.free.fr\n\n"
+    "This program comes with ABSOLUTELY NO WARRANTY.\n"
+    "This is free software, and you are welcome to redistribute it under\n"
+    "certain conditions. More details in dcto8d-licence.txt\n\n"
+    "Raccourcis clavier :\n"
+    "- ESC   = reset TO8D program\n"
+    "- PAUSE = stop 6809 processor\n"
+    "- F6    = toggle fullscreen\n\n"
+    "Please check the documentation for more information." };
 const char* MSG_PROGNAME[] = { "DCTO8D - Emulateur Thomson TO8D", "DCTO8D - Thomson TO8D emulator" };
 const char* MSG_MENU_SETTINGS[] = { "Param""\xe8""tres", "Settings" };
 const char* MSG_MENU_KEYBOARD[] = { "Clavier", "Keyboard" };
@@ -82,12 +82,12 @@ const char* MSG_NO[] = { "non", "no" };
 const char* MSG_SETTINGS_NUMPAD[] = { "Pav\xe9"" num""\xe9""rique", "Numpad" };
 
 const char *msg_btn[][2]={
-  /*0*/{"D\xe9sassembler",
-  /*0*/ "Disassemble"},
-  /*1*/{"R""\xe9""tablir la disposition standard",
-  /*1*/ "Restore standard layout"},
-  /*2*/{"Sauver la disposition personnalis""\xe9""e",
-  /*2*/ "Save customized layout"},
-  /*3*/{"R""\xe9""tablir les valeurs par d""\xe9""faut",
-  /*3*/ "Restore default values"}
+    /*0*/{"D\xe9sassembler",
+    /*0*/ "Disassemble"},
+    /*1*/{"R""\xe9""tablir la disposition standard",
+    /*1*/ "Restore standard layout"},
+    /*2*/{"Sauver la disposition personnalis""\xe9""e",
+    /*2*/ "Save customized layout"},
+    /*3*/{"R""\xe9""tablir les valeurs par d""\xe9""faut",
+    /*3*/ "Restore default values"}
 };

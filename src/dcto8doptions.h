@@ -34,21 +34,21 @@ void Resetoptions();
 
 typedef struct
 {
- int language;     //0=francais 1=anglais
- int frequency;    //frequence 6809 en kHz
- int xclient;      //largeur fenetre utilisateur
- int yclient;      //hauteur ecran dans fenetre utilisateur
- int vblnumbermax; //nombre de vbl entre deux affichages
- int k7protection; // indicateur lecture seule pour la cassette
- int fdprotection; // indicateur lecture seule pour la disquette
- int keybpriority; // indicateur lecture seule pour la disquette
- int reserved1;
- int reserved2;
- int reserved3;
- int reserved4;
- int reserved5;
- char to8dkeycode[256]; //scancode to8d en fonction du scancode pc
- char to8djoycode[256]; //numero bouton joystick en fonction du scancode pc
+  int language;     //0=francais 1=anglais
+  int frequency;    //frequence 6809 en kHz
+  int xclient;      //largeur fenetre utilisateur
+  int yclient;      //hauteur ecran dans fenetre utilisateur
+  int vblnumbermax; //nombre de vbl entre deux affichages
+  int k7protection; // indicateur lecture seule pour la cassette
+  int fdprotection; // indicateur lecture seule pour la disquette
+  int keybpriority; // indicateur lecture seule pour la disquette
+  int reserved1;
+  int reserved2;
+  int reserved3;
+  int reserved4;
+  int reserved5;
+  char to8dkeycode[256]; //scancode to8d en fonction du scancode pc
+  char to8djoycode[256]; //numero bouton joystick en fonction du scancode pc
 } Options;
 
 extern Options options;
