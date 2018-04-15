@@ -68,8 +68,12 @@ extern int bordercolor;
 //pointeur page video affichee
 extern char *pagevideo;
 
+typedef enum { JOY0_UP, JOY0_DOWN, JOY0_LEFT, JOY0_RIGHT,
+               JOY1_UP, JOY1_DOWN, JOY1_LEFT, JOY1_RIGHT,
+               JOY0_FIRE, JOY1_FIRE } JoystickAxis;
+
 // Joystick emulation ////////////////////////////////////////////////////////
-void Joysemul(int i, int state);
+void Joysemul(JoystickAxis axis, bool isOn);
 // Emulation du clavier TO8 ///////////////////////////////////////////////////
 void TO8key(int scancode, bool down);
 // Initialisation programme de l'ordinateur emule ////////////////////////////

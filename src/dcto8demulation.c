@@ -262,13 +262,13 @@ static int Initn()
 }
 
 // Joystick emulation ////////////////////////////////////////////////////////
-void Joysemul(int i, int state)
+void Joysemul(JoystickAxis axis, bool isOn)
 {
   //PA0=0 nord   PA1=0 sud   PA2=0 ouest   PA3=0 est   PB6=0 action
   //PA4=1 nord   PA5=1 sud   PA6=1 ouest   PA7=1 est   PB7=1 action
   int n;
   n = 0;
-  switch(i)
+  switch(axis)
   {
     case 0: if(joysposition & 0x02) n = 0x01; break;
     case 1: if(joysposition & 0x01) n = 0x02; break;
@@ -278,10 +278,10 @@ void Joysemul(int i, int state)
     case 5: if(joysposition & 0x10) n = 0x20; break;
     case 6: if(joysposition & 0x80) n = 0x40; break;
     case 7: if(joysposition & 0x40) n = 0x80; break;
-    case 8: if(state) joysaction |= 0x40; else joysaction &= 0xbf; return;
-    case 9: if(state) joysaction |= 0x80; else joysaction &= 0x7f; return;
+    case 8: if(!isOn) joysaction |= 0x40; else joysaction &= 0xbf; return;
+    case 9: if(!isOn) joysaction |= 0x80; else joysaction &= 0x7f; return;
   }
-  if(n > 0) {if(state) joysposition |= n; else joysposition &= (~n);}
+  if(n > 0) {if(!isOn) joysposition |= n; else joysposition &= (~n);}
 }
 
 // Initialisation programme de l'ordinateur emule ////////////////////////////

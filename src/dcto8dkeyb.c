@@ -478,7 +478,7 @@ void Keyup(int keysym, int scancode)
 
   if(ijoy < JOYSTICKKEY_MAX) if((ikey == KEYBOARDKEY_MAX) || (options.keybpriority == 0))
   {
-    Joysemul(ijoy, 0x80);
+    Joysemul(ijoy, false);
     if(dialog == DIALOG_JOYSTICK) Drawbutton(&joystickbutton[ijoy], 0);
   }
 
@@ -563,7 +563,7 @@ void Keydown(int sym, int scancode)
 
   if(ijoy < JOYSTICKKEY_MAX) if((ikey == KEYBOARDKEY_MAX) || (options.keybpriority == 0))
   {
-    Joysemul(ijoy, 0x00);
+    Joysemul(ijoy, true);
     if(dialog == DIALOG_JOYSTICK) Drawbutton(&joystickbutton[ijoy], 1);
   }
 
