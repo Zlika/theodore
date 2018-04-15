@@ -1,28 +1,27 @@
-//////////////////////////////////////////////////////////////////////////////
-// DCTO8DMSG.C - message text used by dcto8d
-// Author   : Daniel Coulom - danielcoulom@gmail.com
-// Web site : http://dcto8.free.fr
-//
-// This file is part of DCTO8D.
-//
-// DCTO8D is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// DCTO8D is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with DCTO8D. If not, see <http://www.gnu.org/licenses/>.
-//
-//////////////////////////////////////////////////////////////////////////////
+/*
+ * This file is part of theodore, a Thomson emulator based on
+ * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Management of text messages */
+
+#include "msg.h"
 
 #include "../config.h"
-#include "dcto8dmsg.h"
-#include "dcto8doptions.h"
+#include "options.h"
 
 // Renvoie la chaine de caracteres en fonction de la langue selectionnee.
 const char* gettext(const char *msg[2])
@@ -34,30 +33,28 @@ const char* gettext(const char *msg[2])
   return msg[options.language];
 }
 
-const char* MSG_ABOUT_TITLE[] = { "A propos de DCTO8D", "About DCTO8D" };
+const char* MSG_ABOUT_TITLE[] = { "A propos de "PACKAGE_NAME, "About "PACKAGE_NAME };
 const char* MSG_ABOUT[] = { "Version : "VERSION"\n"
-    "Auteur : Daniel Coulom\n"
-    "Site internet : http://dcto8.free.fr\n\n"
+    "Basé sur l'émulateur DCTO8D de Daniel Coulom\n"
+    "(http://dcto8.free.fr)\n\n"
     "Ce programme est diffusé SANS AUCUNE GARANTIE.\n"
-    "C'est un logiciel libre, et vous êtes encouragés à le redistribuer\n"
-    "sous certaines conditions. Lire les détails dans dcto8d-licence.txt\n\n"
+    "C'est un logiciel libre sous licence GPL\n\n"
     "Raccourcis clavier :\n"
     "- ECHAP = initialisation programme\n"
     "- PAUSE = arrêt processeur 6809\n"
     "- F6    = plein écran\n\n"
     "Lire la documentation pour d'autres informations..."
     , "Version : "VERSION"\n"
-    "Author : Daniel Coulom\n"
-    "Web site : http://dcto8.free.fr\n\n"
+    "Based on Daniel Coulom's DCTO8D emulator\n"
+    "(http://dcto8.free.fr)\n\n"
     "This program comes with ABSOLUTELY NO WARRANTY.\n"
-    "This is free software, and you are welcome to redistribute it under\n"
-    "certain conditions. More details in dcto8d-licence.txt\n\n"
+    "This is a free software under GPL license\n\n"
     "Raccourcis clavier :\n"
-    "- ESC   = reset TO8D program\n"
+    "- ESC   = reset program\n"
     "- PAUSE = stop 6809 processor\n"
     "- F6    = toggle fullscreen\n\n"
     "Please check the documentation for more information." };
-const char* MSG_PROGNAME[] = { "DCTO8D - Emulateur Thomson TO8D", "DCTO8D - Thomson TO8D emulator" };
+const char* MSG_PROGNAME[] = { PACKAGE_NAME" - Emulateur Thomson TO8D", PACKAGE_NAME" - Thomson TO8D emulator" };
 const char* MSG_MENU_SETTINGS[] = { "Param""\xe8""tres", "Settings" };
 const char* MSG_MENU_KEYBOARD[] = { "Clavier", "Keyboard" };
 const char* MSG_MENU_JOYSTICKS[] = { "Manettes", "Joysticks" };

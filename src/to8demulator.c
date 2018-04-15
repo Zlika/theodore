@@ -1,34 +1,34 @@
-///////////////////////////////////////////////////////////////////////////////
-// DCTO8DEMULATION.C - Emulateur Thomson TO8D portable
-// Author   : Daniel Coulom - danielcoulom@gmail.com
-// Web site : http://dcto8.free.fr
-//
-// This file is part of DCTO8D.
-//
-// DCTO8D is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// DCTO8D is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with DCTO8D. If not, see <http://www.gnu.org/licenses/>.
-//
-///////////////////////////////////////////////////////////////////////////////
+/*
+ * This file is part of theodore, a Thomson emulator based on
+ * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Thomson TO8D emulator */
+
+#include "to8demulator.h"
 
 #include <string.h>
 #include <time.h>
-#include "dc6809emul.h"
-#include "dcto8ddevices.h"
-#include "dcto8demulation.h"
-#include "dcto8doptions.h"
+
+#include "6809emulator.h"
 #include "to8dbasic.h"
 #include "to8dmoniteur.h"
-#include "dcto8dvideo.h"
+#include "devices.h"
+#include "options.h"
+#include "video.h"
 
 // memory
 char car[CARTRIDGE_MEM_SIZE]; //espace cartouche 4x16K

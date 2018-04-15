@@ -1,24 +1,22 @@
-//////////////////////////////////////////////////////////////////////////////
-// DCTO8DKEYB.C - keyboard input and customization
-// Author   : Daniel Coulom - danielcoulom@gmail.com
-// Web site : http://dcto8.free.fr
-//
-// This file is part of DCTO8D.
-//
-// DCTO8D is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// DCTO8D is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with DCTO8D. If not, see <http://www.gnu.org/licenses/>.
-//
-//////////////////////////////////////////////////////////////////////////////
+/*
+ * This file is part of theodore, a Thomson emulator based on
+ * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Keyboard input */
 
 #include <SDL.h>
 #include <stdio.h>
@@ -26,12 +24,12 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#include "dcto8dkeyb.h"
-#include "dcto8dinterface.h"
-#include "dcto8dmsg.h"
-#include "dcto8demulation.h"
-#include "dcto8doptions.h"
-#include "dcto8dvideo.h"
+#include "keyboard.h"
+#include "interface.h"
+#include "msg.h"
+#include "to8demulator.h"
+#include "options.h"
+#include "video.h"
 
 #define JOYSTICKKEY_MAX 10    //nombre total de contacts des deux manettes
 #define TEXT_MAXLENGTH 256
@@ -504,7 +502,7 @@ void Keydown(int sym, int scancode)
   lastkeycode = keycode;
   lastkeysym = sym;
 
-  //touches de raccourcis dcto8d
+  //touches de raccourcis
   if(sym == SDLK_ESCAPE) {Initprog(); pause6809 = 0; return;}
   if(sym == SDLK_PAUSE) {pause6809 = 1; return;}
   if(sym == SDLK_F6) {SwitchFullScreenMode(); return;}

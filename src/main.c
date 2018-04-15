@@ -1,36 +1,35 @@
-//////////////////////////////////////////////////////////////////////////////
-// DCTO8DMAIN.C - dcto8d emulator main program
-// Author   : Daniel Coulom - danielcoulom@gmail.com
-// Web site : http://dcto8.free.fr
-//
-// This file is part of DCTO8D.
-//
-// DCTO8D is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// DCTO8D is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with DCTO8D. If not, see <http://www.gnu.org/licenses/>.
-//
-//////////////////////////////////////////////////////////////////////////////
+/*
+ * This file is part of theodore, a Thomson emulator based on
+ * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Entry point for the standalone emulator */
 
 #include <SDL.h>
-#include "dcto8dinterface.h"
-#include "dcto8demulation.h"
-#include "dcto8doptions.h"
-#include "dcto8dvideo.h"
-#include "dc6809emul.h"
-#include "dcto8dkeyb.h"
+
+#include "6809emulator.h"
+#include "interface.h"
+#include "keyboard.h"
+#include "options.h"
+#include "to8demulator.h"
+#include "video.h"
 
 #define SDL_main main    //indispensable pour eviter l'erreur
                          //undefined reference to `WinMain@16'
-#define OPTIONS_FILENAME "dcto8d.ini"
+#define OPTIONS_FILENAME "theodore.dat"
 
 // global variables //////////////////////////////////////////////////////////
 static SDL_AudioSpec audio;

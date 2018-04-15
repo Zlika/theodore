@@ -1,31 +1,28 @@
-//////////////////////////////////////////////////////////////////////////////
-// DCTO8DOPTIONS.C - Option setting, save & restore
-// Author   : Daniel Coulom - danielcoulom@gmail.com
-// Web site : http://dcto8.free.fr
-//
-// This file is part of DCTO8D.
-//
-// DCTO8D is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// DCTO8D is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with DCTO8D. If not, see <http://www.gnu.org/licenses/>.
-//
-//////////////////////////////////////////////////////////////////////////////
+/*
+ * This file is part of theodore, a Thomson emulator based on
+ * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Management of program settings */
+
+#include "options.h"
 
 #include <stdio.h>
 #include <string.h>
-#include "dcto8doptions.h"
-#include "dcto8dglobal.h"
-
-#define OPTION_FILE_ID "dcto8dini-01"
+#include "global.h"
 
 Options options = { .language = 0, .xclient = XBITMAP, .yclient = 2 * YBITMAP,
                     .frequency = 1000, .vblnumbermax = 2,
@@ -71,13 +68,6 @@ void Loadoptions(char *filename)
   //ouverture fichier
   fpi = fopen(filename, "rb+");                 //s'il existe ouverture
   if (fpi == NULL) return;
-  r = fread(string, sizeof(OPTION_FILE_ID) - 1, 1, fpi); //lecture identifiant
-  if(r != 1 || strcmp(OPTION_FILE_ID, string) != 0)
-  {
-    printf("Wrong config file %s\n", filename);
-    fclose(fpi);
-    return;
-  }
   //lecture des options
   r = fread(&options, sizeof(options), 1, fpi);
   if (r != 1) Resetoptions();
@@ -105,7 +95,6 @@ void Saveoptions(char *filename)
   FILE *fpi;
   fpi = fopen(filename, "wb+");
   if ((fpi == NULL)
-      || (fwrite(OPTION_FILE_ID, sizeof(OPTION_FILE_ID) - 1, 1, fpi) != 1)
       || (fwrite(&options, sizeof(options), 1, fpi) != 1))
   {
     printf("Cannot write config file %s\n", filename);

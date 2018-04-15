@@ -1,33 +1,32 @@
-///////////////////////////////////////////////////////////////////////////////
-// DCTO8DVIDEO.C - Fonctions d'affichage pour dcto8d
-// Author   : Daniel Coulom - danielcoulom@gmail.com
-// Web site : http://dcto8.free.fr
-//
-// This file is part of DCTO8D.
-//
-// DCTO8D is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// DCTO8D is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with DCTO8D. If not, see <http://www.gnu.org/licenses/>.
-//
-///////////////////////////////////////////////////////////////////////////////
+/*
+ * This file is part of theodore, a Thomson emulator based on
+ * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Graphical display functions of the emulator */
+
+#include "video.h"
 
 #include <SDL.h>
-#include "dcto8dvideo.h"
-#include "dcto8demulation.h"
-#include "dcto8doptions.h"
+#include "options.h"
+#include "to8demulator.h"
 #ifndef __LIBRETRO__
-#include "dcto8dinterface.h"
-#include "dcto8dicon.h"
-#include "dcto8dmsg.h"
+#include "interface.h"
+#include "icon.h"
+#include "msg.h"
 #endif
 
 struct pix {char b, g, r, a;};        //structure pixel BGRA
@@ -321,7 +320,7 @@ void Resizescreen(int x, int y)
                               options.xclient, options.yclient + ystatus,
                               is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE);
     if (window == NULL) { SDL_error(__func__, "SDL_CreateWindow"); return; }
-    SDL_SetWindowIcon(window, SDL_LoadBMP_RW(SDL_RWFromMem(dcto8dicon, sizeof(dcto8dicon)), 1));
+    SDL_SetWindowIcon(window, SDL_LoadBMP_RW(SDL_RWFromMem(icon, sizeof(icon)), 1));
     renderer = SDL_CreateRenderer(window, -1, 0);
     if (renderer == NULL) { SDL_error(__func__, "SDL_CreateRenderer"); return; }
   }

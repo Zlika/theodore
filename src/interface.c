@@ -1,37 +1,36 @@
-///////////////////////////////////////////////////////////////////////////////
-// DCTO8DINTERFACE.C - Fonctions d'interface utilisateur
-// Author   : Daniel Coulom - danielcoulom@gmail.com
-// Web site : http://dcto8.free.fr
-//
-// This file is part of DCTO8D.
-//
-// DCTO8D is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// DCTO8D is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with DCTO8D. If not, see <http://www.gnu.org/licenses/>.
-//
-///////////////////////////////////////////////////////////////////////////////
+/*
+ * This file is part of theodore, a Thomson emulator based on
+ * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Emulator GUI */
+
+#include "interface.h"
 
 #include <SDL.h>
 #include <string.h>
 #include <dirent.h>
 #include <unistd.h>
-#include "dcto8dinterface.h"
-#include "dcto8dfont.h"
-#include "dcto8dmsg.h"
-#include "dcto8ddevices.h"
-#include "dcto8dvideo.h"
-#include "dcto8doptions.h"
-#include "dcto8ddesass.h"
-#include "dcto8dkeyb.h"
+#include "devices.h"
+#include "disasmui.h"
+#include "font.h"
+#include "keyboard.h"
+#include "msg.h"
+#include "options.h"
+#include "video.h"
 
 #define DIRLIST_LENGTH 32
 #define DIRLIST_NMAX 500
@@ -388,7 +387,7 @@ void Initfontsurfaces()
   r.h = 1; r.w = 1;
   for(i = 0; i < 104; i++) for(j = 0; j < 16; j++)
   {
-    int c = dcto8dfont[16 * i + j];
+    int c = font[16 * i + j];
     r.x = 8 * j; r.y = i;
     for(k = 128; k > 0; k >>= 1)
     {

@@ -1,30 +1,29 @@
-//////////////////////////////////////////////////////////////////////////////
-// DCTO8DDEVICES.C   Emulation des peripheriques TO8
-// Author   : Daniel Coulom - danielcoulom@gmail.com
-// Web site : http://dcto8.free.fr
-//
-// This file is part of DCTO8D.
-//
-// DCTO8D is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// DCTO8D is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty
-// of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with DCTO8D. If not, see <http://www.gnu.org/licenses/>.
-//
-//////////////////////////////////////////////////////////////////////////////
+/*
+ * This file is part of theodore, a Thomson emulator based on
+ * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Emulation of Thomson devices */
 
 #include <stdio.h>
 #include <string.h>
-#include "dc6809emul.h"
-#include "dcto8demulation.h"
-#include "dcto8doptions.h"
+
+#include "6809emulator.h"
+#include "options.h"
+#include "to8demulator.h"
 
 // Variables globales ////////////////////////////////////////////////////////
 static FILE *ffd = NULL;   // pointeur fichier disquette
@@ -46,7 +45,7 @@ static void (*UpdateK7IndexCallback)() = NULL; // Callback appellee quand k7inde
 // Emulation imprimante //////////////////////////////////////////////////////
 void Imprime()
 {
-  if(fprn == NULL) fprn = fopen("dcto8d-printer.txt", "ab");
+  if(fprn == NULL) fprn = fopen("thomson-printer.txt", "ab");
   if(fprn != NULL) {fputc(B, fprn); CC &= 0xfe;};
 }
 

@@ -1,4 +1,6 @@
 /*
+ * This file is part of theodore, a Thomson emulator
+ * (https://github.com/Zlika/theodore).
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,12 +18,12 @@
 #include <string.h>
 #include "libretro.h"
 #include "../config.h"
-#include "../src/dc6809emul.h"
-#include "../src/dcto8dglobal.h"
-#include "../src/dcto8ddevices.h"
-#include "../src/dcto8demulation.h"
-#include "../src/dcto8dvideo.h"
-#include "../src/dcto8doptions.h"
+#include "../src/6809emulator.h"
+#include "../src/devices.h"
+#include "../src/global.h"
+#include "../src/options.h"
+#include "../src/to8demulator.h"
+#include "../src/video.h"
 #include "keymap.h"
 
 #define MAX_CONTROLLERS   2
