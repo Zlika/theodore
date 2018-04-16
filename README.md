@@ -3,15 +3,15 @@ Theodore - Thomson TO8D emulator
 
 [![Build Status](https://travis-ci.org/Zlika/theodore.svg?branch=master)](https://travis-ci.org/Zlika/theodore)
 
-This is a fork of Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator.
-It adds several improvements, in particular compatibility with [libretro](https://github.com/libretro).
+This is a fork of Daniel Coulom's [DCTO8D](http://dcto8.free.fr/), a [Thomson TO8D emulator](https://en.wikipedia.org/wiki/Thomson_TO8).
+It adds several improvements, in particular compatibility with the [libretro](https://github.com/libretro) API.
 
 ### Requirements
 
 The following packages are required to compile the project:
-* A C compiler (GCC or clang)
-* The autotools
-* The SDL 2 library
+* a C compiler (GCC or clang)
+* the autotools (autoconf, automake, libtool)
+* the SDL 2 library
 
 On Debian and derivatives:
 ```
