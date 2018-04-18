@@ -8,7 +8,7 @@ It adds several improvements, in particular compatibility with the [libretro](ht
 
 ### Requirements
 
-The following packages are required to compile the project:
+The following packages are required to compile the standalone version of the emulator:
 * a C compiler (GCC or clang)
 * the autotools (autoconf, automake, libtool)
 * the SDL 2 library
@@ -18,22 +18,22 @@ On Debian and derivatives:
 sudo apt-get install build-essential autoconf automake libtool libsdl2-dev
 ```
 
+To compile the libretro version of the emulator, only a C compiler is required.
+
 ### How to compile
 
-First, create the makefiles:
+To compile the standalone version of the emulator:
 ```
 autoreconf -i
 ./configure
-```
-Then, compile the standalone version of the emulator:
-```
 make
 ```
-And/Or the libretro version:
+To compile the libretro version of the emulator:
 ```
 cd libretro
 make
 ```
+
 ### Compatibility
 
 The source code is portable. However, this software is only tested on Linux.
