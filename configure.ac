@@ -53,5 +53,5 @@ AC_SUBST(LINKER_HARDENING_FLAGS)
 # Checks for library functions.
 AC_CHECK_FUNCS([atexit getcwd memset strcasecmp strtol])
 
-AC_CONFIG_FILES([Makefile libretro/Makefile])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

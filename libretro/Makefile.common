@@ -1,0 +1,15 @@
+LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro/libretro-common
+INCFLAGS := -I$(CORE_DIR)/libretro  -I$(CORE_DIR) -I$(LIBRETRO_COMM_DIR)/include
+
+ifneq (,$(findstring msvc2003,$(platform)))
+INCFLAGS += -I$(LIBRETRO_COMM_DIR)/include/compat/msvc
+endif
+
+SOURCES_C =
+
+SOURCES_C += $(CORE_DIR)/src/6809emulator.c
+SOURCES_C += $(CORE_DIR)/src/devices.c
+SOURCES_C += $(CORE_DIR)/src/options.c
+SOURCES_C += $(CORE_DIR)/src/to8demulator.c
+SOURCES_C += $(CORE_DIR)/src/video.c
+SOURCES_C += $(CORE_DIR)/libretro/libretro.c

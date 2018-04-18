@@ -21,15 +21,20 @@
 #ifndef __VIDEO_H
 #define __VIDEO_H
 
+#ifndef __LIBRETRO__
 #include <SDL.h>
+#endif
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "global.h"
 
 #define YSTATUS 20
 
+#ifndef __LIBRETRO__
 //surface d'affichage de l'ecran
 extern SDL_Surface *screen;
+#endif
 
 //abscisse souris dans fenetre utilisateur
 extern int xmouse;

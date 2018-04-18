@@ -18,9 +18,9 @@
 
 /* Graphical display functions of the emulator */
 
+#include <stdlib.h>
+#include <string.h>
 #include "video.h"
-
-#include <SDL.h>
 #include "options.h"
 #include "to8demulator.h"
 #ifndef __LIBRETRO__
@@ -36,8 +36,12 @@ struct pix {char b, g, r, a;};        //structure pixel BGRA
 static SDL_Window *window = NULL;     //fenetre d'affichage de l'ecran
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *texture = NULL;   //texture mise à jour a partir de screen
-#endif
 SDL_Surface *screen = NULL;           //surface d'affichage de l'ecran
+#else
+typedef struct { int w, h; void* pixels;} Surface;
+Surface surface;
+Surface *screen = &surface;
+#endif
 int xmouse;                           //abscisse souris dans fenetre utilisateur
 int ymouse;                           //ordonnee souris dans fenetre utilisateur
 static struct pix pcolor[20][8];      //couleurs BGRA de la palette (pour 8 pixels)
@@ -195,13 +199,13 @@ void Displaysegment(void)
   int segmentmax;
   segmentmax = videolinecycle - 10;
   if(segmentmax > 42) segmentmax = 42;
+#ifndef __LIBRETRO__
   if(SDL_MUSTLOCK(screen) && SDL_LockSurface(screen) < 0)
   {
-#ifndef __LIBRETRO__
     SDL_error(__func__, "SDL_LockSurface");
-#endif
     return;
   }
+#endif
   while(currentlinesegment < segmentmax)
   {
     if(videolinenumber < 56) {Displayborder(); continue;}
@@ -210,20 +214,22 @@ void Displaysegment(void)
     if(currentlinesegment == 41) {Displayborder(); continue;}
     Decodevideo(); currentlinesegment++;
   }
+#ifndef __LIBRETRO__
   SDL_UnlockSurface(screen);
+#endif
 }
 
 // Changement de ligne ecran //////////////////////////////////////////////////
 void Nextline(void)
 {
   int *p0, *p1;
+#ifndef __LIBRETRO__
   if(SDL_MUSTLOCK(screen) && SDL_LockSurface(screen) < 0)
   {
-#ifndef __LIBRETRO__
     SDL_error(__func__, "SDL_LockSurface");
-#endif
     return;
   }
+#endif
   p1 = pmin + (videolinenumber - 47) * options.yclient / YBITMAP * options.xclient;
   if(videolinenumber == 263) p1 = pmax;
   p0 = pcurrentline;
@@ -240,7 +246,9 @@ void Nextline(void)
   }
   pcurrentpixel = pcurrentline;
   currentlinesegment = 0;
+#ifndef __LIBRETRO__
   SDL_UnlockSurface(screen);
+#endif
 }
 
 // Effacement de l'ecran.
@@ -375,12 +383,10 @@ bool IsFullScreenMode(void)
 uint32_t* CreateLibRetroVideoBuffer()
 {
   uint32_t *video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * 2 * sizeof(uint32_t));
-  screen = SDL_CreateRGBSurfaceFrom(video_buffer, XBITMAP, YBITMAP*2,
-                                    sizeof(uint32_t), sizeof(uint32_t)*XBITMAP,
-                                    0x00FF0000,
-                                    0x0000FF00,
-                                    0x000000FF,
-                                    0xFF000000);
+  screen->w = XBITMAP;
+  screen->h = YBITMAP*2;
+  screen->pixels = video_buffer;
+
   pmin = (int*)(screen->pixels);
   pmax = pmin + XBITMAP * YBITMAP * 2;
   InitScreen();

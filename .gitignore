@@ -13,14 +13,11 @@ stamp-h1
 
 /src/.deps
 /src/.dirstamp
-/src/.libs
 /src/*.o
 /src/*.lo
 
-/libretro/.deps
-/libretro/.libs
-/libretro/*.la
-/libretro/*.lo
+/libretro/*.o
+/libretro/*.so
 
 .autotools
 .cproject
