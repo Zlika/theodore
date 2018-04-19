@@ -33,6 +33,11 @@
 #define PACKAGE_VERSION "unknown"
 #endif
 
+#ifdef _3DS
+extern "C" void* linearMemAlign(size_t size, size_t alignment);
+extern "C" void linearFree(void* mem);
+#endif
+
 #define MAX_CONTROLLERS   2
 #define VIDEO_FPS         50
 #define AUDIO_SAMPLE_RATE 22050
@@ -134,7 +139,12 @@ void retro_deinit(void)
 {
   if (video_buffer)
   {
+#ifdef _3DS
+    linearFree(video_buffer);
+#else
     free(video_buffer);
+#endif
+    video_buffer = NULL;
   }
 }
 

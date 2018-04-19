@@ -29,6 +29,10 @@
 #include "msg.h"
 #endif
 
+#ifdef _3DS
+extern "C" void* linearMemAlign(size_t size, size_t alignment);
+#endif
+
 struct pix {char b, g, r, a;};        //structure pixel BGRA
 
 // global variables //////////////////////////////////////////////////////////
@@ -382,7 +386,11 @@ bool IsFullScreenMode(void)
 #else
 uint32_t* CreateLibRetroVideoBuffer()
 {
-  uint32_t *video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * 2 * sizeof(uint32_t));
+#ifdef _3DS
+   video_buffer = (uint32_t*)linearMemAlign(XBITMAP * YBITMAP * 2 * sizeof(uint32_t), 0x80);
+#else
+   uint32_t *video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * 2 * sizeof(uint32_t));
+#endif
   screen->w = XBITMAP;
   screen->h = YBITMAP*2;
   screen->pixels = video_buffer;
