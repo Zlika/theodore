@@ -18,7 +18,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "libretro.h"
-#include "../config.h"
 #include "../src/6809emulator.h"
 #include "../src/devices.h"
 #include "../src/global.h"
@@ -26,6 +25,13 @@
 #include "../src/to8demulator.h"
 #include "../src/video.h"
 #include "keymap.h"
+
+#define PACKAGE_NAME "theodore"
+#ifdef GIT_VERSION
+#define PACKAGE_VERSION GIT_VERSION
+#else
+#define PACKAGE_VERSION "unknown"
+#endif
 
 #define MAX_CONTROLLERS   2
 #define VIDEO_FPS         50
