@@ -126,6 +126,10 @@ void retro_init(void)
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "Fire" },
 
+        { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X, "Light Pen X" },
+        { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y, "Light Pen Y" },
+        { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED, "Light Pen Button" },
+
         { 0 },
   };
   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
@@ -194,10 +198,17 @@ void retro_reset(void)
   Hardreset();
 }
 
+static void pointerToScreenCoordinates(int *x, int *y)
+{
+  *x = (*x + 0x7FFF) * XBITMAP / 0xFFFF;
+  *y = (*y + 0x7FFF) * YBITMAP / 0xFFFF;
+}
+
 static void update_input(void)
 {
   int i;
   input_poll_cb();
+  // Joysticks
   for (i = 0; i < MAX_CONTROLLERS; i++)
   {
     Joysemul(JOY0_UP + 4*i, input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP));
@@ -206,6 +217,13 @@ static void update_input(void)
     Joysemul(JOY0_RIGHT + 4*i, input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT));
     Joysemul(JOY0_FIRE + i, input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B));
   }
+  // Light pen
+  int xpointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
+  int ypointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
+  pointerToScreenCoordinates(&xpointer, &ypointer);
+  xpen = xpointer - 16;
+  ypen = (ypointer - 16) / 2;
+  penbutton = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED);
 }
 
 static void check_variables(void)
