@@ -18,6 +18,8 @@ stamp-h1
 
 /libretro/*.o
 /libretro/*.so
+/libretro/libs
+/libretro/obj
 
 .autotools
 .cproject
