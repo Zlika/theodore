@@ -1055,7 +1055,7 @@ static void Setoption(int i)
   if(i >= 0) switch(popuptable)
   {
     case 1: options.language = i; break;
-    case 2: Resizescreen(XBITMAP * (i + 1) / 2, YSTATUS + YBITMAP * (i + 1)); break;
+    case 2: Resizescreen(XBITMAP * (i + 1) / 2, YSTATUS + YBITMAP * (i + 1) / 2); break;
     case 3: options.frequency = f[i]; break;
     case 4: options.vblnumbermax = v[i]; break;
     case 5: options.k7protection = i; break;

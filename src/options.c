@@ -24,7 +24,7 @@
 #include <string.h>
 #include "global.h"
 
-Options options = { .language = 0, .xclient = XBITMAP, .yclient = 2 * YBITMAP,
+Options options = { .language = 0, .xclient = XBITMAP, .yclient = YBITMAP,
                     .frequency = 1000, .vblnumbermax = 2,
                     .k7protection = 1, .fdprotection = 1, .keybpriority = 0 };
 static char default_keycode[256] = { 0 };
@@ -41,8 +41,8 @@ void Initoptions(char defaultto8dkeycode[256], char defaultto8djoycode[256])
 void Resetoptions()
 {
   options.language = 0;          //francais
-  options.xclient = XBITMAP;     //zoomx 2
-  options.yclient = 2 * YBITMAP; //zoomy 2
+  options.xclient = XBITMAP;     //zoom x
+  options.yclient = YBITMAP;     //zoom y
   options.frequency = 1000;      //1000 kHz
   options.vblnumbermax = 2;      //nombre de vbl entre deux affichages
   options.k7protection = 1;      //protection cassette
@@ -78,8 +78,8 @@ void Loadoptions(char *filename)
   if(options.frequency > 9000) options.frequency = 9000;
   if(options.xclient < (XBITMAP / 2)) options.xclient = XBITMAP / 2;
   if(options.xclient > (2 * XBITMAP)) options.xclient = 2 * XBITMAP;
-  if(options.yclient < YBITMAP) options.yclient = YBITMAP;
-  if(options.yclient > (4 * YBITMAP)) options.yclient = 4 * YBITMAP;
+  if(options.yclient < YBITMAP / 2) options.yclient = YBITMAP / 2;
+  if(options.yclient > (2 * YBITMAP)) options.yclient = 2 * YBITMAP;
   if(options.vblnumbermax < 1) options.vblnumbermax = 1;
   if(options.vblnumbermax > 64) options.vblnumbermax = 64;
   if(options.k7protection) options.k7protection = 1;

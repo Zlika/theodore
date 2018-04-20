@@ -132,7 +132,12 @@ void retro_init(void)
 
   Init6809();
   Hardreset();
-  video_buffer = CreateLibRetroVideoBuffer();
+#ifdef _3DS
+  video_buffer = (uint32_t*)linearMemAlign(XBITMAP * YBITMAP * sizeof(uint32_t), 0x80);
+#else
+  video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * sizeof(uint32_t));
+#endif
+  SetLibRetroVideoBuffer(video_buffer);
 }
 
 void retro_deinit(void)
@@ -169,10 +174,10 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
   info->timing.fps = VIDEO_FPS;
   info->timing.sample_rate = AUDIO_SAMPLE_RATE;
   info->geometry.base_width = XBITMAP;
-  info->geometry.base_height = YBITMAP * 2;
+  info->geometry.base_height = YBITMAP;
   info->geometry.max_width = XBITMAP;
-  info->geometry.max_height = YBITMAP * 2;
-  info->geometry.aspect_ratio = (float) XBITMAP / (YBITMAP * 2.0);
+  info->geometry.max_height = YBITMAP;
+  info->geometry.aspect_ratio = (float) XBITMAP / (float) YBITMAP;
 }
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
@@ -256,7 +261,7 @@ void retro_run(void)
   }
 
   audio_batch_cb(audio_stereo_buffer, AUDIO_SAMPLE_PER_FRAME);
-  video_cb(video_buffer, XBITMAP, YBITMAP * 2, sizeof(uint32_t)*XBITMAP);
+  video_cb(video_buffer, XBITMAP, YBITMAP, sizeof(uint32_t)*XBITMAP);
 }
 
 size_t retro_serialize_size(void)

@@ -93,7 +93,7 @@ static void Eventloop()
           xmouse = event.motion.x;
           ymouse = event.motion.y;
           xpen = xmouse * XBITMAP / options.xclient - 16;
-          ypen = (ymouse - (IsFullScreenMode() ? 0 : YSTATUS)) * YBITMAP / options.yclient - 8;
+          ypen = (ymouse - (IsFullScreenMode() ? 0 : YSTATUS)) * YBITMAP / 2 / options.yclient - 8;
           if(xmove && ymove)
           {
             Dialogmove();

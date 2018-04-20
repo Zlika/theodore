@@ -71,7 +71,7 @@ void SwitchFullScreenMode(void);
 // Returns true if fullscreen mode is enabled, false otherwise
 bool IsFullScreenMode(void);
 #else
-uint32_t* CreateLibRetroVideoBuffer(void);
+void SetLibRetroVideoBuffer(void *video_buffer);
 #endif
 
 #endif /* __DCTO8DVIDEO_H */

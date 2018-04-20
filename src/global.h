@@ -22,7 +22,7 @@
 #define __DCTO8DGLOBAL_H
 
 #define XBITMAP 672
-#define YBITMAP 216
+#define YBITMAP 432
 // Nombre de langues differentes
 #define LANGUAGE_MAX 2
 

@@ -29,10 +29,6 @@
 #include "msg.h"
 #endif
 
-#ifdef _3DS
-extern "C" void* linearMemAlign(size_t size, size_t alignment);
-#endif
-
 struct pix {char b, g, r, a;};        //structure pixel BGRA
 
 // global variables //////////////////////////////////////////////////////////
@@ -234,7 +230,7 @@ void Nextline(void)
     return;
   }
 #endif
-  p1 = pmin + (videolinenumber - 47) * options.yclient / YBITMAP * options.xclient;
+  p1 = pmin + (videolinenumber - 47) * options.yclient / (YBITMAP / 2) * options.xclient;
   if(videolinenumber == 263) p1 = pmax;
   p0 = pcurrentline;
   pcurrentline += options.xclient;
@@ -292,7 +288,7 @@ static void InitScreen(void)
 // Conserve le rapport largeur/hauteur de l'écran /////////////////////////////
 static void KeepAspectRatio(int *x, int *y)
 {
-  float expectedAspectRatio = (float)XBITMAP/(float)(2*YBITMAP);
+  float expectedAspectRatio = (float)XBITMAP/(float)YBITMAP;
   float aspectRatio = (float)*x/(float)*y;
 
   if(aspectRatio != expectedAspectRatio)
@@ -321,7 +317,7 @@ void Resizescreen(int x, int y)
   ystatus = is_fullscreen ? 0 : YSTATUS; // Disable status bar in fullscreen mode
   y -= ystatus;
   options.xclient = (x < XBITMAP/2) ? XBITMAP/2 : x;
-  options.yclient = (y < YBITMAP) ? YBITMAP : y;
+  options.yclient = (y < YBITMAP/2) ? YBITMAP/2 : y;
   KeepAspectRatio(&options.xclient, &options.yclient);
 
   if (window == NULL)
@@ -384,21 +380,15 @@ bool IsFullScreenMode(void)
   return is_fullscreen;
 }
 #else
-uint32_t* CreateLibRetroVideoBuffer()
+void SetLibRetroVideoBuffer(void *video_buffer)
 {
-#ifdef _3DS
-   video_buffer = (uint32_t*)linearMemAlign(XBITMAP * YBITMAP * 2 * sizeof(uint32_t), 0x80);
-#else
-   uint32_t *video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * 2 * sizeof(uint32_t));
-#endif
   screen->w = XBITMAP;
-  screen->h = YBITMAP*2;
+  screen->h = YBITMAP;
   screen->pixels = video_buffer;
 
   pmin = (int*)(screen->pixels);
-  pmax = pmin + XBITMAP * YBITMAP * 2;
+  pmax = pmin + XBITMAP * YBITMAP;
   InitScreen();
   ClearScreen();
-  return video_buffer;
 }
 #endif
