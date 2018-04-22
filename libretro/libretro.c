@@ -42,7 +42,6 @@ extern "C" void linearFree(void* mem);
 #define VIDEO_FPS         50
 #define AUDIO_SAMPLE_RATE 22050
 #define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
-#define TO8_B_KEY 0x0F
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -230,7 +229,7 @@ static void update_input(void)
   // Emulation of the B key with the B button of the joypad
   if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B))
   {
-    TO8key(TO8_B_KEY, true);
+    TO8key(libretroKeyCodeToThomsonScanCode[RETROK_b], true);
   }
 }
 
