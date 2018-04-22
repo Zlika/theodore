@@ -9,7 +9,7 @@ AM_SILENT_RULES([yes])
 AC_CONFIG_SRCDIR([src/6809disasm.h])
 AC_CONFIG_HEADERS([config.h])
 
-# Libtool to generate the libretro shared library.
+# Libtool is used here only because travis build fails during link phase without it.
 LT_PREREQ([2.4])
 LT_INIT([disable-static])
 
