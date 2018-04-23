@@ -1,4 +1,4 @@
-Next Release
+Release 0.8 (2018/04/23)
 ===========
 First release.
 * Import of DCTO8D 2009.05 source code (http://dcto8.free.fr/).
