@@ -22,6 +22,7 @@ ndk-build
 ### Gamepad: mapping of the buttons
 
 A => "Fire" button
+
 B => Simulates a keystroke on the 'B' key of the keyboard (allows to start most games without the need of a keyboard)
 
 ### Keyboard: mapping of special keys
@@ -41,6 +42,6 @@ B => Simulates a keystroke on the 'B' key of the keyboard (allows to start most 
 
 ### Compatibility
 
-The source code is portable and should compile on most platforms. However, this software is mostly tested on Linux and Android.
+The source code is portable and should compile on most platforms. However, this software is mostly tested on Linux.
 The Travis job checks that the code also builds on MacOS, and the AppVeyor job checks that the code also builds on Windows.
 Pull requests are welcomed to fix compilation and execution problems on other platforms.
