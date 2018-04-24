@@ -21,6 +21,11 @@
 #ifndef __DEVICES_H
 #define __DEVICES_H
 
+#include <stdbool.h>
+
+void SetFloppyWriteProtect(bool enabled);
+void SetTapeWriteProtect(bool enabled);
+
 void Readoctetk7();
 void Writeoctetk7();
 void Readsector();
@@ -36,10 +41,5 @@ void Loadmemo(const char *filename);
 void Unloadk7();
 void Unloadfd();
 void Unloadmemo();
-// Chargement d'un fichier avec auto-detection du type : k7 (*.k7), fd (*.fd) ou memo7 (*.rom)
-void Load(char *filename);
-void PrintK7Index(char *index);
-// Callback appellee quand k7index est modifie
-void SetUpdateK7IndexCallback(void (*callback)());
 
-#endif /* __DCTO8DDEVICES_H */
+#endif /* __DEVICES_H */

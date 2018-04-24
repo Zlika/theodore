@@ -13,8 +13,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef LIBRETRO_KEYMAP_H_
-#define LIBRETRO_KEYMAP_H_
+#ifndef SRC_KEYMAP_H_
+#define SRC_KEYMAP_H_
 
 #define THOMSON_ACC 0x14
 #define THOMSON_CAPSLOCK 0x50
@@ -210,4 +210,4 @@ const char libretroKeyCodeToThomsonScanCode[512] =
     -1     /* SDLK_UNDO = 322 */
 };
 
-#endif /* LIBRETRO_KEYMAP_H_ */
+#endif /* SRC_KEYMAP_H_ */

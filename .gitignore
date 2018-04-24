@@ -1,32 +1,13 @@
-/autom4te.cache
-/build-aux
-aclocal.m4
-config.h
-config.h.in
-config.log
-config.status
-configure
-libtool
-Makefile
-Makefile.in
-stamp-h1
-
 /src/.deps
 /src/.dirstamp
 /src/*.o
-/src/*.lo
 
-/libretro/*.o
-/libretro/*.so
-/libretro/libs
-/libretro/obj
+*.so
+libs
+obj
 
-.autotools
 .cproject
 .project
 .settings/
-
-theodore
-theodore.dat
 
 *~

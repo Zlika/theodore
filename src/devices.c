@@ -22,10 +22,11 @@
 #include <string.h>
 
 #include "6809emulator.h"
-#include "options.h"
 #include "to8demulator.h"
 
 // Variables globales ////////////////////////////////////////////////////////
+static bool fdprotection = true;
+static bool k7protection = true;
 static FILE *ffd = NULL;   // pointeur fichier disquette
 static FILE *fk7 = NULL;   // pointeur fichier k7
 static FILE *fprn = NULL;  // pointeur fichier imprimante
@@ -41,6 +42,16 @@ static void (*UpdateK7IndexCallback)() = NULL; // Callback appellee quand k7inde
 #define B *dc6809_b
 #define X dc6809_x
 #define Y dc6809_y
+
+void SetFloppyWriteProtect(bool enabled)
+{
+  fdprotection = enabled;
+}
+
+void SetTapeWriteProtect(bool enabled)
+{
+  k7protection = enabled;
+}
 
 // Emulation imprimante //////////////////////////////////////////////////////
 void Imprime()
@@ -84,7 +95,7 @@ void Writesector()
   int i, j, u, p, s;
   if(ffd == NULL) {Diskerror(71); return;}
   //erreur 72 = protection ecriture
-  if(options.fdprotection == 1) {Diskerror(72); return;}
+  if(fdprotection) {Diskerror(72); return;}
   u = Mgetc(0x6049) & 0xff; if(u > 03) {Diskerror(53); return;}
   p = Mgetc(0x604a) & 0xff; if(p != 0) {Diskerror(53); return;}
   p = Mgetc(0x604b) & 0xff; if(p > 79) {Diskerror(53); return;}
@@ -103,7 +114,7 @@ void Formatdisk()
   int i, u, fatlength;
   if(ffd == NULL) {Diskerror(71); return;}
   //erreur 72 = protection ecriture
-  if(options.fdprotection == 1) {Diskerror(72); return;}
+  if(fdprotection) {Diskerror(72); return;}
   u = Mgetc(0x6049) & 0xff; if(u > 03) return; //unite
   u = (1280 * u) << 8; //debut de l'unite dans le fichier .fd
   fatlength = 160;     //80=160Ko, 160=320Ko
@@ -165,7 +176,7 @@ void Readoctetk7()
 void Writeoctetk7()
 {
   if(fk7 == NULL) {Initprog(); return;}
-  if(options.k7protection) {Initprog(); return;}
+  if(k7protection) {Initprog(); return;}
   if(fputc(A, fk7) == EOF) {Initprog(); return;}
   Mputc(0x2045, 0);
   if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; UpdateK7Index();}

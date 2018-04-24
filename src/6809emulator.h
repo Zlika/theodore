@@ -56,4 +56,4 @@ void Reset6809();
 // - negative value (-code) when operation code is illegal
 int Run6809();
 
-#endif /* __DC6809EMUL_H */
+#endif /* __6809EMULATOR_H */

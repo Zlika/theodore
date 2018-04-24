@@ -1,3 +1,7 @@
+Next Release
+===========
+* Remove the standalone version of the emulator.
+
 Release 0.8 (2018/04/23)
 ===========
 First release.

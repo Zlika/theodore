@@ -9,7 +9,6 @@ SOURCES_C =
 
 SOURCES_C += $(CORE_DIR)/src/6809emulator.c
 SOURCES_C += $(CORE_DIR)/src/devices.c
-SOURCES_C += $(CORE_DIR)/src/options.c
 SOURCES_C += $(CORE_DIR)/src/to8demulator.c
 SOURCES_C += $(CORE_DIR)/src/video.c
-SOURCES_C += $(CORE_DIR)/libretro/libretro.c
+SOURCES_C += $(CORE_DIR)/src/libretro.c

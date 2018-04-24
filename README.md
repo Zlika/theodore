@@ -7,36 +7,40 @@ Theodore - Thomson TO8D emulator
 This is a fork of Daniel Coulom's [DCTO8D](http://dcto8.free.fr/), a [Thomson TO8D emulator](https://en.wikipedia.org/wiki/Thomson_TO8).
 It adds several improvements, in particular compatibility with the [libretro](https://github.com/libretro) API.
 
-### Requirements
-
-The following packages are required to compile the standalone version of the emulator:
-* a C compiler (GCC or clang)
-* the autotools (autoconf, automake, libtool)
-* the SDL 2 library
-
-On Debian and derivatives:
-```
-sudo apt-get install build-essential autoconf automake libtool libsdl2-dev
-```
-
-To compile the libretro version of the emulator, only a C compiler is required.
-
 ### How to compile
 
-To compile the standalone version of the emulator:
+Linux version:
 ```
-autoreconf -i
-./configure
 make
 ```
-To compile the libretro version of the emulator:
+Android version:
 ```
-cd libretro
-make
+cd jni
+ndk-build
 ```
+
+### Gamepad: mapping of the buttons
+
+A => "Fire" button
+B => Simulates a keystroke on the 'B' key of the keyboard (allows to start most games without the need of a keyboard)
+
+### Keyboard: mapping of special keys
+
+| Thomson keyboard | PC keyboard |
+| ------------- | ------------- |
+| STOP  | TAB  |
+| CNT  | CTRL  |
+| CAPSLOCK  | CAPSLOCK  |
+| ACC  | ALT  |
+| HOME  | HOME  |
+| Arrows  | Arrows  |
+| INS  | INSERT  |
+| EFF  | DEL  |
+| F1-F5  | F1-F5  |
+| F6-F10  | SHIFT+F1-F5  |
 
 ### Compatibility
 
-The source code is portable. However, this software is only tested on Linux.
+The source code is portable and should compile on most platforms. However, this software is mostly tested on Linux and Android.
 The Travis job checks that the code also builds on MacOS, and the AppVeyor job checks that the code also builds on Windows.
 Pull requests are welcomed to fix compilation and execution problems on other platforms.

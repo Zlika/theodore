@@ -609,7 +609,7 @@ else
 endif
 endif
 
-CORE_DIR = ..
+CORE_DIR = .
 
 include Makefile.common
 
@@ -627,7 +627,7 @@ DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES) $(GCC_FLAGS) $(GCC_WARNINGS) -DNST
 CFLAGS += $(fpic) $(DEFINES) $(C_VER)
 CXXFLAGS += $(fpic) $(DEFINES)
 
-INCDIRS := -I$(CORE_DIR) -I$(CORE_DIR)/source
+INCDIRS := -I$(CORE_DIR) -I$(CORE_DIR)/src
 
 OBJOUT   = -o
 LINKOUT  = -o 

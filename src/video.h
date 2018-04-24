@@ -21,31 +21,14 @@
 #ifndef __VIDEO_H
 #define __VIDEO_H
 
-#ifndef __LIBRETRO__
-#include <SDL.h>
-#endif
-#include <stdbool.h>
-#include <stdint.h>
+#define XBITMAP 672
+#define YBITMAP 432
 
-#include "global.h"
-
-#define YSTATUS 20
-
-#ifndef __LIBRETRO__
-//surface d'affichage de l'ecran
-extern SDL_Surface *screen;
-#endif
-
-//abscisse souris dans fenetre utilisateur
-extern int xmouse;
-//ordonnee souris dans fenetre utilisateur
-extern int ymouse;
+void SetLibRetroVideoBuffer(void *video_buffer);
 
 //pointeur fonction decodage memoire video
 extern void (*Decodevideo)(void);
 
-//Display screen
-void Displayscreen(void);
 // Creation d'un segment de ligne d'ecran
 void Displaysegment(void);
 // Changement de ligne ecran
@@ -63,15 +46,4 @@ void Decode160x16(void);
 // Decodage octet video mode 640x200 2 couleurs
 void Decode640x2(void);
 
-#ifndef __LIBRETRO__
-// Resize screen
-void Resizescreen(int x, int y);
-// Switch between fullscreen and windowed modes
-void SwitchFullScreenMode(void);
-// Returns true if fullscreen mode is enabled, false otherwise
-bool IsFullScreenMode(void);
-#else
-void SetLibRetroVideoBuffer(void *video_buffer);
-#endif
-
-#endif /* __DCTO8DVIDEO_H */
+#endif /* __VIDEO_H */

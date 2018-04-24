@@ -27,8 +27,9 @@
 #include "to8dbasic.h"
 #include "to8dmoniteur.h"
 #include "devices.h"
-#include "options.h"
 #include "video.h"
+
+#define VBL_NUMBER_MAX 2
 
 // memory
 char car[CARTRIDGE_MEM_SIZE]; //espace cartouche 4x16K
@@ -415,8 +416,7 @@ int Run(int ncyclesmax)
         //256-263 bord bas, 264-311 hors ecran
       {
         videolinenumber -= 312;
-        if(vblnumber == 0) Displayscreen();
-        if(++vblnumber >= options.vblnumbermax) vblnumber = 0;
+        if(++vblnumber >= VBL_NUMBER_MAX) vblnumber = 0;
       }
       displayflag = 0;
       if(vblnumber == 0)

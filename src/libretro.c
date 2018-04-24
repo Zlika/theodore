@@ -15,16 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "libretro-common/include/libretro.h"
+
 #include <stdlib.h>
 #include <string.h>
-#include "libretro.h"
-#include "../src/6809emulator.h"
-#include "../src/devices.h"
-#include "../src/global.h"
-#include "../src/options.h"
-#include "../src/to8demulator.h"
-#include "../src/video.h"
+#include "6809emulator.h"
+#include "devices.h"
 #include "keymap.h"
+#include "to8demulator.h"
+#include "video.h"
 
 #define PACKAGE_NAME "theodore"
 #ifdef GIT_VERSION
@@ -42,6 +41,7 @@ extern "C" void linearFree(void* mem);
 #define VIDEO_FPS         50
 #define AUDIO_SAMPLE_RATE 22050
 #define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
+#define CPU_FREQUENCY 1000
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -65,8 +65,8 @@ void retro_set_environment(retro_environment_t env)
 
   // Emulator's preferences
   static const struct retro_variable vars[] = {
-      { PACKAGE_NAME"_fd_write", "Floppy write protection; enabled|disabled" },
-      { PACKAGE_NAME"_k7_write", "Tape write protection; enabled|disabled" },
+      { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
+      { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
       { NULL, NULL }
   };
   env(RETRO_ENVIRONMENT_SET_VARIABLES, (void *) vars);
@@ -237,15 +237,15 @@ static void check_variables(void)
 {
   struct retro_variable var = {0};
 
-  var.key = PACKAGE_NAME"_fd_write";
+  var.key = PACKAGE_NAME"_floppy_write_protect";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
-    options.fdprotection = (strcmp(var.value, "enabled") == 0);
+    SetFloppyWriteProtect(strcmp(var.value, "enabled") == 0);
   }
-  var.key = PACKAGE_NAME"_k7_write";
+  var.key = PACKAGE_NAME"_tape_write_protect";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
-    options.k7protection = (strcmp(var.value, "enabled") == 0);
+    SetTapeWriteProtect(strcmp(var.value, "enabled") == 0);
   }
 }
 
@@ -268,11 +268,11 @@ void retro_run(void)
     // Computes the nb of cycles between 2 samples and runs the emulation for this nb of cycles
     // Nb of theoretical cycles for this period of time =
     // theoretical number + previous remaining - cycles in excess during the previous period
-    mcycles = options.frequency * 100000 / 2205;   // theoretical thousandths of cycles
-    mcycles += excess;                     // corrected thousandths of cyces
-    icycles = mcycles / 1000;              // integer number of cycles to run
-    excess = mcycles - 1000 * icycles;     // remaining to do the next time
-    excess -= 1000 * Run(icycles);         // remove thousandths in excess
+    mcycles = CPU_FREQUENCY * 100000 / 2205; // theoretical thousandths of cycles
+    mcycles += excess;                       // corrected thousandths of cyces
+    icycles = mcycles / 1000;                // integer number of cycles to run
+    excess = mcycles - 1000 * icycles;       // remaining to do the next time
+    excess -= 1000 * Run(icycles);           // remove thousandths in excess
     audio_sample = u8toS16_audio_sample(sound + 96);
     audio_stereo_buffer[(i << 1) + 0] = audio_stereo_buffer[(i << 1) + 1] = audio_sample;
   }

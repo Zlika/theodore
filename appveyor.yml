@@ -5,7 +5,7 @@ shallow_clone: true
 image: Visual Studio 2017
 
 environment:
-  makefile_location: libretro
+  makefile_location: .
   makefile_name: makefile
   target_name: theodore
 

@@ -21,27 +21,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "video.h"
-#include "options.h"
 #include "to8demulator.h"
-#ifndef __LIBRETRO__
-#include "interface.h"
-#include "icon.h"
-#include "msg.h"
-#endif
 
 struct pix {char b, g, r, a;};        //structure pixel BGRA
 
 // global variables //////////////////////////////////////////////////////////
-#ifndef __LIBRETRO__
-static SDL_Window *window = NULL;     //fenetre d'affichage de l'ecran
-static SDL_Renderer *renderer = NULL;
-static SDL_Texture *texture = NULL;   //texture mise à jour a partir de screen
-SDL_Surface *screen = NULL;           //surface d'affichage de l'ecran
-#else
 typedef struct { int w, h; void* pixels;} Surface;
 Surface surface;
 Surface *screen = &surface;
-#endif
 int xmouse;                           //abscisse souris dans fenetre utilisateur
 int ymouse;                           //ordonnee souris dans fenetre utilisateur
 static struct pix pcolor[20][8];      //couleurs BGRA de la palette (pour 8 pixels)
@@ -54,9 +41,6 @@ static int *pmax;                     //pointeur ecran : dernier pixel + 1
 static int screencount = 0;           //nbre ecrans affiches entre 2 affichages status
 static int xpixel[XBITMAP + 1];       //abscisse des pixels dans la ligne
 void (*Decodevideo)(void);            //pointeur fonction decodage memoire video
-#ifndef __LIBRETRO__
-static bool is_fullscreen = false;    //true when emulator runs in fullscreen
-#endif
 
 //definition des intensites pour correction gamma de la datasheet EF9369
 static const int intens[16] = {80,118,128,136,142,147,152,156,160,163,166,169,172,175,178,180};
@@ -72,37 +56,6 @@ void Palette(int n, int r, int v, int b)
     pcolor[n][i].r = 2 * (intens[r] - 64) + 16;
     pcolor[n][i].a = 0xff;
   }
-}
-
-// Mise à jour de la fenetre graphique ///////////////////////////////////////
-static void Render(void)
-{
-#ifndef __LIBRETRO__
-  SDL_UpdateTexture(texture, NULL, screen->pixels, screen->pitch);
-  SDL_RenderClear(renderer);
-  SDL_RenderCopy(renderer, texture, NULL, NULL);
-  SDL_RenderPresent(renderer);
-#endif
-}
-
-//Display screen /////////////////////////////////////////////////////////////
-void Displayscreen(void)
-{
-#ifndef __LIBRETRO__
-  if(dialog > 0 && SDL_BlitSurface(dialogbox, NULL, screen, &dialogrect) < 0)
-  {
-    SDL_error(__func__, "SDL_BlitSurface");
-  }
-  if(--screencount < 0)  //1 fois sur 10 pour diminuer le temps d'affichage
-  {
-    if(statusbar != NULL && !is_fullscreen && SDL_BlitSurface(statusbar, NULL, screen, NULL) < 0)
-    {
-      SDL_error(__func__, "SDL_BlitSurface");
-    }
-    screencount = 9;
-  }
-  Render();
-#endif
 }
 
 // Decodage octet video mode 320x16 standard /////////////////////////////////
@@ -199,13 +152,6 @@ void Displaysegment(void)
   int segmentmax;
   segmentmax = videolinecycle - 10;
   if(segmentmax > 42) segmentmax = 42;
-#ifndef __LIBRETRO__
-  if(SDL_MUSTLOCK(screen) && SDL_LockSurface(screen) < 0)
-  {
-    SDL_error(__func__, "SDL_LockSurface");
-    return;
-  }
-#endif
   while(currentlinesegment < segmentmax)
   {
     if(videolinenumber < 56) {Displayborder(); continue;}
@@ -214,30 +160,20 @@ void Displaysegment(void)
     if(currentlinesegment == 41) {Displayborder(); continue;}
     Decodevideo(); currentlinesegment++;
   }
-#ifndef __LIBRETRO__
-  SDL_UnlockSurface(screen);
-#endif
 }
 
 // Changement de ligne ecran //////////////////////////////////////////////////
 void Nextline(void)
 {
   int *p0, *p1;
-#ifndef __LIBRETRO__
-  if(SDL_MUSTLOCK(screen) && SDL_LockSurface(screen) < 0)
-  {
-    SDL_error(__func__, "SDL_LockSurface");
-    return;
-  }
-#endif
-  p1 = pmin + (videolinenumber - 47) * options.yclient / (YBITMAP / 2) * options.xclient;
+  p1 = pmin + (videolinenumber - 47) / 2 * XBITMAP;
   if(videolinenumber == 263) p1 = pmax;
   p0 = pcurrentline;
-  pcurrentline += options.xclient;
+  pcurrentline += XBITMAP;
   while(pcurrentline < p1)
   {
-    memcpy(pcurrentline, p0, 4 * options.xclient);
-    pcurrentline += options.xclient;
+    memcpy(pcurrentline, p0, 4 * XBITMAP);
+    pcurrentline += XBITMAP;
   }
   if(p1 == pmax)
   {
@@ -246,9 +182,6 @@ void Nextline(void)
   }
   pcurrentpixel = pcurrentline;
   currentlinesegment = 0;
-#ifndef __LIBRETRO__
-  SDL_UnlockSurface(screen);
-#endif
 }
 
 // Effacement de l'ecran.
@@ -260,7 +193,6 @@ static void ClearScreen(void)
     pmax = pmin + screen->w * screen->h;
     for(pcurrentpixel = pmin; pcurrentpixel < pmax; pcurrentpixel++)
       memcpy(pcurrentpixel, pcolor, 4);
-    Render();
   }
 }
 
@@ -271,115 +203,14 @@ static void InitScreen(void)
   pcurrentpixel = pmin;   //initialisation pointeur pixel courant
   currentlinesegment = 0; //initialisation numero d'octet dans la ligne
   currentvideomemory = 0; //initialisation index en memoire video thomson
-  for(i = 0; i <= XBITMAP; i++) xpixel[i] = i * options.xclient / XBITMAP;
+  for(i = 0; i <= XBITMAP; i++) xpixel[i] = i;
   videolinecycle = 52;
   for(videolinenumber = 48; videolinenumber < 264; videolinenumber++)
   {Displaysegment(); Nextline();}
   videolinecycle = 0; videolinenumber = 0;
-#ifndef __LIBRETRO__
-  Drawstatusbar();
-  if(dialog == DIALOG_OPTIONS) Drawoptionbox();
-#endif
   screencount = 0;
-  Displayscreen();
 }
 
-#ifndef __LIBRETRO__
-// Conserve le rapport largeur/hauteur de l'écran /////////////////////////////
-static void KeepAspectRatio(int *x, int *y)
-{
-  float expectedAspectRatio = (float)XBITMAP/(float)YBITMAP;
-  float aspectRatio = (float)*x/(float)*y;
-
-  if(aspectRatio != expectedAspectRatio)
-  {
-    if(aspectRatio > expectedAspectRatio)
-    {
-      *x = expectedAspectRatio * *y;
-    }
-    else
-    {
-      *y = (1.f / expectedAspectRatio) * *x;
-    }
-  }
-}
-
-// Resize screen //////////////////////////////////////////////////////////////
-void Resizescreen(int x, int y)
-{
-  int savepause6809;
-  int ystatus;
-  savepause6809 = pause6809;
-  pause6809 = 1; SDL_Delay(200);
-  //effacement surface de l'ecran
-  ClearScreen();
-
-  ystatus = is_fullscreen ? 0 : YSTATUS; // Disable status bar in fullscreen mode
-  y -= ystatus;
-  options.xclient = (x < XBITMAP/2) ? XBITMAP/2 : x;
-  options.yclient = (y < YBITMAP/2) ? YBITMAP/2 : y;
-  KeepAspectRatio(&options.xclient, &options.yclient);
-
-  if (window == NULL)
-  {
-    window = SDL_CreateWindow(_(MSG_PROGNAME),
-                              SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED,
-                              options.xclient, options.yclient + ystatus,
-                              is_fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE);
-    if (window == NULL) { SDL_error(__func__, "SDL_CreateWindow"); return; }
-    SDL_SetWindowIcon(window, SDL_LoadBMP_RW(SDL_RWFromMem(icon, sizeof(icon)), 1));
-    renderer = SDL_CreateRenderer(window, -1, 0);
-    if (renderer == NULL) { SDL_error(__func__, "SDL_CreateRenderer"); return; }
-  }
-  SDL_RenderSetLogicalSize(renderer, options.xclient, options.yclient + ystatus);
-  SDL_SetWindowSize(window, options.xclient, options.yclient + ystatus);
-  screen = SDL_CreateRGBSurface(0, options.xclient, options.yclient + ystatus, 32,
-                                0x00FF0000,
-                                0x0000FF00,
-                                0x000000FF,
-                                0xFF000000);
-  if (screen == NULL) { SDL_error(__func__, "SDL_CreateRGBSurface"); return; }
-  texture = SDL_CreateTexture(renderer,
-                              SDL_PIXELFORMAT_ARGB8888,
-                              SDL_TEXTUREACCESS_STREAMING,
-                              options.xclient, options.yclient + ystatus);
-  if (texture == NULL) { SDL_error(__func__, "SDL_CreateTexture"); return; }
-
-  pmin = (int*)(screen->pixels) + ystatus * options.xclient;
-  pmax = pmin + options.yclient * options.xclient;
-  //rafraichissement de l'ecran
-  InitScreen();
-  pause6809 = savepause6809;
-}
-
-// Switch between fullscreen and windowed modes
-void SwitchFullScreenMode(void)
-{
-  SDL_Delay(200);
-  int result;
-  if (is_fullscreen)
-  {
-    is_fullscreen = false;
-    result = SDL_SetWindowFullscreen(window, 0);
-  }
-  else
-  {
-    is_fullscreen = true;
-    result = SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-  }
-  if (result != 0)
-  {
-    SDL_error(__func__, "SDL_SetWindowFullscreen");
-  }
-}
-
-// Returns true if fullscreen mode is enabled, false otherwise
-bool IsFullScreenMode(void)
-{
-  return is_fullscreen;
-}
-#else
 void SetLibRetroVideoBuffer(void *video_buffer)
 {
   screen->w = XBITMAP;
@@ -391,4 +222,3 @@ void SetLibRetroVideoBuffer(void *video_buffer)
   InitScreen();
   ClearScreen();
 }
-#endif

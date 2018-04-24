@@ -23,7 +23,7 @@
 
 #include <stdbool.h>
 
-// nombre de touches du clavier TO8D
+// Number of keys of the TO8D keyboard
 #define KEYBOARDKEY_MAX 84
 // Size of cartridge memory space (4x16K)
 #define CARTRIDGE_MEM_SIZE 0x10000
@@ -53,8 +53,6 @@ extern int penbutton;
 
 //niveau du haut-parleur
 extern int sound;
-// mute flag
-extern int mute;
 
 //affichage
 //compteur ligne (0-63)
@@ -81,4 +79,4 @@ int Run(int ncyclesmax);
 // Hardreset de l'ordinateur emule ///////////////////////////////////////////
 void Hardreset();
 
-#endif /* __DCTO8DEMULATION_H */
+#endif /* __TO8DEMULATION_H */
