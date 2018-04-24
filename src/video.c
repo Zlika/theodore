@@ -166,7 +166,7 @@ void Displaysegment(void)
 void Nextline(void)
 {
   int *p0, *p1;
-  p1 = pmin + (videolinenumber - 47) / 2 * XBITMAP;
+  p1 = pmin + (videolinenumber - 47) * 2 * XBITMAP;
   if(videolinenumber == 263) p1 = pmax;
   p0 = pcurrentline;
   pcurrentline += XBITMAP;
