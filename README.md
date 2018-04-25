@@ -50,7 +50,7 @@ The source code is portable and should compile and run on most platforms.
 The Travis job checks that the code builds on Linux and MacOS, and the AppVeyor job checks that the code builds on Windows.
 
 | Platform | Compiles | Runs |
-| ------------- | ------------- |
+| --- | :---: | :---: |
 | Linux / amd64 | :heavy_check_mark: | :heavy_check_mark: |
 | Raspbian / Raspberry Pi | :heavy_check_mark: | :heavy_check_mark: |
 | Android | :heavy_check_mark: | :question: |
