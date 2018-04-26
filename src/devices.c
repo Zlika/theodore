@@ -34,7 +34,6 @@ static int k7bit = 0;      // puissance de 2 designant le bit k7 en cours
 static int k7octet;        // octet de la cassette en cours de traitement
 static int k7index;        // compteur du lecteur de cassette
 static int k7indexmax;     // compteur du lecteur de cassette en fin de bande
-static void (*UpdateK7IndexCallback)() = NULL; // Callback appellee quand k7index est modifie
 
 //6809 registers
 #define CC dc6809_cc
@@ -154,11 +153,6 @@ void Loadfd(const char *filename)
 }
 
 // Emulation cassette ////////////////////////////////////////////////////////
-static void UpdateK7Index()
-{
-  if (UpdateK7IndexCallback != NULL) (*UpdateK7IndexCallback)();
-}
-
 void Readoctetk7()
 {
   int byte = 0;
@@ -167,10 +161,10 @@ void Readoctetk7()
   if(byte == EOF)
   {
     Initprog();
-    fseek(fk7, 0, SEEK_SET); k7index = 0; UpdateK7Index(); return;
+    fseek(fk7, 0, SEEK_SET); k7index = 0; return;
   }
   A = k7octet = byte; Mputc(0x2045, byte); k7bit = 0;
-  if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; UpdateK7Index();}
+  if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9;}
 }
 
 void Writeoctetk7()
@@ -179,7 +173,7 @@ void Writeoctetk7()
   if(k7protection) {Initprog(); return;}
   if(fputc(A, fk7) == EOF) {Initprog(); return;}
   Mputc(0x2045, 0);
-  if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9; UpdateK7Index();}
+  if((ftell(fk7) & 511) == 0) {k7index = ftell(fk7) >> 9;}
 }
 
 void Unloadk7()
@@ -197,7 +191,6 @@ void Loadk7(const char *filename)
   fseek(fk7, 0, SEEK_END);
   k7indexmax = ftell(fk7) >> 9;
   fseek(fk7, 0, SEEK_SET);
-  UpdateK7Index();
 }
 
 void Unloadmemo()
@@ -228,11 +221,6 @@ void Loadmemo(const char *filename)
 void PrintK7Index(char *index)
 {
   if(fk7 != NULL) sprintf(index, "%03d/%03d", k7index, k7indexmax);
-}
-
-void SetUpdateK7IndexCallback(void (*callback)())
-{
-  UpdateK7IndexCallback = callback;
 }
 
 // Lecture boutons souris ////////////////////////////////////////////////////
