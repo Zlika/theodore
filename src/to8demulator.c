@@ -386,7 +386,7 @@ static void Entreesortie(int io)
     case 0x45: Writeoctetk7(); break;    //ecrit octet cassette
     case 0x4b: Readpenxy(0); break;      //lit position crayon
     case 0x4e: Readpenxy(1); break;      //lit position souris
-    case 0x51: Imprime(); break;         //imprime un caractere
+    case 0x51: Print(); break;           //imprime un caractere
     case 0x52: Readmousebutton(); break; //test clic souris
     default: break;                      //code op. invalide
   }

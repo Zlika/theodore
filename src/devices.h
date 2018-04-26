@@ -25,13 +25,14 @@
 
 void SetFloppyWriteProtect(bool enabled);
 void SetTapeWriteProtect(bool enabled);
+void SetPrinterEmulationEnabled(bool enabled);
 
 void Readoctetk7();
 void Writeoctetk7();
 void Readsector();
 void Writesector();
 void Formatdisk();
-void Imprime();
+void Print();
 void Readmousebutton();
 void Readpenxy(int device);
 

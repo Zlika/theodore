@@ -27,6 +27,7 @@
 // Variables globales ////////////////////////////////////////////////////////
 static bool fdprotection = true;
 static bool k7protection = true;
+static bool printerEnabled = false;
 static FILE *ffd = NULL;   // pointeur fichier disquette
 static FILE *fk7 = NULL;   // pointeur fichier k7
 static FILE *fprn = NULL;  // pointeur fichier imprimante
@@ -52,11 +53,19 @@ void SetTapeWriteProtect(bool enabled)
   k7protection = enabled;
 }
 
-// Emulation imprimante //////////////////////////////////////////////////////
-void Imprime()
+void SetPrinterEmulationEnabled(bool enabled)
 {
-  if(fprn == NULL) fprn = fopen("thomson-printer.txt", "ab");
-  if(fprn != NULL) {fputc(B, fprn); CC &= 0xfe;};
+  printerEnabled = enabled;
+}
+
+// Printer emulation /////////////////////////////////////////////////////////
+void Print()
+{
+  if (printerEnabled)
+  {
+    if(fprn == NULL) fprn = fopen("thomson-printer.txt", "ab");
+    if(fprn != NULL) {fputc(B, fprn); CC &= 0xfe;};
+  }
 }
 
 // Erreur lecture/ecriture fichier qd ou fd //////////////////////////////////

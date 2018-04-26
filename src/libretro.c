@@ -67,6 +67,7 @@ void retro_set_environment(retro_environment_t env)
   static const struct retro_variable vars[] = {
       { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
       { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
+      { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
       { NULL, NULL }
   };
   env(RETRO_ENVIRONMENT_SET_VARIABLES, (void *) vars);
@@ -246,6 +247,11 @@ static void check_variables(void)
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
     SetTapeWriteProtect(strcmp(var.value, "enabled") == 0);
+  }
+  var.key = PACKAGE_NAME"_printer_emulation";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    SetPrinterEmulationEnabled(strcmp(var.value, "enabled") == 0);
   }
 }
 
