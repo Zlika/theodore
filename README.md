@@ -44,6 +44,10 @@ B => Simulates a keystroke on the 'B' key of the keyboard (allows to start most 
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
 
+### :floppy_disk: File formats
+
+The emulator can read the following file formats: *.fd (floppy disks), *.k7 (tapes), *.rom (cartridges).
+
 ### Compatibility
 
 The source code is portable and should compile and run on most platforms.
@@ -53,9 +57,9 @@ The Travis job checks that the code builds on Linux and MacOS, and the AppVeyor 
 | --- | :---: | :---: |
 | Linux / amd64 | :heavy_check_mark: | :heavy_check_mark: |
 | Raspbian / Raspberry Pi | :heavy_check_mark: | :heavy_check_mark: |
-| Android | :heavy_check_mark: | :question: |
+| Android | :heavy_check_mark: | :heavy_check_mark: |
 | MacOS | :heavy_check_mark: | :question: |
-| Windows | :heavy_check_mark: | :question: |
+| Windows | :heavy_check_mark: | :heavy_check_mark: |
 | Others | :question: | :question: |
 
 Pull requests are welcomed to fix compilation and execution problems on other platforms.
