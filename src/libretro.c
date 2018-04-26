@@ -55,7 +55,12 @@ static unsigned int input_type[MAX_CONTROLLERS];
 static uint32_t *video_buffer = NULL;
 static int16_t audio_stereo_buffer[2*(AUDIO_SAMPLE_RATE / VIDEO_FPS)];
 
-static int excess;           // nb of thousandth of cycles in excess to run the next time
+// nb of thousandth of cycles in excess to run the next time
+static int excess;
+// current index in virtualkb_* arrays
+static int virtualkb_index = 0;
+// true if a key of the virtual keyboard was being pressed during the last call of update_input()
+static bool virtualkb_pressed = false;
 
 void retro_set_environment(retro_environment_t env)
 {
@@ -121,6 +126,10 @@ void retro_init(void)
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "Fire" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "B Key" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Virtual Keyboard: Change Letter (Up)" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Virtual Keyboard: Press Letter" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "Virtual Keyboard: Change Letter (Up)" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Virtual Keyboard: Change Letter (Down)" },
 
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Left" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Up" },
@@ -206,6 +215,14 @@ static void pointerToScreenCoordinates(int *x, int *y)
   *y = (*y + 0x7FFF) * YBITMAP / 0xFFFF;
 }
 
+static void print_current_virtualkb_key()
+{
+  struct retro_message msg;
+  msg.msg = virutalkb_chars[virtualkb_index];
+  msg.frames = VIDEO_FPS;
+  environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
+}
+
 static void update_input(void)
 {
   int i;
@@ -231,6 +248,38 @@ static void update_input(void)
   if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B))
   {
     TO8key(libretroKeyCodeToThomsonScanCode[RETROK_b], true);
+  }
+  // Change letter with Select/X/Y and press it with Start
+  bool select = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
+  bool start = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START);
+  bool x = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X);
+  bool y = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
+  if (!virtualkb_pressed)
+  {
+    if (select || x)
+    {
+      virtualkb_index = (virtualkb_index + 1) % VIRTUALKB_NB_KEYS;
+      print_current_virtualkb_key();
+      virtualkb_pressed = true;
+    }
+    else if (y)
+    {
+      virtualkb_index = ((virtualkb_index - 1) % VIRTUALKB_NB_KEYS + VIRTUALKB_NB_KEYS) % VIRTUALKB_NB_KEYS;
+      print_current_virtualkb_key();
+      virtualkb_pressed = true;
+    }
+    else if (start)
+    {
+      TO8key(libretroKeyCodeToThomsonScanCode[virtualkb_keysyms[virtualkb_index]], true);
+      virtualkb_pressed = true;
+    }
+  }
+  else
+  {
+    if (!select && !start && !x && !y)
+    {
+      virtualkb_pressed = false;
+    }
   }
 }
 

@@ -13,15 +13,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SRC_KEYMAP_H_
-#define SRC_KEYMAP_H_
+#ifndef __KEYMAP_H
+#define __KEYMAP_H
 
 #define THOMSON_ACC 0x14
 #define THOMSON_CAPSLOCK 0x50
 #define THOMSON_LEFT_SHIFT 0x51
 #define THOMSON_RIGHT_SHIFT 0x52
 #define THOMSON_CNT 0x53
-
 
 const char libretroKeyCodeToThomsonScanCode[512] =
 {
@@ -210,4 +209,25 @@ const char libretroKeyCodeToThomsonScanCode[512] =
     -1     /* SDLK_UNDO = 322 */
 };
 
-#endif /* SRC_KEYMAP_H_ */
+#define VIRTUALKB_NB_KEYS 37
+
+const int virtualkb_keysyms[VIRTUALKB_NB_KEYS] =
+{
+    RETROK_KP0, RETROK_KP1, RETROK_KP2, RETROK_KP3, RETROK_KP4,
+    RETROK_KP5, RETROK_KP6, RETROK_KP7, RETROK_KP8, RETROK_KP9,
+    RETROK_a, RETROK_b, RETROK_c, RETROK_d, RETROK_e, RETROK_f,
+    RETROK_g, RETROK_h, RETROK_i, RETROK_j, RETROK_k, RETROK_l,
+    RETROK_m, RETROK_n, RETROK_o, RETROK_p, RETROK_q, RETROK_r,
+    RETROK_s, RETROK_t, RETROK_u, RETROK_v, RETROK_w, RETROK_x,
+    RETROK_y, RETROK_z, RETROK_RETURN
+};
+
+const char* virutalkb_chars[VIRTUALKB_NB_KEYS] =
+{
+    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+    "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+    "U", "V", "W", "X", "Y", "Z", "Enter"
+};
+
+#endif /* __KEYMAP_H */

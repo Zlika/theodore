@@ -29,6 +29,9 @@ A => "Fire" button
 
 B => Simulates a keystroke on the 'B' key of the keyboard (allows to start most games without the need of a keyboard)
 
+**Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the start button simulates a keystroke on the selected key. On controllers without Y/X keys, select can also be used to roll the virtual keyboard up.
+The order of the keys in the virtual keyboard is: digits (0->9) then letters (A->Z) then "Enter".
+
 ### Keyboard: mapping of special keys
 
 | Thomson keyboard | PC keyboard |
