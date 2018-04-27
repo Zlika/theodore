@@ -3,6 +3,7 @@ Next Release
 * Remove the standalone version of the emulator.
 * Add an option to enable/disable printer emulation.
 * Add a virtual keyboard to play without a keyboard.
+* Add support for the SAP file format.
 
 Release 0.8 (2018/04/23)
 ===========

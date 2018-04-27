@@ -18,6 +18,7 @@
 
 #include "libretro-common/include/libretro.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "6809emulator.h"
@@ -25,6 +26,7 @@
 #include "keymap.h"
 #include "to8demulator.h"
 #include "video.h"
+#include "sap.h"
 
 #define PACKAGE_NAME "theodore"
 #ifdef GIT_VERSION
@@ -179,7 +181,7 @@ void retro_get_system_info(struct retro_system_info *info)
   memset(info, 0, sizeof(*info));
   info->library_name = PACKAGE_NAME;
   info->library_version = PACKAGE_VERSION;
-  info->valid_extensions = "fd|k7|m7|rom";
+  info->valid_extensions = "fd|sap|k7|m7|rom";
   info->need_fullpath = true;
   info->block_extract = false;
 }
@@ -368,10 +370,24 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 {
 }
 
+static bool exists(const char *filename)
+{
+    FILE *file;
+    if ((file = fopen(filename, "r")))
+    {
+        fclose(file);
+        return true;
+    }
+    return false;
+}
+
 // Load file with auto-detection of type based on the file extension:
 // k7 (*.k7), fd (*.fd) or memo7 (*.rom)
 static bool load_file(const char *filename)
 {
+  char fd_filename[256];
+  size_t filename_size;
+
   if (strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".k7"))
   {
     Loadk7(filename);
@@ -384,6 +400,23 @@ static bool load_file(const char *filename)
       || !strcmp(filename + strlen(filename) - 3, ".m7")))
   {
     Loadmemo(filename);
+  }
+  else if (strlen(filename) > 4 && !strcmp(filename + strlen(filename) - 4, ".sap"))
+  {
+    filename_size = strlen(filename);
+    strcpy(fd_filename, filename);
+    fd_filename[filename_size - 3] = 'f';
+    fd_filename[filename_size - 2] = 'd';
+    fd_filename[filename_size - 1] = '\0';
+    if (!exists(fd_filename))
+    {
+      if (log_cb)
+      {
+        log_cb(RETRO_LOG_INFO, "Converting SAP file to FD format.\n");
+      }
+      sap2fd(filename, fd_filename);
+    }
+    Loadfd(fd_filename);
   }
   else
   {
