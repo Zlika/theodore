@@ -49,7 +49,7 @@ The order of the keys in the virtual keyboard is: digits (0->9) then letters (A-
 
 ### :floppy_disk: File formats
 
-The emulator can read the following file formats: *.fd (floppy disks), *.k7 (tapes), *.rom (cartridges).
+The emulator can read the following file formats: *.fd (floppy disks), *.k7 (tapes), *.m7 and *.rom (cartridges).
 
 ### Compatibility
 

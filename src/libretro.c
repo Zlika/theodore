@@ -178,7 +178,7 @@ void retro_get_system_info(struct retro_system_info *info)
   memset(info, 0, sizeof(*info));
   info->library_name = PACKAGE_NAME;
   info->library_version = PACKAGE_VERSION;
-  info->valid_extensions = "fd|k7|rom";
+  info->valid_extensions = "fd|k7|m7|rom";
   info->need_fullpath = true;
   info->block_extract = false;
 }
@@ -371,15 +371,16 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 // k7 (*.k7), fd (*.fd) or memo7 (*.rom)
 static bool load_file(const char *filename)
 {
-  if(strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".k7"))
+  if (strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".k7"))
   {
     Loadk7(filename);
   }
-  else if(strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".fd"))
+  else if (strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".fd"))
   {
     Loadfd(filename);
   }
-  else if(strlen(filename) > 4 && !strcmp(filename + strlen(filename) - 4, ".rom"))
+  else if (strlen(filename) > 4 && (!strcmp(filename + strlen(filename) - 4, ".rom")
+      || !strcmp(filename + strlen(filename) - 3, ".m7")))
   {
     Loadmemo(filename);
   }
