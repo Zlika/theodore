@@ -1,5 +1,5 @@
 DEBUG = 0
-GIT_VERSION := " $(shell git rev-parse --short HEAD)"
+GIT_VERSION := "$(shell git describe --dirty --always --tags)"
 HAS_GCC = 1
 
 SPACE :=

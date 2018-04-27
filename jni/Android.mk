@@ -6,7 +6,7 @@ include $(CORE_DIR)/Makefile.common
 
 COREFLAGS := -std=gnu99 -fsigned-char -DANDROID -D__LIBRETRO__ $(INCFLAGS)
 
-GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+GIT_VERSION := "$(shell git describe --dirty --always --tags || echo unknown)"
 ifneq ($(GIT_VERSION)," unknown")
 	COREFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 endif
