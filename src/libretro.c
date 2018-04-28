@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "6809emulator.h"
 #include "devices.h"
 #include "keymap.h"
@@ -381,6 +382,19 @@ static bool exists(const char *filename)
     return false;
 }
 
+static bool streq_nocase(const char *s1, const char *s2)
+{
+  int i;
+  for (i = 0; s1[i] != '\0'; i++)
+  {
+    if (toupper(s1[i]) != toupper(s2[i]))
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Load file with auto-detection of type based on the file extension:
 // k7 (*.k7), fd (*.fd) or memo7 (*.rom)
 static bool load_file(const char *filename)
@@ -388,20 +402,20 @@ static bool load_file(const char *filename)
   char fd_filename[256];
   size_t filename_size;
 
-  if (strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".k7"))
+  if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".k7"))
   {
     Loadk7(filename);
   }
-  else if (strlen(filename) > 3 && !strcmp(filename + strlen(filename) - 3, ".fd"))
+  else if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".fd"))
   {
     Loadfd(filename);
   }
-  else if (strlen(filename) > 4 && (!strcmp(filename + strlen(filename) - 4, ".rom")
-      || !strcmp(filename + strlen(filename) - 3, ".m7")))
+  else if (strlen(filename) > 4 && (streq_nocase(filename + strlen(filename) - 4, ".rom")
+      || streq_nocase(filename + strlen(filename) - 3, ".m7")))
   {
     Loadmemo(filename);
   }
-  else if (strlen(filename) > 4 && !strcmp(filename + strlen(filename) - 4, ".sap"))
+  else if (strlen(filename) > 4 && streq_nocase(filename + strlen(filename) - 4, ".sap"))
   {
     filename_size = strlen(filename);
     strcpy(fd_filename, filename);
@@ -410,20 +424,18 @@ static bool load_file(const char *filename)
     fd_filename[filename_size - 1] = '\0';
     if (!exists(fd_filename))
     {
-      if (log_cb)
+      if (log_cb) log_cb(RETRO_LOG_INFO, "Converting SAP file to FD format.\n");
+      if (!sap2fd(filename, fd_filename))
       {
-        log_cb(RETRO_LOG_INFO, "Converting SAP file to FD format.\n");
+        if (log_cb) log_cb(RETRO_LOG_ERROR, "Cannot convert file to SAP format.\n");
+        return false;
       }
-      sap2fd(filename, fd_filename);
     }
     Loadfd(fd_filename);
   }
   else
   {
-    if (log_cb)
-    {
-      log_cb(RETRO_LOG_ERROR, "Unknown file type for file %s.\n", filename);
-    }
+    if (log_cb) log_cb(RETRO_LOG_ERROR, "Unknown file type for file %s.\n", filename);
     return false;
   }
   return true;
