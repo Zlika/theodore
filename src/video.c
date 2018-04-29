@@ -18,6 +18,7 @@
 
 /* Graphical display functions of the emulator */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "video.h"
@@ -175,7 +176,7 @@ void Nextline(void)
     memcpy(pcurrentline, p0, 4 * XBITMAP);
     pcurrentline += XBITMAP;
   }
-  if(p1 == pmax)
+  if(pcurrentline == pmax)
   {
     pcurrentline = pmin;    //initialisation pointeur ligne courante
     currentvideomemory = 0; //initialisation index en memoire video thomson
