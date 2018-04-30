@@ -620,6 +620,19 @@ C_VER = -std=gnu99
 CFLAGS += -fsigned-char
 CXXFLAGS += -std=c99
 CXXFLAGS += -fno-rtti
+GCC_WARNINGS += --pedantic \
+	-Wall \
+	-Wno-sign-compare \
+	-Wno-unused-variable \
+	-Wno-unused-function \
+	-Werror-implicit-function-declaration \
+	-Wno-uninitialized \
+	-Wno-strict-aliasing \
+	-Wno-overflow \
+	-fno-strict-overflow \
+	-Wformat \
+	-Wformat-security \
+	-Werror=format-security 
 endif
 
 DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES) $(GCC_FLAGS) $(GCC_WARNINGS) -DNST_NO_ZLIB $(INCFLAGS) $(INCFLAGS_PLATFORM)
