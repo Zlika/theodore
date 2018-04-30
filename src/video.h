@@ -21,10 +21,13 @@
 #ifndef __VIDEO_H
 #define __VIDEO_H
 
+#include <stdint.h>
+
 #define XBITMAP 672
 #define YBITMAP 432
 
-void SetLibRetroVideoBuffer(void *video_buffer);
+// Sets the framebuffer to use
+void SetLibRetroVideoBuffer(uint32_t *video_buffer);
 
 //pointeur fonction decodage memoire video
 extern void (*Decodevideo)(void);

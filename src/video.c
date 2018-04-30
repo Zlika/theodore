@@ -25,22 +25,19 @@
 #include "to8demulator.h"
 
 struct pix {char b, g, r, a;};        //structure pixel BGRA
+typedef struct { int w, h; uint32_t* pixels;} Surface;
 
 // global variables //////////////////////////////////////////////////////////
-typedef struct { int w, h; void* pixels;} Surface;
-Surface surface;
-Surface *screen = &surface;
-int xmouse;                           //abscisse souris dans fenetre utilisateur
-int ymouse;                           //ordonnee souris dans fenetre utilisateur
+static Surface screen;
 static struct pix pcolor[20][8];      //couleurs BGRA de la palette (pour 8 pixels)
 static int currentvideomemory;        //index octet courant en memoire video thomson
 static int currentlinesegment;        //numero de l'octet courant dans la ligne video
-static int *pcurrentpixel;            //pointeur ecran : pixel courant
-static int *pcurrentline;             //pointeur ecran : debut ligne courante
-static int *pmin;                     //pointeur ecran : premier pixel
-static int *pmax;                     //pointeur ecran : dernier pixel + 1
+static uint32_t *pcurrentpixel;       //pointeur ecran : pixel courant
+static uint32_t *pcurrentline;        //pointeur ecran : debut ligne courante
+static uint32_t *pmin;                //pointeur ecran : premier pixel
+static uint32_t *pmax;                //pointeur ecran : dernier pixel + 1
 static int screencount = 0;           //nbre ecrans affiches entre 2 affichages status
-static int xpixel[XBITMAP + 1];       //abscisse des pixels dans la ligne
+
 void (*Decodevideo)(void);            //pointeur fonction decodage memoire video
 
 //definition des intensites pour correction gamma de la datasheet EF9369
@@ -72,7 +69,7 @@ void Decode320x16(void)
   for(i = 7; i >= 0; i--)
   {
     k += 2; c = pcolor + (((shape >> i) & 1) ? c1 : c0);
-    while(pcurrentpixel < pcurrentline + xpixel[k]) memcpy(pcurrentpixel++, c, 4);
+    while(pcurrentpixel < pcurrentline + k) memcpy(pcurrentpixel++, c, sizeof(uint32_t));
   }
 }
 
@@ -87,7 +84,7 @@ void Decode320x4(void)
   for(i = 7; i >= 0; i--)
   {
     k += 2; c = pcolor + (((c0 << 1) >> i & 2) | (c1 >> i & 1));
-    while(pcurrentpixel < pcurrentline + xpixel[k]) memcpy(pcurrentpixel++, c, 4);
+    while(pcurrentpixel < pcurrentline + k) memcpy(pcurrentpixel++, c, sizeof(uint32_t));
   }
 }
 
@@ -102,7 +99,7 @@ void Decode320x4special(void)
   for(i = 14; i >= 0; i -= 2)
   {
     k += 2; c = pcolor + (c0 >> i & 3);
-    while(pcurrentpixel < pcurrentline + xpixel[k]) memcpy(pcurrentpixel++, c, 4);
+    while(pcurrentpixel < pcurrentline + k) memcpy(pcurrentpixel++, c, sizeof(uint32_t));
   }
 }
 
@@ -117,7 +114,7 @@ void Decode160x16(void)
   for(i = 12; i >= 0; i -= 4)
   {
     k += 4; c = pcolor + (c0 >> i & 0x0f);
-    while(pcurrentpixel < pcurrentline + xpixel[k]) memcpy(pcurrentpixel++, c, 4);
+    while(pcurrentpixel < pcurrentline + k) memcpy(pcurrentpixel++, c, sizeof(uint32_t));
   }
 }
 
@@ -132,7 +129,7 @@ void Decode640x2(void)
   for(i = 15; i >= 0; i--)
   {
     k += 1; c = pcolor + (((c0 >> i) & 1) ? 1 : 0);
-    while(pcurrentpixel < pcurrentline + xpixel[k]) memcpy(pcurrentpixel++, c, 4);
+    while(pcurrentpixel < pcurrentline + k) memcpy(pcurrentpixel++, c, sizeof(uint32_t));
   }
 }
 
@@ -144,7 +141,7 @@ static void Displayborder(void)
   currentlinesegment++;
   c = pcolor + bordercolor;
   k = currentlinesegment << 4;
-  while(pcurrentpixel < pcurrentline + xpixel[k]) memcpy(pcurrentpixel++, c, 4);
+  while(pcurrentpixel < pcurrentline + k) memcpy(pcurrentpixel++, c, sizeof(uint32_t));
 }
 
 // Creation d'un segment de ligne d'ecran /////////////////////////////////////
@@ -166,14 +163,14 @@ void Displaysegment(void)
 // Changement de ligne ecran //////////////////////////////////////////////////
 void Nextline(void)
 {
-  int *p0, *p1;
+  uint32_t *p0, *p1;
   p1 = pmin + (videolinenumber - 47) * 2 * XBITMAP;
   if(videolinenumber == 263) p1 = pmax;
   p0 = pcurrentline;
   pcurrentline += XBITMAP;
   while(pcurrentline < p1)
   {
-    memcpy(pcurrentline, p0, 4 * XBITMAP);
+    memcpy(pcurrentline, p0, sizeof(uint32_t) * XBITMAP);
     pcurrentline += XBITMAP;
   }
   if(pcurrentline == pmax)
@@ -188,13 +185,10 @@ void Nextline(void)
 // Effacement de l'ecran.
 static void ClearScreen(void)
 {
-  if(screen != NULL)
-  {
-    pmin = (int*)(screen->pixels);
-    pmax = pmin + screen->w * screen->h;
-    for(pcurrentpixel = pmin; pcurrentpixel < pmax; pcurrentpixel++)
-      memcpy(pcurrentpixel, pcolor, 4);
-  }
+  pmin = screen.pixels;
+  pmax = pmin + screen.w * screen.h;
+  for(pcurrentpixel = pmin; pcurrentpixel < pmax; pcurrentpixel++)
+    memcpy(pcurrentpixel, pcolor, sizeof(uint32_t));
 }
 
 static void InitScreen(void)
@@ -204,7 +198,6 @@ static void InitScreen(void)
   pcurrentpixel = pmin;   //initialisation pointeur pixel courant
   currentlinesegment = 0; //initialisation numero d'octet dans la ligne
   currentvideomemory = 0; //initialisation index en memoire video thomson
-  for(i = 0; i <= XBITMAP; i++) xpixel[i] = i;
   videolinecycle = 52;
   for(videolinenumber = 48; videolinenumber < 264; videolinenumber++)
   {Displaysegment(); Nextline();}
@@ -212,13 +205,13 @@ static void InitScreen(void)
   screencount = 0;
 }
 
-void SetLibRetroVideoBuffer(void *video_buffer)
+void SetLibRetroVideoBuffer(uint32_t *video_buffer)
 {
-  screen->w = XBITMAP;
-  screen->h = YBITMAP;
-  screen->pixels = video_buffer;
+  screen.w = XBITMAP;
+  screen.h = YBITMAP;
+  screen.pixels = video_buffer;
 
-  pmin = (int*)(screen->pixels);
+  pmin = screen.pixels;
   pmax = pmin + XBITMAP * YBITMAP;
   InitScreen();
   ClearScreen();
