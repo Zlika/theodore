@@ -1,6 +1,7 @@
 /*
- * This file is part of theodore, a Thomson emulator based on
- * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ * This file is part of theodore (https://github.com/Zlika/theodore),
+ * a Thomson emulator based on Daniel Coulom's DCTO8D emulator
+ * (http://dcto8.free.fr/).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +24,10 @@
 
 #include <stdbool.h>
 
-// Number of keys of the TO8D keyboard
-#define KEYBOARDKEY_MAX 84
-// Size of cartridge memory space (4x16K)
-#define CARTRIDGE_MEM_SIZE 0x10000
 // Size of RAM (512K)
 #define RAM_SIZE 0x80000
+// Size of cartridge memory space (4x16K)
+#define CARTRIDGE_MEM_SIZE 0x10000
 // Size of I/O ports space
 #define IO_MEM_SIZE 0x40
 

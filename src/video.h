@@ -1,6 +1,7 @@
 /*
- * This file is part of theodore, a Thomson emulator based on
- * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ * This file is part of theodore (https://github.com/Zlika/theodore),
+ * a Thomson emulator based on Daniel Coulom's DCTO8D emulator
+ * (http://dcto8.free.fr/).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +30,12 @@
 // Sets the framebuffer to use
 void SetLibRetroVideoBuffer(uint32_t *video_buffer);
 
-//pointeur fonction decodage memoire video
-extern void (*Decodevideo)(void);
+// List of available video modes
+enum VideoMode { VIDEO_320X16, VIDEO_320X4, VIDEO_320X4_SPECIAL,
+                 VIDEO_160X16, VIDEO_640X2 };
+
+// Sets the video mode
+void SetVideoMode(enum VideoMode mode);
 
 // Creation d'un segment de ligne d'ecran
 void Displaysegment(void);
@@ -38,15 +43,5 @@ void Displaysegment(void);
 void Nextline(void);
 // Modification de la palette
 void Palette(int n, int r, int v, int b);
-// Decodage octet video mode 320x16 standard
-void Decode320x16(void);
-// Decodage octet video mode bitmap4 320x200 4 couleurs
-void Decode320x4(void);
-// Decodage octet video mode bitmap4 special 320x200 4 couleurs
-void Decode320x4special(void);
-// Decodage octet video mode bitmap16 160x200 16 couleurs
-void Decode160x16(void);
-// Decodage octet video mode 640x200 2 couleurs
-void Decode640x2(void);
 
 #endif /* __VIDEO_H */

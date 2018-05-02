@@ -22,7 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "6809emulator.h"
+
+#include "6809cpu.h"
 #include "devices.h"
 #include "keymap.h"
 #include "to8demulator.h"

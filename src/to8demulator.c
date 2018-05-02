@@ -1,6 +1,7 @@
 /*
- * This file is part of theodore, a Thomson emulator based on
- * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ * This file is part of theodore (https://github.com/Zlika/theodore),
+ * a Thomson emulator based on Daniel Coulom's DCTO8D emulator
+ * (http://dcto8.free.fr/).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,13 +24,15 @@
 #include <string.h>
 #include <time.h>
 
-#include "6809emulator.h"
+#include "6809cpu.h"
 #include "to8dbasic.h"
 #include "to8dmoniteur.h"
 #include "devices.h"
 #include "video.h"
 
 #define VBL_NUMBER_MAX 2
+// Number of keys of the TO8D keyboard
+#define KEYBOARDKEY_MAX 84
 
 // memory
 char car[CARTRIDGE_MEM_SIZE]; //espace cartouche 4x16K
@@ -224,11 +227,11 @@ static void TO8videomode(char c)
   port[0x1c] = c;
   switch(c)
   {
-    case 0x21: Decodevideo = Decode320x4; break;
-    case 0x2a: Decodevideo = Decode640x2; break;
-    case 0x41: Decodevideo = Decode320x4special; break;
-    case 0x7b: Decodevideo = Decode160x16; break;
-    default:   Decodevideo = Decode320x16; break;
+    case 0x21: SetVideoMode(VIDEO_320X4); break;
+    case 0x2a: SetVideoMode(VIDEO_640X2); break;
+    case 0x41: SetVideoMode(VIDEO_320X4_SPECIAL); break;
+    case 0x7b: SetVideoMode(VIDEO_160X16); break;
+    default:   SetVideoMode(VIDEO_320X16); break;
   }
 }
 
@@ -295,7 +298,7 @@ void Initprog()
   carflags &= 0xec;
   Mputc = Mputto8d;
   Mgetc = Mgetto8d;
-  Decodevideo = Decode320x16;
+  SetVideoMode(VIDEO_320X16);
   ramuser = ram - 0x2000;
   Videopage_bordercolor(port[0x1d]);
   TO8videoram();
@@ -374,24 +377,6 @@ static void Timercontrol()
   if(port[0x05] & 0x01) timer6846 = latch6846 << 3;
 }
 
-// Traitement des entrees-sorties ////////////////////////////////////////////
-static void Entreesortie(int io)
-{
-  switch(io)
-  {
-    case 0x14: Readsector(); break;      //lit secteur qd-fd
-    case 0x15: Writesector(); break;     //ecrit secteur qd-fd
-    case 0x18: Formatdisk(); break;      //formatage qd-fd
-    case 0x42: Readoctetk7(); break;     //lit octet cassette
-    case 0x45: Writeoctetk7(); break;    //ecrit octet cassette
-    case 0x4b: Readpenxy(0); break;      //lit position crayon
-    case 0x4e: Readpenxy(1); break;      //lit position souris
-    case 0x51: Print(); break;           //imprime un caractere
-    case 0x52: Readmousebutton(); break; //test clic souris
-    default: break;                      //code op. invalide
-  }
-}
-
 // Execution n cycles processeur 6809 ////////////////////////////////////////
 int Run(int ncyclesmax)
 {
@@ -401,7 +386,7 @@ int Run(int ncyclesmax)
   {
     //execution d'une instruction
     opcycles = Run6809();
-    if(opcycles < 0) {Entreesortie(-opcycles); opcycles = 64;}
+    if(opcycles < 0) {RunIoOpcode(-opcycles); opcycles = 64;}
     ncycles += opcycles;
     videolinecycle += opcycles;
     if(displayflag) Displaysegment();

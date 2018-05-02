@@ -1,6 +1,7 @@
 /*
- * This file is part of theodore, a Thomson emulator based on
- * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ * This file is part of theodore (https://github.com/Zlika/theodore),
+ * a Thomson emulator based on Daniel Coulom's DCTO8D emulator
+ * (http://dcto8.free.fr/).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +39,18 @@ static uint32_t *pmin;                //pointeur ecran : premier pixel
 static uint32_t *pmax;                //pointeur ecran : dernier pixel + 1
 static int screencount = 0;           //nbre ecrans affiches entre 2 affichages status
 
-void (*Decodevideo)(void);            //pointeur fonction decodage memoire video
+// Forward declarations
+static void Decode320x16(void);
+static void Decode320x4(void);
+static void Decode320x4special(void);
+static void Decode160x16(void);
+static void Decode640x2(void);
+// Current video memory decoding function
+static void (*Decodevideo)(void) = Decode320x16;
+// Array of the different video memory decoding functions (indexed by the video mode)
+static void (*DecodevideoModes[5])(void) =
+  { Decode320x16, Decode320x4, Decode320x4special,
+    Decode160x16, Decode640x2 };
 
 //definition des intensites pour correction gamma de la datasheet EF9369
 static const int intens[16] = {80,118,128,136,142,147,152,156,160,163,166,169,172,175,178,180};
@@ -56,8 +68,13 @@ void Palette(int n, int r, int v, int b)
   }
 }
 
+void SetVideoMode(enum VideoMode mode)
+{
+  Decodevideo = DecodevideoModes[mode];
+}
+
 // Decodage octet video mode 320x16 standard /////////////////////////////////
-void Decode320x16(void)
+static void Decode320x16(void)
 {
   int i, k, c0, c1, color, shape;
   void *c;
@@ -74,7 +91,7 @@ void Decode320x16(void)
 }
 
 // Decodage octet video mode bitmap4 320x200 4 couleurs //////////////////////
-void Decode320x4(void)
+static void Decode320x4(void)
 {
   int i, k, c0, c1;
   void *c;
@@ -89,7 +106,7 @@ void Decode320x4(void)
 }
 
 // Decodage octet video mode bitmap4 special 320x200 4 couleurs //////////////
-void Decode320x4special(void)
+static void Decode320x4special(void)
 {
   int i, k, c0;
   void *c;
@@ -104,7 +121,7 @@ void Decode320x4special(void)
 }
 
 // Decodage octet video mode bitmap16 160x200 16 couleurs ////////////////////
-void Decode160x16(void)
+static void Decode160x16(void)
 {
   int i, k, c0;
   void *c;
@@ -119,7 +136,7 @@ void Decode160x16(void)
 }
 
 // Decodage octet video mode 640x200 2 couleurs //////////////////////////////
-void Decode640x2(void)
+static void Decode640x2(void)
 {
   int i, k, c0;
   void *c;

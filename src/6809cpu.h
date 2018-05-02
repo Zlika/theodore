@@ -1,6 +1,7 @@
 /*
- * This file is part of theodore, a Thomson emulator based on
- * Daniel Coulom's DCTO8D emulator (http://dcto8.free.fr/).
+ * This file is part of theodore (https://github.com/Zlika/theodore),
+ * a Thomson emulator based on Daniel Coulom's DCTO8D emulator
+ * (http://dcto8.free.fr/).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +19,8 @@
 
 /* Motorola 6809 microprocessor emulation */
 
-#ifndef __6809EMULATOR_H
-#define __6809EMULATOR_H
+#ifndef __6809CPU_H
+#define __6809CPU_H
 
 //pointeurs vers fonctions d'acces memoire
 extern char (*Mgetc)(unsigned short a);
@@ -43,7 +44,7 @@ extern char *dc6809_a;
 //pointer to B register
 extern char *dc6809_b;
 
-//irq trigger  (0=inactif)
+//irq trigger  (0=disabled, 1=enabled)
 extern int dc6809_irq;
 
 // Processor initialisation
@@ -56,4 +57,4 @@ void Reset6809();
 // - negative value (-code) when operation code is illegal
 int Run6809();
 
-#endif /* __6809EMULATOR_H */
+#endif /* __6809CPU_H */
