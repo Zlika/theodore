@@ -1,3 +1,7 @@
+Next Release
+===========
+* Add support for save states.
+
 Release 0.9 (2018/05/01)
 ===========
 * Remove the standalone version of the emulator.
