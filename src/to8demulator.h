@@ -67,15 +67,23 @@ typedef enum { JOY0_UP, JOY0_DOWN, JOY0_LEFT, JOY0_RIGHT,
                JOY1_UP, JOY1_DOWN, JOY1_LEFT, JOY1_RIGHT,
                JOY0_FIRE, JOY1_FIRE } JoystickAxis;
 
-// Joystick emulation ////////////////////////////////////////////////////////
+// Joystick emulation
 void Joysemul(JoystickAxis axis, bool isOn);
-// Emulation du clavier TO8 ///////////////////////////////////////////////////
+// TO8 keyboard emulation
 void TO8key(int scancode, bool down);
-// Initialisation programme de l'ordinateur emule ////////////////////////////
-void Initprog();
-// Execution n cycles processeur 6809 ////////////////////////////////////////
+// Initialisation of the computer
+void Initprog(void);
+// Execution of n CPU cycles
 int Run(int ncyclesmax);
-// Hardreset de l'ordinateur emule ///////////////////////////////////////////
-void Hardreset();
+// Hardreset of the computer
+void Hardreset(void);
+
+// The following functions are used for libretro's save states feature.
+// Returns the amount of data required to serialize the whole state of the emulator.
+int to8d_serialize_size(void);
+// Serializes the whole state of the emulator.
+void to8d_serialize(void *data);
+// Unserializes the whole state of the emulator.
+void to8d_unserialize(const void *data);
 
 #endif /* __TO8DEMULATION_H */

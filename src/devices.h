@@ -38,11 +38,11 @@ void Loadk7(const char *filename);
 // Load a memo7 cartridge
 void Loadmemo(const char *filename);
 // Unload the floppy disk
-void Unloadfd();
+void Unloadfd(void);
 // Unload the tape
-void Unloadk7();
+void Unloadk7(void);
 // Unload the cartridge
-void Unloadmemo();
+void Unloadmemo(void);
 
 // Run an input/output related opcode
 void RunIoOpcode(int opcode);

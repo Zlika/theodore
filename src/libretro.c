@@ -351,17 +351,21 @@ void retro_run(void)
 
 size_t retro_serialize_size(void)
 {
-  return 0;
+  return to8d_serialize_size();
 }
 
 bool retro_serialize(void *data, size_t size)
 {
-  return false;
+  if (size != to8d_serialize_size()) return false;
+  to8d_serialize(data);
+  return true;
 }
 
 bool retro_unserialize(const void *data, size_t size)
 {
-  return false;
+  if (size != to8d_serialize_size()) return false;
+  to8d_unserialize(data);
+  return true;
 }
 
 void retro_cheat_reset(void)

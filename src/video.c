@@ -25,6 +25,8 @@
 #include "video.h"
 #include "to8demulator.h"
 
+#define NB_VIDEO_MODES 5
+
 struct pix {char b, g, r, a;};        //structure pixel BGRA
 typedef struct { int w, h; uint32_t* pixels;} Surface;
 
@@ -37,7 +39,6 @@ static uint32_t *pcurrentpixel;       //pointeur ecran : pixel courant
 static uint32_t *pcurrentline;        //pointeur ecran : debut ligne courante
 static uint32_t *pmin;                //pointeur ecran : premier pixel
 static uint32_t *pmax;                //pointeur ecran : dernier pixel + 1
-static int screencount = 0;           //nbre ecrans affiches entre 2 affichages status
 
 // Forward declarations
 static void Decode320x16(void);
@@ -48,7 +49,7 @@ static void Decode640x2(void);
 // Current video memory decoding function
 static void (*Decodevideo)(void) = Decode320x16;
 // Array of the different video memory decoding functions (indexed by the video mode)
-static void (*DecodevideoModes[5])(void) =
+static void (*DecodevideoModes[NB_VIDEO_MODES])(void) =
   { Decode320x16, Decode320x4, Decode320x4special,
     Decode160x16, Decode640x2 };
 
@@ -219,7 +220,6 @@ static void InitScreen(void)
   for(videolinenumber = 48; videolinenumber < 264; videolinenumber++)
   {Displaysegment(); Nextline();}
   videolinecycle = 0; videolinenumber = 0;
-  screencount = 0;
 }
 
 void SetLibRetroVideoBuffer(uint32_t *video_buffer)
@@ -232,4 +232,62 @@ void SetLibRetroVideoBuffer(uint32_t *video_buffer)
   pmax = pmin + XBITMAP * YBITMAP;
   InitScreen();
   ClearScreen();
+}
+
+int video_serialize_size(void)
+{
+  return sizeof(pcolor) + sizeof(currentvideomemory) + sizeof(currentlinesegment)
+      + sizeof(int) + sizeof(int) + sizeof(int);
+}
+
+void video_serialize(void *data)
+{
+  int offset = 0;
+  int pcurrentpixelOffset = pcurrentpixel - pmin;
+  int pcurrentlineOffset = pcurrentline - pmin;
+  int decodeVideoIndex = 0;
+  int i;
+  char *buffer = (char *) data;
+  memcpy(buffer+offset, pcolor, sizeof(pcolor));
+  offset += sizeof(pcolor);
+  memcpy(buffer+offset, &currentvideomemory, sizeof(currentvideomemory));
+  offset += sizeof(currentvideomemory);
+  memcpy(buffer+offset, &currentlinesegment, sizeof(currentlinesegment));
+  offset += sizeof(currentlinesegment);
+  memcpy(buffer+offset, &pcurrentpixelOffset, sizeof(pcurrentpixelOffset));
+  offset += sizeof(pcurrentpixelOffset);
+  memcpy(buffer+offset, &pcurrentlineOffset, sizeof(pcurrentlineOffset));
+  offset += sizeof(pcurrentlineOffset);
+  for (i = 0; i < NB_VIDEO_MODES; i++)
+  {
+    if (Decodevideo == DecodevideoModes[i])
+    {
+      decodeVideoIndex = i;
+      break;
+    }
+  }
+  memcpy(buffer+offset, &decodeVideoIndex, sizeof(decodeVideoIndex));
+}
+
+void video_unserialize(const void *data)
+{
+  int offset = 0;
+  int pcurrentpixelOffset;
+  int pcurrentlineOffset;
+  int decodeVideoIndex;
+  const char *buffer = (const char *) data;
+  memcpy(pcolor, buffer+offset, sizeof(pcolor));
+  offset += sizeof(pcolor);
+  memcpy(&currentvideomemory, buffer+offset, sizeof(currentvideomemory));
+  offset += sizeof(currentvideomemory);
+  memcpy(&currentlinesegment, buffer+offset, sizeof(currentlinesegment));
+  offset += sizeof(currentlinesegment);
+  memcpy(&pcurrentpixelOffset, buffer+offset, sizeof(pcurrentpixelOffset));
+  pcurrentpixel = pmin + pcurrentpixelOffset;
+  offset += sizeof(pcurrentpixelOffset);
+  memcpy(&pcurrentlineOffset, buffer+offset, sizeof(pcurrentlineOffset));
+  pcurrentline = pmin + pcurrentlineOffset;
+  offset += sizeof(pcurrentlineOffset);
+  memcpy(&decodeVideoIndex, buffer+offset, sizeof(decodeVideoIndex));
+  Decodevideo = DecodevideoModes[decodeVideoIndex];
 }

@@ -56,7 +56,7 @@ void SetPrinterEmulationEnabled(bool enabled)
 }
 
 // Printer emulation
-static void Print()
+static void Print(void)
 {
   if (printerEnabled)
   {
@@ -74,7 +74,7 @@ static void Diskerror(int n)
 }
 
 // Floppy drive: Read a sector
-static void Readsector()
+static void Readsector(void)
 {
   char buffer[256];
   int i, j, u, p, s;
@@ -94,7 +94,7 @@ static void Readsector()
 }
 
 // Floppy drive: Write a sector
-static void Writesector()
+static void Writesector(void)
 {
   char buffer[256];
   int i, j, u, p, s;
@@ -113,7 +113,7 @@ static void Writesector()
 }
 
 // Format a floppy disk
-static void Formatdisk()
+static void Formatdisk(void)
 {
   char buffer[256];
   int i, u, fatlength;
@@ -142,7 +142,7 @@ static void Formatdisk()
   if(fwrite(buffer, 256, 1, ffd) == 0) {Diskerror(53); return;}
 }
 
-void Unloadfd()
+void Unloadfd(void)
 {
   if(ffd) {fclose(ffd); ffd = NULL;}
 }
@@ -158,7 +158,7 @@ void Loadfd(const char *filename)
 }
 
 // Tape drive: read a byte
-static void Readbytek7()
+static void Readbytek7(void)
 {
   int byte = 0;
   if(fk7 == NULL) {Initprog(); return;}
@@ -173,7 +173,7 @@ static void Readbytek7()
 }
 
 // Tape drive: write a byte
-static void Writebytek7()
+static void Writebytek7(void)
 {
   if(fk7 == NULL) {Initprog(); return;}
   if(k7protection) {Initprog(); return;}
@@ -181,7 +181,7 @@ static void Writebytek7()
   Mputc(0x2045, 0);
 }
 
-void Unloadk7()
+void Unloadk7(void)
 {
   if(fk7) {fclose(fk7); fk7 = NULL;}
 }
@@ -196,7 +196,7 @@ void Loadk7(const char *filename)
   fseek(fk7, 0, SEEK_SET);
 }
 
-void Unloadmemo()
+void Unloadmemo(void)
 {
   carflags = 0;
   Hardreset();
@@ -221,7 +221,7 @@ void Loadmemo(const char *filename)
 }
 
 // Read the buttons of the mouse
-static void Readmousebutton()
+static void Readmousebutton(void)
 {
   A = 3; if(penbutton) {A = 0; CC |= 0x05;}
 }

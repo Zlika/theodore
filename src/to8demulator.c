@@ -33,12 +33,13 @@
 #define VBL_NUMBER_MAX 2
 // Number of keys of the TO8D keyboard
 #define KEYBOARDKEY_MAX 84
+#define PALETTE_SIZE 32
 
 // memory
-char car[CARTRIDGE_MEM_SIZE]; //espace cartouche 4x16K
-char ram[RAM_SIZE];         //ram 512K
-char port[IO_MEM_SIZE];     //ports d'entree/sortie
-static char x7da[32];       //stockage de la palette de couleurs
+char car[CARTRIDGE_MEM_SIZE];   //espace cartouche 4x16K
+char ram[RAM_SIZE];             //ram 512K
+char port[IO_MEM_SIZE];         //ports d'entree/sortie
+static char x7da[PALETTE_SIZE]; //stockage de la palette de couleurs
 // pointers
 char *pagevideo;            //pointeur page video affichee
 static char *ramvideo;      //pointeur couleurs ou formes
@@ -157,7 +158,7 @@ void TO8key(int scancode, bool down)
 }
 
 // Selection de banques memoire //////////////////////////////////////////////
-static void TO8videoram()
+static void TO8videoram(void)
 {
   nvideopage = port[0x03] & 1;
   ramvideo = ram - 0x4000 + (nvideopage << 13);
@@ -165,7 +166,7 @@ static void TO8videoram()
   romsys = to8dmoniteur - 0xe000 + (nsystbank << 13);
 }
 
-static void TO8rambank()
+static void TO8rambank(void)
 {
   //mode TO8 par e7e5
   if(port[0x27] & 0x10)
@@ -188,7 +189,7 @@ static void TO8rambank()
   rambank = ram - 0x2000 + (nrambank << 14);
 }
 
-static void TO8rombank()
+static void TO8rombank(void)
 {
   //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
   //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
@@ -249,14 +250,14 @@ static void Palettecolor(char c)
 }
 
 // Signaux de synchronisation ligne et trame /////////////////////////////////
-static int Iniln()
+static int Iniln(void)
 {//11 microsecondes - 41 microsecondes - 12 microsecondes
   if(videolinecycle < 11) return 0;
   if(videolinecycle > 51) return 0;
   return 0x20;
 }
 
-static int Initn()
+static int Initn(void)
 {//debut a 12 microsecondes ligne 56, fin a 51 microsecondes ligne 255
   if(videolinenumber < 56) return 0;
   if(videolinenumber > 255) return 0;
@@ -289,7 +290,7 @@ void Joysemul(JoystickAxis axis, bool isOn)
 }
 
 // Initialisation programme de l'ordinateur emule ////////////////////////////
-void Initprog()
+void Initprog(void)
 {
   int i;
   for(i = 0; i < KEYBOARDKEY_MAX; i++) touche[i] = 0x80; //touches relachees
@@ -321,7 +322,7 @@ static void TO8dpatch(char rom[], int patch[])
 }
 
 // Hardreset de l'ordinateur emule ///////////////////////////////////////////
-void Hardreset()
+void Hardreset(void)
 {
   int i;
   time_t curtime;
@@ -372,7 +373,7 @@ void Hardreset()
 }
 
 // Timer control /////////////////////////////////////////////////////////////
-static void Timercontrol()
+static void Timercontrol(void)
 {
   if(port[0x05] & 0x01) timer6846 = latch6846 << 3;
 }
@@ -516,6 +517,153 @@ static char Mgetto8d(unsigned short a)
       return(romsys[a]);
     }
     return romsys[a];
-      default: return romsys[a];
+    default: return romsys[a];
   }
+}
+
+int to8d_serialize_size(void)
+{
+  return cpu_serialize_size() + video_serialize_size()
+      + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(nvideopage) + sizeof(nvideobank)
+      + sizeof(nrambank) + sizeof(nrombank) + sizeof(nsystbank) + sizeof(nctrlbank)
+      + sizeof(carflags) + sizeof(touche) + sizeof(capslock) + sizeof(joysposition)
+      + sizeof(joysaction) + sizeof(xpen) + sizeof(ypen) + sizeof(penbutton)
+      + sizeof(videolinecycle) + sizeof(videolinenumber) + sizeof(vblnumber)
+      + sizeof(displayflag) + sizeof(bordercolor) + sizeof(sound) + sizeof(mute)
+      + sizeof(timer6846) + sizeof(latch6846) + sizeof(keyb_irqcount) + sizeof(timer_irqcount);
+}
+
+void to8d_serialize(void *data)
+{
+  int offset = 0;
+  char *buffer = (char *) data;
+  cpu_serialize(buffer+offset);
+  offset += cpu_serialize_size();
+  video_serialize(buffer+offset);
+  offset += video_serialize_size();
+  memcpy(buffer+offset, ram, sizeof(ram));
+  offset += sizeof(ram);
+  memcpy(buffer+offset, port, sizeof(port));
+  offset += sizeof(port);
+  memcpy(buffer+offset, x7da, sizeof(x7da));
+  offset += sizeof(x7da);
+  memcpy(buffer+offset, &nvideopage, sizeof(nvideopage));
+  offset += sizeof(nvideopage);
+  memcpy(buffer+offset, &nvideobank, sizeof(nvideobank));
+  offset += sizeof(nvideobank);
+  memcpy(buffer+offset, &nrambank, sizeof(nrambank));
+  offset += sizeof(nrambank);
+  memcpy(buffer+offset, &nrombank, sizeof(nrombank));
+  offset += sizeof(nrombank);
+  memcpy(buffer+offset, &nsystbank, sizeof(nsystbank));
+  offset += sizeof(nsystbank);
+  memcpy(buffer+offset, &nctrlbank, sizeof(nctrlbank));
+  offset += sizeof(nctrlbank);
+  memcpy(buffer+offset, &carflags, sizeof(carflags));
+  offset += sizeof(carflags);
+  memcpy(buffer+offset, touche, sizeof(touche));
+  offset += sizeof(touche);
+  memcpy(buffer+offset, &capslock, sizeof(capslock));
+  offset += sizeof(capslock);
+  memcpy(buffer+offset, &joysposition, sizeof(joysposition));
+  offset += sizeof(joysposition);
+  memcpy(buffer+offset, &joysaction, sizeof(joysaction));
+  offset += sizeof(joysaction);
+  memcpy(buffer+offset, &xpen, sizeof(xpen));
+  offset += sizeof(xpen);
+  memcpy(buffer+offset, &ypen, sizeof(ypen));
+  offset += sizeof(ypen);
+  memcpy(buffer+offset, &penbutton, sizeof(penbutton));
+  offset += sizeof(penbutton);
+  memcpy(buffer+offset, &videolinecycle, sizeof(videolinecycle));
+  offset += sizeof(videolinecycle);
+  memcpy(buffer+offset, &videolinenumber, sizeof(videolinenumber));
+  offset += sizeof(videolinenumber);
+  memcpy(buffer+offset, &vblnumber, sizeof(vblnumber));
+  offset += sizeof(vblnumber);
+  memcpy(buffer+offset, &displayflag, sizeof(displayflag));
+  offset += sizeof(displayflag);
+  memcpy(buffer+offset, &bordercolor, sizeof(bordercolor));
+  offset += sizeof(bordercolor);
+  memcpy(buffer+offset, &sound, sizeof(sound));
+  offset += sizeof(sound);
+  memcpy(buffer+offset, &mute, sizeof(mute));
+  offset += sizeof(mute);
+  memcpy(buffer+offset, &timer6846, sizeof(timer6846));
+  offset += sizeof(timer6846);
+  memcpy(buffer+offset, &latch6846, sizeof(latch6846));
+  offset += sizeof(latch6846);
+  memcpy(buffer+offset, &keyb_irqcount, sizeof(keyb_irqcount));
+  offset += sizeof(keyb_irqcount);
+  memcpy(buffer+offset, &timer_irqcount, sizeof(timer_irqcount));
+}
+
+void to8d_unserialize(const void *data)
+{
+  int offset = 0;
+  const char *buffer = (const char *) data;
+  cpu_unserialize(buffer+offset);
+  offset += cpu_serialize_size();
+  video_unserialize(buffer+offset);
+  offset += video_serialize_size();
+  memcpy(ram, buffer+offset, sizeof(ram));
+  offset += sizeof(ram);
+  memcpy(port, buffer+offset, sizeof(port));
+  offset += sizeof(port);
+  memcpy(x7da, buffer+offset, sizeof(x7da));
+  offset += sizeof(x7da);
+  memcpy(&nvideopage, buffer+offset, sizeof(nvideopage));
+  offset += sizeof(nvideopage);
+  memcpy(&nvideobank, buffer+offset, sizeof(nvideobank));
+  offset += sizeof(nvideobank);
+  memcpy(&nrambank, buffer+offset, sizeof(nrambank));
+  offset += sizeof(nrambank);
+  memcpy(&nrombank, buffer+offset, sizeof(nrombank));
+  offset += sizeof(nrombank);
+  memcpy(&nsystbank, buffer+offset, sizeof(nsystbank));
+  offset += sizeof(nsystbank);
+  memcpy(&nctrlbank, buffer+offset, sizeof(nctrlbank));
+  offset += sizeof(nctrlbank);
+  memcpy(&carflags, buffer+offset, sizeof(carflags));
+  offset += sizeof(carflags);
+  memcpy(touche, buffer+offset, sizeof(touche));
+  offset += sizeof(touche);
+  memcpy(&capslock, buffer+offset, sizeof(capslock));
+  offset += sizeof(capslock);
+  memcpy(&joysposition, buffer+offset, sizeof(joysposition));
+  offset += sizeof(joysposition);
+  memcpy(&joysaction, buffer+offset, sizeof(joysaction));
+  offset += sizeof(joysaction);
+  memcpy(&xpen, buffer+offset, sizeof(xpen));
+  offset += sizeof(xpen);
+  memcpy(&ypen, buffer+offset, sizeof(ypen));
+  offset += sizeof(ypen);
+  memcpy(&penbutton, buffer+offset, sizeof(penbutton));
+  offset += sizeof(penbutton);
+  memcpy(&videolinecycle, buffer+offset, sizeof(videolinecycle));
+  offset += sizeof(videolinecycle);
+  memcpy(&videolinenumber, buffer+offset, sizeof(videolinenumber));
+  offset += sizeof(videolinenumber);
+  memcpy(&vblnumber, buffer+offset, sizeof(vblnumber));
+  offset += sizeof(vblnumber);
+  memcpy(&displayflag, buffer+offset, sizeof(displayflag));
+  offset += sizeof(displayflag);
+  memcpy(&bordercolor, buffer+offset, sizeof(bordercolor));
+  offset += sizeof(bordercolor);
+  memcpy(&sound, buffer+offset, sizeof(sound));
+  offset += sizeof(sound);
+  memcpy(&mute, buffer+offset, sizeof(mute));
+  offset += sizeof(mute);
+  memcpy(&timer6846, buffer+offset, sizeof(timer6846));
+  offset += sizeof(timer6846);
+  memcpy(&latch6846, buffer+offset, sizeof(latch6846));
+  offset += sizeof(latch6846);
+  memcpy(&keyb_irqcount, buffer+offset, sizeof(keyb_irqcount));
+  offset += sizeof(keyb_irqcount);
+  memcpy(&timer_irqcount, buffer+offset, sizeof(timer_irqcount));
+
+  Videopage_bordercolor(port[0x1d]);
+  TO8videoram();
+  TO8rambank();
+  TO8rombank();
 }

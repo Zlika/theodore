@@ -48,13 +48,21 @@ extern char *dc6809_b;
 extern int dc6809_irq;
 
 // Processor initialisation
-void Init6809();
+void Init6809(void);
 // Processor reset
-void Reset6809();
+void Reset6809(void);
 // Execute one operation at pc address and set pc to next opcode address
 // Return value is set to :
 // - cycle count for the executed instruction when operation code is legal
 // - negative value (-code) when operation code is illegal
-int Run6809();
+int Run6809(void);
+
+// The following functions are used for libretro's save states feature.
+// Returns the amount of data required to serialize the CPU's internal state.
+int cpu_serialize_size(void);
+// Serializes the CPU's internal state.
+void cpu_serialize(void *data);
+// Unserializes the CPU's internal state.
+void cpu_unserialize(const void *data);
 
 #endif /* __6809CPU_H */

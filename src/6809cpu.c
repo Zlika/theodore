@@ -141,7 +141,7 @@ short Mgetw(unsigned short a) {return (Mgetc(a) << 8 | (Mgetc(a+1) & 0xff));}
 void Mputw(unsigned short a, short w) {Mputc(a, w >> 8); Mputc(++a, w);}
 
 // Processor reset ///////////////////////////////////////////////////////////
-void Reset6809()
+void Reset6809(void)
 {
   dc6809_sync = 0;   //synchronisation flag
   dc6809_irq = 0;    //irq trigger
@@ -152,7 +152,7 @@ void Reset6809()
 }
 
 // Processor initialisation //////////////////////////////////////////////////
-void Init6809()
+void Init6809(void)
 {
   int i = 1;              //integer used to test endianness
   char *c = (char*)&i;    //left byte of integer i
@@ -175,7 +175,7 @@ void Init6809()
 }
 
 // Get memory (indexed) //////////////////////////////////////////////////////
-static void Mgeti()
+static void Mgeti(void)
 {
   int i;
   short *r;
@@ -376,7 +376,7 @@ static void Tfr(char c)
 }
 
 // CLR, NEG, COM, INC, DEC  (CC=EFHINZVC) /////////////////////////////////////
-static char Clr()
+static char Clr(void)
 {
   CC &= 0xf0;
   CC |= CC_Z;
@@ -425,7 +425,7 @@ static char Dec(char c)
 }
 
 // Registers operations  (CC=EFHINZVC) ////////////////////////////////////////
-static void Mul()
+static void Mul(void)
 {
   D = (A & 0xff) * (B & 0xff);
   CC &= 0xf2;
@@ -503,7 +503,7 @@ static void Subw(short *r, short word)
   if(*r == 0) CC |= CC_Z;
 }
 
-static void Daa()
+static void Daa(void)
 {
   int i = A & 0xff;
   if((CC & CC_H) || ((i & 0x00f) > 0x09)) i += 0x06;
@@ -611,7 +611,7 @@ static void Cmpw(short *reg, short word)
 }
 
 // Interrupt requests  (CC=EFHINZVC) //////////////////////////////////////////
-static int Nmi()  //non masquable interrupt     a verifier !!!!
+static int Nmi(void)  //non masquable interrupt     a verifier !!!!
 {
   CC |= CC_E;
   Pshs(0xff);
@@ -621,7 +621,7 @@ static int Nmi()  //non masquable interrupt     a verifier !!!!
   return 1;
 }
 
-static int Firq() //fast interrupt request
+static int Firq(void) //fast interrupt request
 {
   if((CC & CC_F) == 0)          //si les FIRQs ne sont pas masquees
   {
@@ -635,7 +635,7 @@ static int Firq() //fast interrupt request
   else return 0;
 }
 
-static int Irq() //interrupt request
+static int Irq(void) //interrupt request
 {
   if(dc6809_sync == 1) dc6809_sync = 2; //si attente synchro, indicateur d'interruption
   if((CC & CC_I) == 0)          //si les IRQs ne sont pas masquees
@@ -660,14 +660,14 @@ static void Swi(int n) //software interrupt
 }
 
 // RTI ////////////////////////////////////////////////////////////////////////
-static void Rti()
+static void Rti(void)
 {
   Puls(0x01);
   if(CC & CC_E) Puls(0xfe); else Puls(0x80);
 }
 
 // SYNC ///////////////////////////////////////////////////////////////////////
-static void Sync()
+static void Sync(void)
 {
   //positionner le flag d'attente de synchronisation
   if(dc6809_sync == 0) dc6809_sync = 1;
@@ -683,7 +683,7 @@ Return value is set to :
 - cycle count for the executed instruction when operation code is legal
 - negative value (-code) when operation code is illegal
  */
-int Run6809()
+int Run6809(void)
 {
   int precode, code;
 
@@ -1001,4 +1001,81 @@ int Run6809()
 
     default: return -code;                                      /* Illegal */
   }
+}
+
+int cpu_serialize_size(void)
+{
+  return sizeof(dc6809_cycles) + sizeof(dc6809_sync) + sizeof(dc6809_irq)
+      + sizeof(dc6809_firq) + sizeof(dc6809_nmi) + sizeof(dc6809_w)
+      + sizeof(dc6809_cc) + sizeof(dc6809_pc) + sizeof(dc6809_d)
+      + sizeof(dc6809_x) + sizeof(dc6809_y) + sizeof(dc6809_u)
+      + sizeof(dc6809_s) + sizeof(dc6809_da);
+}
+
+#include <string.h>
+
+void cpu_serialize(void *data)
+{
+  int offset = 0;
+  char *buffer = (char *) data;
+  memcpy(buffer+offset, &dc6809_cycles, sizeof(dc6809_cycles));
+  offset += sizeof(dc6809_cycles);
+  memcpy(buffer+offset, &dc6809_sync, sizeof(dc6809_sync));
+  offset += sizeof(dc6809_sync);
+  memcpy(buffer+offset, &dc6809_irq, sizeof(dc6809_irq));
+  offset += sizeof(dc6809_irq);
+  memcpy(buffer+offset, &dc6809_firq, sizeof(dc6809_firq));
+  offset += sizeof(dc6809_firq);
+  memcpy(buffer+offset, &dc6809_nmi, sizeof(dc6809_nmi));
+  offset += sizeof(dc6809_nmi);
+  memcpy(buffer+offset, &dc6809_w, sizeof(dc6809_w));
+  offset += sizeof(dc6809_w);
+  memcpy(buffer+offset, &dc6809_cc, sizeof(dc6809_cc));
+  offset += sizeof(dc6809_cc);
+  memcpy(buffer+offset, &dc6809_pc, sizeof(dc6809_pc));
+  offset += sizeof(dc6809_pc);
+  memcpy(buffer+offset, &dc6809_d, sizeof(dc6809_d));
+  offset += sizeof(dc6809_d);
+  memcpy(buffer+offset, &dc6809_x, sizeof(dc6809_x));
+  offset += sizeof(dc6809_x);
+  memcpy(buffer+offset, &dc6809_y, sizeof(dc6809_y));
+  offset += sizeof(dc6809_y);
+  memcpy(buffer+offset, &dc6809_u, sizeof(dc6809_u));
+  offset += sizeof(dc6809_u);
+  memcpy(buffer+offset, &dc6809_s, sizeof(dc6809_s));
+  offset += sizeof(dc6809_s);
+  memcpy(buffer+offset, &dc6809_da, sizeof(dc6809_da));
+}
+
+void cpu_unserialize(const void *data)
+{
+  int offset = 0;
+  const char *buffer = (const char *) data;
+  memcpy(&dc6809_cycles, buffer+offset, sizeof(dc6809_cycles));
+  offset += sizeof(dc6809_cycles);
+  memcpy(&dc6809_sync, buffer+offset, sizeof(dc6809_sync));
+  offset += sizeof(dc6809_sync);
+  memcpy(&dc6809_irq, buffer+offset, sizeof(dc6809_irq));
+  offset += sizeof(dc6809_irq);
+  memcpy(&dc6809_firq, buffer+offset, sizeof(dc6809_firq));
+  offset += sizeof(dc6809_firq);
+  memcpy(&dc6809_nmi, buffer+offset, sizeof(dc6809_nmi));
+  offset += sizeof(dc6809_nmi);
+  memcpy(&dc6809_w, buffer+offset, sizeof(dc6809_w));
+  offset += sizeof(dc6809_w);
+  memcpy(&dc6809_cc, buffer+offset, sizeof(dc6809_cc));
+  offset += sizeof(dc6809_cc);
+  memcpy(&dc6809_pc, buffer+offset, sizeof(dc6809_pc));
+  offset += sizeof(dc6809_pc);
+  memcpy(&dc6809_d, buffer+offset, sizeof(dc6809_d));
+  offset += sizeof(dc6809_d);
+  memcpy(&dc6809_x, buffer+offset, sizeof(dc6809_x));
+  offset += sizeof(dc6809_x);
+  memcpy(&dc6809_y, buffer+offset, sizeof(dc6809_y));
+  offset += sizeof(dc6809_y);
+  memcpy(&dc6809_u, buffer+offset, sizeof(dc6809_u));
+  offset += sizeof(dc6809_u);
+  memcpy(&dc6809_s, buffer+offset, sizeof(dc6809_s));
+  offset += sizeof(dc6809_s);
+  memcpy(&dc6809_da, buffer+offset, sizeof(dc6809_da));
 }
