@@ -19,6 +19,7 @@ addons:
     project:
       name: "Zlika/theodore"
       description: "Thomson 8-bit computer emulator"
+    notification_email: na78hh8gv4ra68r@jetable.org
     build_command: "make"
     branch_pattern: coverity_scan
 
