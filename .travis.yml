@@ -1,17 +1,24 @@
 language: c
-compiler:
-  - gcc
-  - clang
-os:
-  - linux
-  - osx
+compiler: gcc
+os: linux
 dist: trusty
 
-matrix:
-  exclude:
-  # GCC on OS X is just a frontend to LLVM
-  - os: osx
-    compiler: gcc
-
 script: make
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "PJle5ve1jbs4rNi2Yw1K6xrqh2UG6I7Dk2WhfGfeeO6bS8+BZ5FxUkxAB/1Fv76vCEsb3XBncJ6DgVdj+aSM5WMqYCt5MzD93kiJywTiiHCuxB+8xuowb4etlLu65/J913t3LFRDxwwmQAl0jAtTpqHqQxozxFxjrvBUOXliR9E3uKv4mmrOgsGTUWi9LoKx4K0P2C2wbopOR9+XQKtqUOPDTen3KdwluzPbRhHs6h0dg9CX/m5YKO6mWXJ28wTLiDzs26oKpHTYkK4UFkJMEtpODnN/HgSFs8WNa8qKSFkA9hbYBKjGBwE2vogH6BVD5uh7n7NVs/CfMtfgUKE5VFpj1nHqfX75JT0wiDhd5x0lFZuANc6FJVADeFEZ4OWpYCHzDybLcHDQF8X0xG7L6aEMHgE+ZW0fUq7WF4S6yXGPVcAzcqTC5TqnQ2vVbOX8Pp9rqZavkWL9PhePcj74i8GiQLbzEeCNpxT7+KZwSvW8B4jePTUjdi5jOCbvY6rR0curmVlYNx/MNdLIDjkx7jn3caJRgDydWWIO8m+dWGLIT7xigPExLK7jFxZxcgREmsVUw8FAQtlDr2fud4TYitt+h7tw4nQ6YzElI0HDQc129BaNcKBD6XAQahBKt04fv1iaVdEAV5OTt2U2LHq0J0Ijvx4O79KRv6Xsy0U3Lho="
+
+before_install:
+  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
+
+addons:
+  coverity_scan:
+    project:
+      name: "Zlika/theodore"
+      description: "Thomson 8-bit computer emulator"
+    build_command: "make"
+    branch_pattern: coverity_scan
 
