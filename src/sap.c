@@ -45,7 +45,12 @@ bool sap2fd(const char *sap_filename, const char *fd_filename)
     fclose(sap_file);
     return false;
   }
-  if (fseek(sap_file, SAP_HEADER_SIZE, SEEK_SET)) return false;
+  if (fseek(sap_file, SAP_HEADER_SIZE, SEEK_SET))
+  {
+    fclose(fd_file);
+    fclose(sap_file);
+    return false;
+  }
 
   while (fread(sap_sector, SAP_SECTOR_SIZE, 1, sap_file) == 1)
   {
