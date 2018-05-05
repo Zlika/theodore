@@ -67,6 +67,8 @@ typedef enum { JOY0_UP, JOY0_DOWN, JOY0_LEFT, JOY0_RIGHT,
                JOY1_UP, JOY1_DOWN, JOY1_LEFT, JOY1_RIGHT,
                JOY0_FIRE, JOY1_FIRE } JoystickAxis;
 
+typedef enum { TO8, TO8D } ThomsonFlavor;
+
 // Joystick emulation
 void Joysemul(JoystickAxis axis, bool isOn);
 // TO8 keyboard emulation
@@ -77,6 +79,8 @@ void Initprog(void);
 int Run(int ncyclesmax);
 // Hardreset of the computer
 void Hardreset(void);
+// Sets the Thomson version emulated (default=TO8D)
+void SetThomsonFlavor(ThomsonFlavor flavor);
 
 // The following functions are used for libretro's save states feature.
 // Returns the amount of data required to serialize the whole state of the emulator.

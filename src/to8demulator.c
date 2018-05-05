@@ -25,16 +25,21 @@
 #include <time.h>
 
 #include "6809cpu.h"
-#include "to8dbasic.h"
-#include "to8dmoniteur.h"
 #include "devices.h"
 #include "video.h"
+#include "rom/to8dbasic.h"
+#include "rom/to8dmoniteur.h"
+#include "rom/to8moniteur.h"
 
 #define VBL_NUMBER_MAX 2
 // Number of keys of the TO8D keyboard
 #define KEYBOARDKEY_MAX 84
 #define PALETTE_SIZE 32
 
+static char *basic = to8dbasic;
+static int *basicpatch = to8dbasicpatch;
+static char *moniteur = to8dmoniteur;
+static int *moniteurpatch = to8dmoniteurpatch;
 // memory
 char car[CARTRIDGE_MEM_SIZE];   //espace cartouche 4x16K
 char ram[RAM_SIZE];             //ram 512K
@@ -123,6 +128,26 @@ E7C6= registre temporisateur d'octet de poids fort (TMSB)
 E7C7= registre temporisateur d'octet de poids faible (TLSB)
 */
 
+void SetThomsonFlavor(ThomsonFlavor flavor)
+{
+  if (flavor == TO8D)
+  {
+    basic = to8dbasic;
+    basicpatch = to8dbasicpatch;
+    moniteur = to8dmoniteur;
+    moniteurpatch = to8dmoniteurpatch;
+  }
+  else if (flavor == TO8)
+  {
+    // Same basic then TO8D
+    basic = to8dbasic;
+    basicpatch = to8dbasicpatch;
+    moniteur = to8moniteur;
+    moniteurpatch = to8moniteurpatch;
+  }
+  Hardreset();
+}
+
 // Emulation du clavier TO8 ///////////////////////////////////////////////////
 void TO8key(int scancode, bool down)
 {
@@ -149,8 +174,8 @@ void TO8key(int scancode, bool down)
     case 0x27: case 0x2a: case 0x2b: case 0x2f: case 0x32: case 0x33: case 0x3a:
     case 0x3b: case 0x42: case 0x43: case 0x4a: case 0x4b: i = 0x80; break;
   }
-  to8dmoniteur[0x30f8] = scancode | i;         //scancode + indicateur de touche SHIFT
-  to8dmoniteur[0x3125] = touche[0x53] ? 0 : 1; //indicateur de touche CTRL
+  moniteur[0x30f8] = scancode | i;         //scancode + indicateur de touche SHIFT
+  moniteur[0x3125] = touche[0x53] ? 0 : 1; //indicateur de touche CTRL
   port[0x08] |= 0x01; //bit 0 de E7C8 = 1 (touche enfoncee)
   port[0x00] |= 0x82; //bit CP1 = interruption clavier
   keyb_irqcount = 500000; //positionne le signal d'irq pour 500 ms maximum
@@ -163,7 +188,7 @@ static void TO8videoram(void)
   nvideopage = port[0x03] & 1;
   ramvideo = ram - 0x4000 + (nvideopage << 13);
   nsystbank = (port[0x03] & 0x10) >> 4;
-  romsys = to8dmoniteur - 0xe000 + (nsystbank << 13);
+  romsys = moniteur - 0xe000 + (nsystbank << 13);
 }
 
 static void TO8rambank(void)
@@ -206,7 +231,7 @@ static void TO8rombank(void)
   if(port[0x03] & 0x04)
   {
     nrombank = carflags & 3;
-    rombank = to8dbasic + (nrombank << 14);
+    rombank = basic + (nrombank << 14);
   }
   else
   {
@@ -341,19 +366,19 @@ void Hardreset(void)
     car[i] = 0;
   }
   //patch de la rom
-  TO8dpatch(to8dbasic, to8dbasicpatch);
-  TO8dpatch(to8dmoniteur - 0xe000, to8dmoniteurpatch);
+  TO8dpatch(basic, basicpatch);
+  TO8dpatch(moniteur - 0xe000, moniteurpatch);
   //en rom : remplacer jj-mm-aa par la date courante
   curtime = time(NULL);
   loctime = localtime(&curtime);
-  strftime(to8dbasic + 0xeb90, 9, "%d-%m-%y", loctime);
-  to8dbasic[0xeb98] = 0x1f;
+  strftime(basic + 0xeb90, 9, "%d-%m-%y", loctime);
+  basic[0xeb98] = 0x1f;
   //en rom : au reset initialiser la date courante
   //24E2 8E2B90  LDX  #$2B90
   //24E5 BD29C8  BSR  $29C8
-  to8dbasic[0xe4e2] = 0x8e; to8dbasic[0xe4e3] = 0x2b;
-  to8dbasic[0xe4e4] = 0x90; to8dbasic[0xe4e5] = 0xbd;
-  to8dbasic[0xe4e6] = 0x29; to8dbasic[0xe4e7] = 0xc8;
+  basic[0xe4e2] = 0x8e; basic[0xe4e3] = 0x2b;
+  basic[0xe4e4] = 0x90; basic[0xe4e5] = 0xbd;
+  basic[0xe4e6] = 0x29; basic[0xe4e7] = 0xc8;
   nvideobank = 0;
   nrambank = 0;
   nsystbank = 0;

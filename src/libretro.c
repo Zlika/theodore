@@ -75,6 +75,7 @@ void retro_set_environment(retro_environment_t env)
 
   // Emulator's preferences
   static const struct retro_variable vars[] = {
+      { PACKAGE_NAME"_rom", "Thomson flavor; TO8D|TO8" },
       { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
       { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
       { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
@@ -306,6 +307,18 @@ static void check_variables(void)
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
     SetPrinterEmulationEnabled(strcmp(var.value, "enabled") == 0);
+  }
+  var.key = PACKAGE_NAME"_rom";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    if (strcmp(var.value, "TO8D") == 0)
+    {
+      SetThomsonFlavor(TO8D);
+    }
+    else if (strcmp(var.value, "TO8") == 0)
+    {
+      SetThomsonFlavor(TO8);
+    }
   }
 }
 
