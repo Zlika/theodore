@@ -3,6 +3,7 @@ Theodore - Thomson TO8D emulator
 
 [![Build status](https://travis-ci.org/Zlika/theodore.svg?branch=master)](https://travis-ci.org/Zlika/theodore)
 [![Build status](https://ci.appveyor.com/api/projects/status/7lo7cohkpmn50ogk?svg=true)](https://ci.appveyor.com/project/Zlika/theodore)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
 This is a [libretro](https://github.com/libretro) core for emulation of the [Thomson TO8D computer](https://en.wikipedia.org/wiki/Thomson_TO8). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator.
