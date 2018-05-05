@@ -496,27 +496,28 @@ static char Mgetto8d(unsigned short a)
     case 0x4: case 0x5: return ramvideo[a];
     case 0x6: case 0x7: case 0x8: case 0x9: return ramuser[a];
     case 0xa: case 0xb: case 0xc: case 0xd: return rambank[a];
-    case 0xe: switch(a)
-    {
-      case 0xe7c0: return((port[0]) ? (port[0] | 0x80) : 0);
-      case 0xe7c3: return(port[0x03] | 0x80 | (penbutton << 1));
-      case 0xe7c6: return (timer6846 >> 11 & 0xff);
-      case 0xe7c7: return (timer6846 >> 3 & 0xff);
-      case 0xe7ca: return (videolinenumber < 200) ? 0 : 2; //non, registre de controle PIA
-      case 0xe7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
-      case 0xe7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
-      case 0xe7ce: return 0x04;
-      case 0xe7da: return x7da[port[0x1b]++ & 0x1f];
-      case 0xe7df: port[0x1e] = 0; return(port[0x1f]);
-      case 0xe7e4: return port[0x1d] & 0xf0;
-      case 0xe7e5: return port[0x25] & 0x1f;
-      case 0xe7e6: return port[0x26] & 0x7f;
-      case 0xe7e7: return (port[0x24] & 0x01) | Initn() | Iniln();
-      default: if(a < 0xe7c0) return(romsys[a]);
-      if(a < 0xe800) return(port[a & 0x3f]);
-      return(romsys[a]);
-    }
-    return romsys[a];
+    case 0xe:
+      switch(a)
+      {
+        case 0xe7c0: return((port[0]) ? (port[0] | 0x80) : 0);
+        case 0xe7c3: return(port[0x03] | 0x80 | (penbutton << 1));
+        case 0xe7c6: return (timer6846 >> 11 & 0xff);
+        case 0xe7c7: return (timer6846 >> 3 & 0xff);
+        case 0xe7ca: return (videolinenumber < 200) ? 0 : 2; //non, registre de controle PIA
+        case 0xe7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
+        case 0xe7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
+        case 0xe7ce: return 0x04;
+        case 0xe7da: return x7da[port[0x1b]++ & 0x1f];
+        case 0xe7df: port[0x1e] = 0; return(port[0x1f]);
+        case 0xe7e4: return port[0x1d] & 0xf0;
+        case 0xe7e5: return port[0x25] & 0x1f;
+        case 0xe7e6: return port[0x26] & 0x7f;
+        case 0xe7e7: return (port[0x24] & 0x01) | Initn() | Iniln();
+        default:
+          if(a < 0xe7c0) return(romsys[a]);
+          if(a < 0xe800) return(port[a & 0x3f]);
+      }
+      return romsys[a];
     default: return romsys[a];
   }
 }
