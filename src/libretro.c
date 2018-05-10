@@ -23,12 +23,11 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "6809cpu.h"
 #include "devices.h"
 #include "keymap.h"
+#include "sap.h"
 #include "to8demulator.h"
 #include "video.h"
-#include "sap.h"
 
 #define PACKAGE_NAME "theodore"
 #ifdef GIT_VERSION
@@ -151,7 +150,6 @@ void retro_init(void)
   };
   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
-  Init6809();
   Hardreset();
 #ifdef _3DS
   video_buffer = (uint32_t*)linearMemAlign(XBITMAP * YBITMAP * sizeof(uint32_t), 0x80);

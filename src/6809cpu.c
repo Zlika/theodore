@@ -140,19 +140,8 @@ N BL BMI     ZC BHI BLS     NV BGE BLT     001 no  yes
 short Mgetw(unsigned short a) {return (Mgetc(a) << 8 | (Mgetc(a+1) & 0xff));}
 void Mputw(unsigned short a, short w) {Mputc(a, w >> 8); Mputc(++a, w);}
 
-// Processor reset ///////////////////////////////////////////////////////////
-void Reset6809(void)
-{
-  dc6809_sync = 0;   //synchronisation flag
-  dc6809_irq = 0;    //irq trigger
-  dc6809_firq = 0;   //firq trigger
-  dc6809_nmi = 0;    //nmi trigger
-  CC = 0x10;         //condition code
-  PC = GETW(0xfffe); //program counter
-}
-
 // Processor initialisation //////////////////////////////////////////////////
-void Init6809(void)
+static void Init6809(void)
 {
   int i = 1;              //integer used to test endianness
   char *c = (char*)&i;    //left byte of integer i
@@ -172,6 +161,18 @@ void Init6809(void)
     default: dc6809_xl++; dc6809_yl++; dc6809_ul++; dc6809_sl++;
     dc6809_pcl++; dc6809_dd++; dc6809_b++; break;
   }
+}
+
+// Processor reset ///////////////////////////////////////////////////////////
+void Reset6809(void)
+{
+  Init6809();
+  dc6809_sync = 0;   //synchronisation flag
+  dc6809_irq = 0;    //irq trigger
+  dc6809_firq = 0;   //firq trigger
+  dc6809_nmi = 0;    //nmi trigger
+  CC = 0x10;         //condition code
+  PC = GETW(0xfffe); //program counter
 }
 
 // Get memory (indexed) //////////////////////////////////////////////////////
