@@ -23,12 +23,11 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "6809cpu.h"
 #include "devices.h"
 #include "keymap.h"
+#include "sap.h"
 #include "to8demulator.h"
 #include "video.h"
-#include "sap.h"
 
 #define PACKAGE_NAME "theodore"
 #ifdef GIT_VERSION
@@ -75,6 +74,7 @@ void retro_set_environment(retro_environment_t env)
 
   // Emulator's preferences
   static const struct retro_variable vars[] = {
+      { PACKAGE_NAME"_rom", "Thomson flavor; TO8D|TO8" },
       { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
       { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
       { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
@@ -150,7 +150,6 @@ void retro_init(void)
   };
   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
-  Init6809();
   Hardreset();
 #ifdef _3DS
   video_buffer = (uint32_t*)linearMemAlign(XBITMAP * YBITMAP * sizeof(uint32_t), 0x80);
@@ -210,7 +209,6 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_reset(void)
 {
-  retro_unload_game();
   Hardreset();
 }
 
@@ -306,6 +304,18 @@ static void check_variables(void)
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
     SetPrinterEmulationEnabled(strcmp(var.value, "enabled") == 0);
+  }
+  var.key = PACKAGE_NAME"_rom";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    if (strcmp(var.value, "TO8D") == 0)
+    {
+      SetThomsonFlavor(TO8D);
+    }
+    else if (strcmp(var.value, "TO8") == 0)
+    {
+      SetThomsonFlavor(TO8);
+    }
   }
 }
 

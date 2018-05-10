@@ -47,8 +47,6 @@ extern char *dc6809_b;
 //irq trigger  (0=disabled, 1=enabled)
 extern int dc6809_irq;
 
-// Processor initialisation
-void Init6809(void);
 // Processor reset
 void Reset6809(void);
 // Execute one operation at pc address and set pc to next opcode address
