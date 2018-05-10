@@ -36,6 +36,7 @@
 #define KEYBOARDKEY_MAX 84
 #define PALETTE_SIZE 32
 
+static ThomsonFlavor currentFlavor = TO8D;
 static char *basic = to8dbasic;
 static int *basicpatch = to8dbasicpatch;
 static char *moniteur = to8dmoniteur;
@@ -130,22 +131,29 @@ E7C7= registre temporisateur d'octet de poids faible (TLSB)
 
 void SetThomsonFlavor(ThomsonFlavor flavor)
 {
-  if (flavor == TO8D)
+  if (flavor != currentFlavor)
   {
-    basic = to8dbasic;
-    basicpatch = to8dbasicpatch;
-    moniteur = to8dmoniteur;
-    moniteurpatch = to8dmoniteurpatch;
+    switch (flavor)
+    {
+      case TO8D:
+        basic = to8dbasic;
+        basicpatch = to8dbasicpatch;
+        moniteur = to8dmoniteur;
+        moniteurpatch = to8dmoniteurpatch;
+        break;
+      case TO8:
+        // Same basic then TO8D
+        basic = to8dbasic;
+        basicpatch = to8dbasicpatch;
+        moniteur = to8moniteur;
+        moniteurpatch = to8moniteurpatch;
+        break;
+      default:
+        return;
+    }
+    currentFlavor = flavor;
+    Hardreset();
   }
-  else if (flavor == TO8)
-  {
-    // Same basic then TO8D
-    basic = to8dbasic;
-    basicpatch = to8dbasicpatch;
-    moniteur = to8moniteur;
-    moniteurpatch = to8moniteurpatch;
-  }
-  Hardreset();
 }
 
 // Emulation du clavier TO8 ///////////////////////////////////////////////////
@@ -563,10 +571,15 @@ void to8d_serialize(void *data)
 {
   int offset = 0;
   char *buffer = (char *) data;
+
+  memcpy(buffer+offset, &currentFlavor, sizeof(currentFlavor));
+  offset += sizeof(currentFlavor);
+
   cpu_serialize(buffer+offset);
   offset += cpu_serialize_size();
   video_serialize(buffer+offset);
   offset += video_serialize_size();
+
   memcpy(buffer+offset, ram, sizeof(ram));
   offset += sizeof(ram);
   memcpy(buffer+offset, port, sizeof(port));
@@ -628,6 +641,12 @@ void to8d_unserialize(const void *data)
 {
   int offset = 0;
   const char *buffer = (const char *) data;
+  ThomsonFlavor flavor;
+
+  memcpy(&flavor, buffer+offset, sizeof(flavor));
+  offset += sizeof(flavor);
+  SetThomsonFlavor(flavor);
+
   cpu_unserialize(buffer+offset);
   offset += cpu_serialize_size();
   video_unserialize(buffer+offset);
