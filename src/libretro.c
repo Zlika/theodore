@@ -84,7 +84,7 @@ void retro_set_environment(retro_environment_t env)
 
   // Emulator's preferences
   static const struct retro_variable vars[] = {
-      { PACKAGE_NAME"_rom", "Thomson flavor; TO8D|TO8" },
+      { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D" },
       { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
       { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
       { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
