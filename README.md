@@ -59,6 +59,12 @@ The emulator can read the following file formats: *.fd and *.sap (floppy disks),
 
 By default, the core emulates a TO8D computer. Using the "Thomson flavor" option you can switch to a T08 computer.
 
+### :innocent: Cheat codes
+
+The emulator supports cheat codes with the following format: 0AAAAA:DD with AAAAA the RAM address (in hexadecimal) and DD the value (in hexadecimal) that will be written at the RAM address after each invocation of retro_run().
+
+Cf. the "cheat" directory for some actual cheat codes, as well as a Python script that helps find cheat codes from a set of save state files.
+
 ### Compatibility
 
 The source code is portable and should compile and run on most platforms.

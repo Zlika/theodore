@@ -36,11 +36,11 @@
 #define KEYBOARDKEY_MAX 84
 #define PALETTE_SIZE 32
 
-static ThomsonFlavor currentFlavor = TO8D;
+static ThomsonFlavor currentFlavor = TO8;
 static char *basic = to8dbasic;
 static int *basicpatch = to8dbasicpatch;
-static char *moniteur = to8dmoniteur;
-static int *moniteurpatch = to8dmoniteurpatch;
+static char *moniteur = to8moniteur;
+static int *moniteurpatch = to8moniteurpatch;
 // memory
 char car[CARTRIDGE_MEM_SIZE];   //espace cartouche 4x16K
 char ram[RAM_SIZE];             //ram 512K
