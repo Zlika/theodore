@@ -45,7 +45,10 @@ extern "C" void linearFree(void* mem);
 #define VIDEO_FPS         50
 #define AUDIO_SAMPLE_RATE 22050
 #define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
-#define CPU_FREQUENCY 1000
+#define CPU_FREQUENCY     1000
+#define MAX_CHEATS        10
+#define CHEAT_LENGTH      9
+#define CHEAT_SEP_POS     6
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -65,6 +68,13 @@ static int excess;
 static int virtualkb_index = 0;
 // true if a key of the virtual keyboard was being pressed during the last call of update_input()
 static bool virtualkb_pressed = false;
+
+typedef struct
+{
+  int address;
+  char value;
+} Cheat;
+static Cheat cheats[MAX_CHEATS] = { 0 };
 
 void retro_set_environment(retro_environment_t env)
 {
@@ -204,6 +214,56 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
   if (port < MAX_CONTROLLERS)
   {
     input_type[port] = device;
+  }
+}
+
+void retro_cheat_reset(void)
+{
+  if (log_cb) log_cb(RETRO_LOG_INFO, "Reset cheats.\n");
+  memset(cheats, 0, sizeof(cheats));
+}
+
+static bool parse_cheat(const char *code, Cheat *cheat)
+{
+  if ((strlen(code) != CHEAT_LENGTH) || (code[CHEAT_SEP_POS] != '-'))
+  {
+    return false;
+  }
+  cheat->address = strtol(code, NULL, 16);
+  cheat->value = (char) strtol(code + CHEAT_SEP_POS + 1, NULL, 16);
+  if (cheat->address <= 0)
+  {
+    return false;
+  }
+  return true;
+}
+
+void retro_cheat_set(unsigned index, bool enabled, const char *code)
+{
+  Cheat cheat;
+  if (log_cb) log_cb(RETRO_LOG_INFO, "Setting cheat %s at index %d, enabled=%s.\n",
+                    code, index, enabled ? "yes" : "no");
+  if ((index < MAX_CHEATS) && enabled)
+  {
+    if (!parse_cheat(code, &cheat))
+    {
+      if (log_cb) log_cb(RETRO_LOG_ERROR, "Wrong cheat format");
+      return;
+    }
+    cheats[index] = cheat;
+  }
+}
+
+void apply_cheats()
+{
+  int i;
+  for (int i = 0; i < MAX_CHEATS; i++)
+  {
+    if (cheats[i].address == 0)
+    {
+      return;
+    }
+    ram[cheats[i].address] = cheats[i].value;
   }
 }
 
@@ -348,6 +408,7 @@ void retro_run(void)
   }
 
   update_input();
+  apply_cheats();
 
   bool updated = false;
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
@@ -376,14 +437,6 @@ bool retro_unserialize(const void *data, size_t size)
   if (size != to8d_serialize_size()) return false;
   to8d_unserialize(data);
   return true;
-}
-
-void retro_cheat_reset(void)
-{
-}
-
-void retro_cheat_set(unsigned index, bool enabled, const char *code)
-{
 }
 
 static bool exists(const char *filename)
@@ -542,7 +595,7 @@ void retro_unload_game(void)
 
 unsigned retro_get_region(void)
 {
-  return 0;
+  return RETRO_REGION_PAL;
 }
 
 void *retro_get_memory_data(unsigned id)

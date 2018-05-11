@@ -2,6 +2,7 @@ Next Release
 ===========
 * Add support for save states.
 * Add TO8 emulation.
+* Add support for cheat codes.
 
 Release 0.9 (2018/05/01)
 ===========
