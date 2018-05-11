@@ -231,7 +231,7 @@ static bool parse_cheat(const char *code, Cheat *cheat)
   }
   cheat->address = strtol(code, NULL, 16);
   cheat->value = (char) strtol(code + CHEAT_SEP_POS + 1, NULL, 16);
-  if (cheat->address <= 0)
+  if (cheat->address <= 0 || cheat->address >= RAM_SIZE)
   {
     return false;
   }
