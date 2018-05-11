@@ -74,7 +74,7 @@ typedef struct
   int address;
   char value;
 } Cheat;
-static Cheat cheats[MAX_CHEATS] = { 0 };
+static Cheat cheats[MAX_CHEATS] = { {0} };
 
 void retro_set_environment(retro_environment_t env)
 {
