@@ -8,6 +8,10 @@ Theodore - Thomson TO8/TO8D emulator
 
 This is a [libretro](https://github.com/libretro) core for emulation of the [Thomson TO8/TO8D computers](https://en.wikipedia.org/wiki/Thomson_TO8). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator.
 
+### How to install
+
+[Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
+
 ### How to compile
 
 On Linux (and most other platforms):

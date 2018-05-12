@@ -1,4 +1,4 @@
-Next Release
+Release 1.0 (2018/05/12)
 ===========
 * Add support for save states.
 * Add TO8 emulation.
