@@ -61,7 +61,7 @@ The emulator can read the following file formats: *.fd and *.sap (floppy disks),
 
 ### Thomson flavors
 
-By default, the core emulates a TO8D computer. Using the "Thomson flavor" option you can switch to a T08 computer.
+By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to a T08D computer.
 
 ### :innocent: Cheat codes
 
