@@ -1,3 +1,6 @@
+[:gb:](https://github.com/Zlika/theodore/blob/master/README.md)
+[:fr:](https://github.com/Zlika/theodore/blob/master/README-FR.md)
+
 Theodore - Thomson TO8/TO8D emulator
 ====================================
 
@@ -33,7 +36,7 @@ ndk-build
 
 A => "Fire" button
 
-B => Simulates a keystroke on the 'B' key of the keyboard (allows to start most games without the need of a keyboard)
+B => Simulates a keystroke on the 'B' key of the keyboard (allows to start most games without the need for a keyboard)
 
 **Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the start button simulates a keystroke on the selected key. On controllers without Y/X keys, select can also be used to roll the virtual keyboard up.
 The order of the keys in the virtual keyboard is: digits (0->9) then letters (A->Z) then "Enter".
@@ -63,6 +66,10 @@ The emulator can read the following file formats: *.fd and *.sap (floppy disks),
 
 By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to a T08D computer.
 
+### Save states
+
+The emulator supports libretro's "save state" feature. Under RetroArch, use the following keys: F2 (save state), F4 (load state), F6/F7 (change state slot).
+
 ### :innocent: Cheat codes
 
 The emulator supports cheat codes with the following format: 0AAAAA:DD with AAAAA the RAM address (in hexadecimal) and DD the value (in hexadecimal) that will be written at the RAM address after each invocation of retro_run().
@@ -83,4 +90,3 @@ The Travis job checks that the code builds on Linux and MacOS, and the AppVeyor 
 | Windows | :heavy_check_mark: | :heavy_check_mark: |
 | Others | :question: | :question: |
 
-Pull requests are welcomed to fix compilation and execution problems on other platforms.
