@@ -53,8 +53,8 @@ static void (*DecodevideoModes[NB_VIDEO_MODES])(void) =
   { Decode320x16, Decode320x4, Decode320x4special,
     Decode160x16, Decode640x2 };
 
-//definition des intensites pour correction gamma de la datasheet EF9369
-static const int intens[16] = {80,118,128,136,142,147,152,156,160,163,166,169,172,175,178,180};
+//definition des intensites pour correction gamma (circuit palette EF9369 + circuit d'adaptation TEA5114)
+static const int intens[16] = {0,100,127,147,163,179,191,203,215,223,231,239,243,247,251,255};
 
 // Modification de la palette ////////////////////////////////////////////////
 void Palette(int n, int r, int v, int b)
@@ -62,9 +62,9 @@ void Palette(int n, int r, int v, int b)
   int i;
   for(i = 0; i < 8; i++)
   {
-    pcolor[n][i].b = 2 * (intens[b] - 64) + 16;
-    pcolor[n][i].g = 2 * (intens[v] - 64) + 16;
-    pcolor[n][i].r = 2 * (intens[r] - 64) + 16;
+    pcolor[n][i].b = intens[b];
+    pcolor[n][i].g = intens[v];
+    pcolor[n][i].r = intens[r];
     pcolor[n][i].a = 0xff;
   }
 }
