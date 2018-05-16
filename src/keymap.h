@@ -212,7 +212,7 @@ const char libretroKeyCodeToThomsonScanCode[512] =
     -1     /* SDLK_UNDO = 322 */
 };
 
-#define VIRTUALKB_NB_KEYS 37
+#define VIRTUALKB_NB_KEYS 38
 
 const int virtualkb_keysyms[VIRTUALKB_NB_KEYS] =
 {
@@ -222,7 +222,7 @@ const int virtualkb_keysyms[VIRTUALKB_NB_KEYS] =
     RETROK_g, RETROK_h, RETROK_i, RETROK_j, RETROK_k, RETROK_l,
     RETROK_m, RETROK_n, RETROK_o, RETROK_p, RETROK_q, RETROK_r,
     RETROK_s, RETROK_t, RETROK_u, RETROK_v, RETROK_w, RETROK_x,
-    RETROK_y, RETROK_z, RETROK_RETURN
+    RETROK_y, RETROK_z, RETROK_SPACE, RETROK_RETURN
 };
 
 const char* virutalkb_chars[VIRTUALKB_NB_KEYS] =
@@ -230,7 +230,7 @@ const char* virutalkb_chars[VIRTUALKB_NB_KEYS] =
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
     "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
     "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-    "U", "V", "W", "X", "Y", "Z", "Enter"
+    "U", "V", "W", "X", "Y", "Z", "Space", "Enter"
 };
 
 #endif /* __KEYMAP_H */
