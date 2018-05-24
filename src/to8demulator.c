@@ -557,7 +557,7 @@ static char Mgetto8d(unsigned short a)
 
 int to8d_serialize_size(void)
 {
-  return cpu_serialize_size() + video_serialize_size()
+  return sizeof(currentFlavor) + cpu_serialize_size() + video_serialize_size()
       + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(nvideopage) + sizeof(nvideobank)
       + sizeof(nrambank) + sizeof(nrombank) + sizeof(nsystbank) + sizeof(nctrlbank)
       + sizeof(carflags) + sizeof(touche) + sizeof(capslock) + sizeof(joysposition)
