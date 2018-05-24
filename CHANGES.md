@@ -1,3 +1,9 @@
+Next Release
+===========
+* Fix gamma correction.
+* Add 'Space' to the virtual keyboard.
+* Fix segfault during serialization.
+
 Release 1.0 (2018/05/12)
 ===========
 * Add support for save states.
