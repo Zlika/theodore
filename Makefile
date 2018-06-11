@@ -633,7 +633,6 @@ GCC_WARNINGS += --pedantic \
 	-Wformat \
 	-Wformat-security \
 	-Werror=format-security
-GCC_SECURITY_FLAGS = -D_FORTIFY_SOURCE=2 -fstack-protector
 endif
 
 DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES) $(GCC_FLAGS) $(GCC_WARNINGS) $(GCC_SECURITY_FLAGS) -DNST_NO_ZLIB $(INCFLAGS) $(INCFLAGS_PLATFORM)
