@@ -28,7 +28,7 @@
 #define YBITMAP 432
 
 // Sets the framebuffer to use
-void SetLibRetroVideoBuffer(uint32_t *video_buffer);
+int SetLibRetroVideoBuffer(uint32_t *video_buffer);
 
 // List of available video modes
 enum VideoMode { VIDEO_320X16, VIDEO_320X4, VIDEO_320X4_SPECIAL,

@@ -166,7 +166,13 @@ void retro_init(void)
 #else
   video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * sizeof(uint32_t));
 #endif
-  SetLibRetroVideoBuffer(video_buffer);
+  int size = SetLibRetroVideoBuffer(video_buffer);
+  struct retro_message msg;
+  char str[255];
+  sprintf(str, "sizeof struc pix = %d", size);
+  msg.msg = str;
+  msg.frames = VIDEO_FPS * 30;
+  environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
 }
 
 void retro_deinit(void)
