@@ -23,6 +23,7 @@
 #define __TO8DEMULATOR_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 // Size of RAM (512K)
 #define RAM_SIZE 0x80000
@@ -50,9 +51,6 @@ extern int xpen, ypen;
 //lightpen button state
 extern int penbutton;
 
-//niveau du haut-parleur
-extern int sound;
-
 //affichage
 //compteur ligne (0-63)
 extern int videolinecycle;
@@ -69,6 +67,8 @@ typedef enum { JOY0_UP, JOY0_DOWN, JOY0_LEFT, JOY0_RIGHT,
 
 typedef enum { TO8, TO8D } ThomsonFlavor;
 
+// Returns the current level of the speaker as a signed 16-bit integer
+int16_t GetAudioSample();
 // Joystick emulation
 void Joysemul(JoystickAxis axis, bool isOn);
 // TO8 keyboard emulation

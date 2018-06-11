@@ -129,6 +129,11 @@ E7C6= registre temporisateur d'octet de poids fort (TMSB)
 E7C7= registre temporisateur d'octet de poids faible (TLSB)
 */
 
+int16_t GetAudioSample()
+{
+  return (sound * 65535 / 0x3f) - (65536 / 2);
+}
+
 void SetThomsonFlavor(ThomsonFlavor flavor)
 {
   if (flavor != currentFlavor)

@@ -379,13 +379,6 @@ static void check_variables(void)
   }
 }
 
-// Converts an 8-bit unsigned audio sample (as produced by the emulator)
-// into a 16-bit signed audio sample (as expected by the libretro audio callback).
-static int16_t u8toS16_audio_sample(uint8_t sample)
-{
-  return (sample * 65535 / 255) - (65536 / 2);
-}
-
 void retro_run(void)
 {
   int i;
@@ -403,7 +396,7 @@ void retro_run(void)
     icycles = mcycles / 1000;                // integer number of cycles to run
     excess = mcycles - 1000 * icycles;       // remaining to do the next time
     excess -= 1000 * Run(icycles);           // remove thousandths in excess
-    audio_sample = u8toS16_audio_sample(sound + 96);
+    audio_sample = GetAudioSample();
     audio_stereo_buffer[(i << 1) + 0] = audio_stereo_buffer[(i << 1) + 1] = audio_sample;
   }
 
