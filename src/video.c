@@ -27,12 +27,12 @@
 
 #define NB_VIDEO_MODES 5
 
-struct pix {char b, g, r, a;};        //structure pixel BGRA
+typedef uint32_t PixARGB; // ARGB pixel
 typedef struct { int w, h; uint32_t* pixels;} Surface;
 
 // global variables //////////////////////////////////////////////////////////
 static Surface screen;
-static struct pix pcolor[20][8];      //couleurs BGRA de la palette (pour 8 pixels)
+static PixARGB pcolor[20][8];         //couleurs BGRA de la palette (pour 8 pixels)
 static int currentvideomemory;        //index octet courant en memoire video thomson
 static int currentlinesegment;        //numero de l'octet courant dans la ligne video
 static uint32_t *pcurrentpixel;       //pointeur ecran : pixel courant
@@ -56,16 +56,16 @@ static void (*DecodevideoModes[NB_VIDEO_MODES])(void) =
 //definition des intensites pour correction gamma (circuit palette EF9369 + circuit d'adaptation TEA5114)
 static const int intens[16] = {0,100,127,147,163,179,191,203,215,223,231,239,243,247,251,255};
 
+// Returns the uint32_t value of a ARGB pixel
+#define ARGB(a,r,g,b) (((a) << 24) + ((r) << 16) + ((g) << 8) + (b))
+
 // Modification de la palette ////////////////////////////////////////////////
 void Palette(int n, int r, int v, int b)
 {
   int i;
   for(i = 0; i < 8; i++)
   {
-    pcolor[n][i].b = intens[b];
-    pcolor[n][i].g = intens[v];
-    pcolor[n][i].r = intens[r];
-    pcolor[n][i].a = 0xff;
+    pcolor[n][i] = ARGB(0xff, intens[r], intens[v], intens[b]);
   }
 }
 
