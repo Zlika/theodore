@@ -45,7 +45,7 @@ extern "C" void linearFree(void* mem);
 #define VIDEO_FPS         50
 #define AUDIO_SAMPLE_RATE 22050
 #define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
-#define CPU_FREQUENCY     1000
+#define CPU_FREQUENCY     1000000
 #define MAX_CHEATS        10
 #define CHEAT_LENGTH      9
 #define CHEAT_SEP_POS     6
@@ -60,10 +60,10 @@ static retro_input_state_t input_state_cb = NULL;
 
 static unsigned int input_type[MAX_CONTROLLERS];
 static uint32_t *video_buffer = NULL;
-static int16_t audio_stereo_buffer[2*(AUDIO_SAMPLE_RATE / VIDEO_FPS)];
+static int16_t audio_stereo_buffer[2*AUDIO_SAMPLE_PER_FRAME];
 
 // nb of thousandth of cycles in excess to run the next time
-static int excess;
+static int excess = 0;
 // current index in virtualkb_* arrays
 static int virtualkb_index = 0;
 // true if a key of the virtual keyboard was being pressed during the last call of update_input()
@@ -162,7 +162,7 @@ void retro_init(void)
 
   Hardreset();
 #ifdef _3DS
-  video_buffer = (uint32_t*)linearMemAlign(XBITMAP * YBITMAP * sizeof(uint32_t), 0x80);
+  video_buffer = (uint32_t *)linearMemAlign(XBITMAP * YBITMAP * sizeof(uint32_t), 0x80);
 #else
   video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * sizeof(uint32_t));
 #endif
@@ -391,8 +391,8 @@ void retro_run(void)
     // Computes the nb of cycles between 2 samples and runs the emulation for this nb of cycles
     // Nb of theoretical cycles for this period of time =
     // theoretical number + previous remaining - cycles in excess during the previous period
-    mcycles = CPU_FREQUENCY * 100000 / 2205; // theoretical thousandths of cycles
-    mcycles += excess;                       // corrected thousandths of cyces
+    mcycles = 1000 * CPU_FREQUENCY / AUDIO_SAMPLE_RATE; // theoretical thousandths of cycles
+    mcycles += excess;                       // corrected thousandths of cycles
     icycles = mcycles / 1000;                // integer number of cycles to run
     excess = mcycles - 1000 * icycles;       // remaining to do the next time
     excess -= 1000 * Run(icycles);           // remove thousandths in excess
