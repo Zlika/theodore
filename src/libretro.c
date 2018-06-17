@@ -49,6 +49,8 @@ extern "C" void linearFree(void* mem);
 #define MAX_CHEATS        10
 #define CHEAT_LENGTH      9
 #define CHEAT_SEP_POS     6
+// Pitch = length in bytes between two lines in video buffer
+#define PITCH             sizeof(uint32_t) * XBITMAP
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -410,7 +412,7 @@ void retro_run(void)
   }
 
   audio_batch_cb(audio_stereo_buffer, AUDIO_SAMPLE_PER_FRAME);
-  video_cb(video_buffer, XBITMAP, YBITMAP, sizeof(uint32_t)*XBITMAP);
+  video_cb(video_buffer, XBITMAP, YBITMAP, PITCH);
 }
 
 size_t retro_serialize_size(void)
