@@ -1,5 +1,12 @@
 Next Release
 ===========
+* Fix gamma correction.
+* Add 'Space' to the virtual keyboard.
+* Fix segfault during serialization.
+* Fix compilation and wrong colors on ngc, wii and wiiu (#3).
+
+Release 1.0 (2018/05/12)
+===========
 * Add support for save states.
 * Add TO8 emulation.
 * Add support for cheat codes.

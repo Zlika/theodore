@@ -45,10 +45,12 @@ extern "C" void linearFree(void* mem);
 #define VIDEO_FPS         50
 #define AUDIO_SAMPLE_RATE 22050
 #define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
-#define CPU_FREQUENCY     1000
+#define CPU_FREQUENCY     1000000
 #define MAX_CHEATS        10
 #define CHEAT_LENGTH      9
 #define CHEAT_SEP_POS     6
+// Pitch = length in bytes between two lines in video buffer
+#define PITCH             sizeof(uint32_t) * XBITMAP
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -60,10 +62,10 @@ static retro_input_state_t input_state_cb = NULL;
 
 static unsigned int input_type[MAX_CONTROLLERS];
 static uint32_t *video_buffer = NULL;
-static int16_t audio_stereo_buffer[2*(AUDIO_SAMPLE_RATE / VIDEO_FPS)];
+static int16_t audio_stereo_buffer[2*AUDIO_SAMPLE_PER_FRAME];
 
 // nb of thousandth of cycles in excess to run the next time
-static int excess;
+static int excess = 0;
 // current index in virtualkb_* arrays
 static int virtualkb_index = 0;
 // true if a key of the virtual keyboard was being pressed during the last call of update_input()
@@ -162,7 +164,7 @@ void retro_init(void)
 
   Hardreset();
 #ifdef _3DS
-  video_buffer = (uint32_t*)linearMemAlign(XBITMAP * YBITMAP * sizeof(uint32_t), 0x80);
+  video_buffer = (uint32_t *)linearMemAlign(XBITMAP * YBITMAP * sizeof(uint32_t), 0x80);
 #else
   video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * sizeof(uint32_t));
 #endif
@@ -231,7 +233,7 @@ static bool parse_cheat(const char *code, Cheat *cheat)
   }
   cheat->address = strtol(code, NULL, 16);
   cheat->value = (char) strtol(code + CHEAT_SEP_POS + 1, NULL, 16);
-  if (cheat->address <= 0)
+  if (cheat->address <= 0 || cheat->address >= RAM_SIZE)
   {
     return false;
   }
@@ -379,13 +381,6 @@ static void check_variables(void)
   }
 }
 
-// Converts an 8-bit unsigned audio sample (as produced by the emulator)
-// into a 16-bit signed audio sample (as expected by the libretro audio callback).
-static int16_t u8toS16_audio_sample(uint8_t sample)
-{
-  return (sample * 65535 / 255) - (65536 / 2);
-}
-
 void retro_run(void)
 {
   int i;
@@ -398,12 +393,12 @@ void retro_run(void)
     // Computes the nb of cycles between 2 samples and runs the emulation for this nb of cycles
     // Nb of theoretical cycles for this period of time =
     // theoretical number + previous remaining - cycles in excess during the previous period
-    mcycles = CPU_FREQUENCY * 100000 / 2205; // theoretical thousandths of cycles
-    mcycles += excess;                       // corrected thousandths of cyces
+    mcycles = 1000 * CPU_FREQUENCY / AUDIO_SAMPLE_RATE; // theoretical thousandths of cycles
+    mcycles += excess;                       // corrected thousandths of cycles
     icycles = mcycles / 1000;                // integer number of cycles to run
     excess = mcycles - 1000 * icycles;       // remaining to do the next time
     excess -= 1000 * Run(icycles);           // remove thousandths in excess
-    audio_sample = u8toS16_audio_sample(sound + 96);
+    audio_sample = GetAudioSample();
     audio_stereo_buffer[(i << 1) + 0] = audio_stereo_buffer[(i << 1) + 1] = audio_sample;
   }
 
@@ -417,7 +412,7 @@ void retro_run(void)
   }
 
   audio_batch_cb(audio_stereo_buffer, AUDIO_SAMPLE_PER_FRAME);
-  video_cb(video_buffer, XBITMAP, YBITMAP, sizeof(uint32_t)*XBITMAP);
+  video_cb(video_buffer, XBITMAP, YBITMAP, PITCH);
 }
 
 size_t retro_serialize_size(void)
