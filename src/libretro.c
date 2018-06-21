@@ -256,7 +256,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
   }
 }
 
-void apply_cheats()
+static void apply_cheats()
 {
   int i;
   for (int i = 0; i < MAX_CHEATS; i++)
