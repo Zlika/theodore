@@ -31,10 +31,12 @@
 #include "rom/to8dmoniteur.h"
 #include "rom/to8moniteur.h"
 
-#define VBL_NUMBER_MAX 2
+#define VBL_NUMBER_MAX  2
 // Number of keys of the TO8D keyboard
 #define KEYBOARDKEY_MAX 84
-#define PALETTE_SIZE 32
+#define PALETTE_SIZE    32
+// Sound level on 6 bits
+#define MAX_SOUND_LEVEL 0x3f
 
 static ThomsonFlavor currentFlavor = TO8;
 static char *basic = to8dbasic;
@@ -131,7 +133,7 @@ E7C7= registre temporisateur d'octet de poids faible (TLSB)
 
 int16_t GetAudioSample()
 {
-  return (sound * 65535 / 0x3f) - (65536 / 2);
+  return (sound * 65535 / MAX_SOUND_LEVEL) - (65536 / 2);
 }
 
 void SetThomsonFlavor(ThomsonFlavor flavor)
@@ -503,7 +505,7 @@ static void Mputto8d(unsigned short a, char c)
       //e7cb= registre de controle port B (CRB)
       case 0xe7c9: port[0x09] = c; TO8rambank(); return;
       case 0xe7cc: port[0x0c] = c; return;
-      case 0xe7cd: if(port[0x0f] & 4) sound = c & 0x3f; else port[0x0d] = c; return;
+      case 0xe7cd: if(port[0x0f] & 4) sound = c & MAX_SOUND_LEVEL; else port[0x0d] = c; return;
       case 0xe7ce: port[0x0e] = c; return; //registre controle position joysticks
       case 0xe7cf: port[0x0f] = c; return; //registre controle action - musique
       case 0xe7d8: return;
