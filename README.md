@@ -13,7 +13,9 @@ This is a [libretro](https://github.com/libretro) core for emulation of the [Tho
 
 ### How to install
 
-[Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
+This emulator is available on the following platforms:
+* RetroArch: [Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
+* [Recalbox](https://www.recalbox.com/): Starting from version 2018.06.27, this emulator is built in your favorite retrogaming operating system.
 
 ### How to compile
 

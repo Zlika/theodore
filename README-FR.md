@@ -13,7 +13,9 @@ Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordin
 
 ### Instructions d'installation
 
-[Installer RetroArch](http://www.retroarch.com/?page=platforms), puis démarrer RetroArch et télécharger le core "theodore" via le "Core Updater".
+Cet émulateur est disponible sur les plateformes suivantes :
+* RetroArch : [Installer RetroArch](http://www.retroarch.com/?page=platforms), puis démarrer RetroArch et télécharger le core "theodore" via le "Core Updater".
+* [Recalbox](https://www.recalbox.com/) : Theodore est inclus dans votre console de retrogaming préférée depuis la version 2018.06.27.
 
 ### Instructions de compilation
 
