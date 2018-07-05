@@ -1,3 +1,7 @@
+Next Release
+===========
+* Add full support for SAP files (without conversion to FD format).
+
 Release 1.1 (2018/06/21)
 ===========
 * Fix gamma correction.

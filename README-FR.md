@@ -62,8 +62,6 @@ L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A 
 
 L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquettes), *.k7 (cassettes), *.m7 et *.rom (cartouches).
 
-**Fichiers SAP :** les fichiers *.sap sont convertis à la volé au format *.fd (sauf si un fichier *.fd de même nom existe déjà). Le fichier *.fd est ensuite chargé par l'émulateur.
-
 ### Variantes Thomson émulées
 
 Par défaut, un ordinateur T08 est émulé. En utilisant l'option "Thomson flavor", il est possible d'émuler un TO8D.

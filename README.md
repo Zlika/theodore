@@ -62,8 +62,6 @@ The order of the keys in the virtual keyboard is: digits (0->9) then letters (A-
 
 The emulator can read the following file formats: *.fd and *.sap (floppy disks), *.k7 (tapes), *.m7 and *.rom (cartridges).
 
-**SAP files:** unless a matching *.fd file already exists, *.sap files are converted on the fly to the *.fd format. The *.fd file is then loaded by the emulator.
-
 ### Thomson flavors
 
 By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to a T08D computer.
