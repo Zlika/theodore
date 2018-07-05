@@ -13,7 +13,9 @@ Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordin
 
 ### Instructions d'installation
 
-[Installer RetroArch](http://www.retroarch.com/?page=platforms), puis démarrer RetroArch et télécharger le core "theodore" via le "Core Updater".
+Cet émulateur est disponible sur les plateformes suivantes :
+* RetroArch : [Installer RetroArch](http://www.retroarch.com/?page=platforms), puis démarrer RetroArch et télécharger le core "theodore" via le "Core Updater".
+* [Recalbox](https://www.recalbox.com/) : Theodore est inclus dans votre console de retrogaming préférée depuis la version 2018.06.27.
 
 ### Instructions de compilation
 
@@ -59,8 +61,6 @@ L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A 
 ### :floppy_disk: Formats de fichiers supportés
 
 L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquettes), *.k7 (cassettes), *.m7 et *.rom (cartouches).
-
-**Fichiers SAP :** les fichiers *.sap sont convertis à la volé au format *.fd (sauf si un fichier *.fd de même nom existe déjà). Le fichier *.fd est ensuite chargé par l'émulateur.
 
 ### Variantes Thomson émulées
 

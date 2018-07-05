@@ -31,10 +31,12 @@
 #include "rom/to8dmoniteur.h"
 #include "rom/to8moniteur.h"
 
-#define VBL_NUMBER_MAX 2
+#define VBL_NUMBER_MAX  2
 // Number of keys of the TO8D keyboard
 #define KEYBOARDKEY_MAX 84
-#define PALETTE_SIZE 32
+#define PALETTE_SIZE    32
+// Sound level on 6 bits
+#define MAX_SOUND_LEVEL 0x3f
 
 static ThomsonFlavor currentFlavor = TO8;
 static char *basic = to8dbasic;
@@ -131,7 +133,7 @@ E7C7= registre temporisateur d'octet de poids faible (TLSB)
 
 int16_t GetAudioSample()
 {
-  return (sound * 65535 / 0x3f) - (65536 / 2);
+  return (sound * 65535 / MAX_SOUND_LEVEL) - (65536 / 2);
 }
 
 void SetThomsonFlavor(ThomsonFlavor flavor)
@@ -487,40 +489,40 @@ static void Mputto8d(unsigned short a, char c)
     case 0x4: case 0x5: ramvideo[a] = c; return;
     case 0x6: case 0x7: case 0x8: case 0x9: ramuser[a] = c; return;
     case 0xa: case 0xb: case 0xc: case 0xd: rambank[a] = c; return;
-    case 0xe: switch(a)
-    {
-      case 0xe7c0: port[0x00] = c; return;
-      case 0xe7c1: port[0x01] = c; mute = c & 8; return;
-      case 0xe7c3: port[0x03] = (c & 0x3d); if((c & 0x20) == 0) keyb_irqcount = 0;
-      TO8videoram(); TO8rombank(); return;
-      case 0xe7c5: port[0x05] = c; Timercontrol(); return; //controle timer
-      case 0xe7c6: latch6846 = (latch6846 & 0xff) | ((c & 0xff) << 8); return;
-      case 0xe7c7: latch6846 = (latch6846 & 0xff00) | (c & 0xff); return;
-      //6821 systeme: 2 ports 8 bits
-      //e7c8= registre de direction ou de donnees port A (6821 systeme)
-      //e7c9= registre de direction ou de donnees port B
-      //e7ca= registre de controle port A (CRA)
-      //e7cb= registre de controle port B (CRB)
-      case 0xe7c9: port[0x09] = c; TO8rambank(); return;
-      case 0xe7cc: port[0x0c] = c; return;
-      case 0xe7cd: if(port[0x0f] & 4) sound = c & 0x3f; else port[0x0d] = c; return;
-      case 0xe7ce: port[0x0e] = c; return; //registre controle position joysticks
-      case 0xe7cf: port[0x0f] = c; return; //registre controle action - musique
-      case 0xe7d8: return;
-      case 0xe7da: Palettecolor(c); return;
-      case 0xe7db: port[0x1b] = c; return;
-      case 0xe7dc: TO8videomode(c); return;
-      case 0xe7dd: Videopage_bordercolor(c); return;
-      case 0xe7e4: port[0x24] = c; return;
-      case 0xe7e5: port[0x25] = c; TO8rambank(); return;
-      case 0xe7e6: port[0x26] = c; TO8rombank(); return;
-      case 0xe7e7: port[0x27] = c; TO8rambank(); return;
-      default: return;
-    }
-    return;
-      default: return;
+    case 0xe:
+      switch(a)
+      {
+        case 0xe7c0: port[0x00] = c; return;
+        case 0xe7c1: port[0x01] = c; mute = c & 8; return;
+        case 0xe7c3: port[0x03] = (c & 0x3d); if((c & 0x20) == 0) keyb_irqcount = 0;
+        TO8videoram(); TO8rombank(); return;
+        case 0xe7c5: port[0x05] = c; Timercontrol(); return; //controle timer
+        case 0xe7c6: latch6846 = (latch6846 & 0xff) | ((c & 0xff) << 8); return;
+        case 0xe7c7: latch6846 = (latch6846 & 0xff00) | (c & 0xff); return;
+        //6821 systeme: 2 ports 8 bits
+        //e7c8= registre de direction ou de donnees port A (6821 systeme)
+        //e7c9= registre de direction ou de donnees port B
+        //e7ca= registre de controle port A (CRA)
+        //e7cb= registre de controle port B (CRB)
+        case 0xe7c9: port[0x09] = c; TO8rambank(); return;
+        case 0xe7cc: port[0x0c] = c; return;
+        case 0xe7cd: if(port[0x0f] & 4) sound = c & MAX_SOUND_LEVEL; else port[0x0d] = c; return;
+        case 0xe7ce: port[0x0e] = c; return; //registre controle position joysticks
+        case 0xe7cf: port[0x0f] = c; return; //registre controle action - musique
+        case 0xe7d8: return;
+        case 0xe7da: Palettecolor(c); return;
+        case 0xe7db: port[0x1b] = c; return;
+        case 0xe7dc: TO8videomode(c); return;
+        case 0xe7dd: Videopage_bordercolor(c); return;
+        case 0xe7e4: port[0x24] = c; return;
+        case 0xe7e5: port[0x25] = c; TO8rambank(); return;
+        case 0xe7e6: port[0x26] = c; TO8rombank(); return;
+        case 0xe7e7: port[0x27] = c; TO8rambank(); return;
+        default: return;
+      }
+      return;
+    default: return;
   }
-  return;
 }
 
 // Lecture memoire to8d //////////////////////////////////////////////////////

@@ -1,9 +1,14 @@
 Next Release
 ===========
+* Add full support for SAP files (without conversion to FD format).
+
+Release 1.1 (2018/06/21)
+===========
 * Fix gamma correction.
 * Add 'Space' to the virtual keyboard.
 * Fix segfault during serialization.
-* Fix compilation and wrong colors on ngc, wii and wiiu (#3).
+* More accurate sound level.
+* Fix compilation errors and wrong colors on ngc, wii and wiiu (#3).
 
 Release 1.0 (2018/05/12)
 ===========

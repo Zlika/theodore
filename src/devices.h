@@ -32,19 +32,23 @@ void SetTapeWriteProtect(bool enabled);
 void SetPrinterEmulationEnabled(bool enabled);
 
 // Load a floppy disk (fd format)
-void Loadfd(const char *filename);
+void LoadFd(const char *filename);
+// Load a floppy disk (sap format)
+void LoadSap(const char *filename);
 // Load a tape
-void Loadk7(const char *filename);
+void LoadK7(const char *filename);
 // Load a memo7 cartridge
-void Loadmemo(const char *filename);
+void LoadMemo(const char *filename);
 // Unload the floppy disk
-void Unloadfd(void);
+void UnloadFloppy(void);
 // Unload the tape
-void Unloadk7(void);
+void UnloadK7(void);
 // Unload the cartridge
-void Unloadmemo(void);
+void UnloadMemo(void);
 
-// Run an input/output related opcode
+// Run an input/output related opcode.
+// These "wrong" opcodes come from the patching of the ROM
+// and are used to emulate I/O functions of the monitor.
 void RunIoOpcode(int opcode);
 
 #endif /* __DEVICES_H */

@@ -21,10 +21,26 @@
 #ifndef __SAP_H
 #define __SAP_H
 
+#include <stdio.h>
 #include <stdbool.h>
 
-// Converts a SAP file to the FD format.
+typedef struct
+{
+  unsigned char format;
+  FILE *handle;
+} SapFile;
+
+// Opens a SAP file.
+// SapFile.handle is NULL in case of error.
+SapFile sap_open(const char *filename);
+// Reads a given sector from the SAP file and stores its content in the 'data' buffer.
 // Returns true for success, false for failure.
-bool sap2fd(const char *sap_filename, const char *fd_filename);
+bool sap_readSector(const SapFile *file, int track, int sector, char *data);
+// Writes a given sector into the SAP file from the content of the 'data' buffer.
+// Returns true for success, false for failure.
+bool sap_writeSector(const SapFile *file, int track, int sector, char *data);
+// Closes the SAP file.
+// Returns true for success, false for failure.
+bool sap_close(SapFile *file);
 
 #endif /* __SAP_H */

@@ -13,7 +13,9 @@ This is a [libretro](https://github.com/libretro) core for emulation of the [Tho
 
 ### How to install
 
-[Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
+This emulator is available on the following platforms:
+* RetroArch: [Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
+* [Recalbox](https://www.recalbox.com/): Starting from version 2018.06.27, this emulator is built in your favorite retrogaming operating system.
 
 ### How to compile
 
@@ -59,8 +61,6 @@ The order of the keys in the virtual keyboard is: digits (0->9) then letters (A-
 ### :floppy_disk: File formats
 
 The emulator can read the following file formats: *.fd and *.sap (floppy disks), *.k7 (tapes), *.m7 and *.rom (cartridges).
-
-**SAP files:** unless a matching *.fd file already exists, *.sap files are converted on the fly to the *.fd format. The *.fd file is then loaded by the emulator.
 
 ### Thomson flavors
 

@@ -256,7 +256,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
   }
 }
 
-void apply_cheats()
+static void apply_cheats()
 {
   int i;
   for (int i = 0; i < MAX_CHEATS; i++)
@@ -434,17 +434,6 @@ bool retro_unserialize(const void *data, size_t size)
   return true;
 }
 
-static bool exists(const char *filename)
-{
-    FILE *file;
-    if ((file = fopen(filename, "r")))
-    {
-        fclose(file);
-        return true;
-    }
-    return false;
-}
-
 static bool streq_nocase(const char *s1, const char *s2)
 {
   int i;
@@ -462,39 +451,22 @@ static bool streq_nocase(const char *s1, const char *s2)
 // k7 (*.k7), fd (*.fd) or memo7 (*.rom)
 static bool load_file(const char *filename)
 {
-  char fd_filename[256];
-  size_t filename_size;
-
   if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".k7"))
   {
-    Loadk7(filename);
+    LoadK7(filename);
   }
   else if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".fd"))
   {
-    Loadfd(filename);
+    LoadFd(filename);
   }
   else if (strlen(filename) > 4 && (streq_nocase(filename + strlen(filename) - 4, ".rom")
       || streq_nocase(filename + strlen(filename) - 3, ".m7")))
   {
-    Loadmemo(filename);
+    LoadMemo(filename);
   }
   else if (strlen(filename) > 4 && streq_nocase(filename + strlen(filename) - 4, ".sap"))
   {
-    filename_size = strlen(filename);
-    strcpy(fd_filename, filename);
-    fd_filename[filename_size - 3] = 'f';
-    fd_filename[filename_size - 2] = 'd';
-    fd_filename[filename_size - 1] = '\0';
-    if (!exists(fd_filename))
-    {
-      if (log_cb) log_cb(RETRO_LOG_INFO, "Converting SAP file to FD format.\n");
-      if (!sap2fd(filename, fd_filename))
-      {
-        if (log_cb) log_cb(RETRO_LOG_ERROR, "Cannot convert file to SAP format.\n");
-        return false;
-      }
-    }
-    Loadfd(fd_filename);
+    LoadSap(filename);
   }
   else
   {
@@ -583,9 +555,9 @@ bool retro_load_game_special(
 
 void retro_unload_game(void)
 {
-  Unloadk7();
-  Unloadfd();
-  Unloadmemo();
+  UnloadK7();
+  UnloadFloppy();
+  UnloadMemo();
 }
 
 unsigned retro_get_region(void)
