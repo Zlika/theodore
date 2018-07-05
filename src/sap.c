@@ -148,7 +148,7 @@ bool sap_writeSector(const SapFile *file, int track, int sector, char *data)
   // Compute sector CRC
   short int crc = compute_crc(sap_sector, sap_sector_size);
   sap_sector[sap_sector_size-2] = crc >> 8;
-  sap_sector[sap_sector_size-2] = crc & 0xFF;
+  sap_sector[sap_sector_size-1] = crc & 0xFF;
   if (fwrite(sap_sector, sap_sector_size, 1, file->handle) != 1)
   {
     return false;
