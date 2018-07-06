@@ -16,13 +16,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Tools to manage the SAP file format */
+/* Management of the SAP file format */
 
 #ifndef __SAP_H
 #define __SAP_H
 
 #include <stdio.h>
-#include <stdbool.h>
+#include "boolean.h"
 
 typedef struct
 {

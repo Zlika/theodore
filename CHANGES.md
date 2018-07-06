@@ -1,6 +1,7 @@
 Next Release
 ===========
 * Add full support for SAP files (without conversion to FD format).
+* Fix build for 3DS, PS3 and MSVC2003/2005/2010.
 
 Release 1.1 (2018/06/21)
 ===========

@@ -22,8 +22,8 @@
 #ifndef __TO8DEMULATOR_H
 #define __TO8DEMULATOR_H
 
-#include <stdbool.h>
 #include <stdint.h>
+#include "boolean.h"
 
 // Size of RAM (512K)
 #define RAM_SIZE 0x80000

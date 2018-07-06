@@ -170,6 +170,7 @@ else ifeq ($(platform), ctr)
 	PLATFORM_DEFINES += -mword-relocations
 	PLATFORM_DEFINES += -fomit-frame-pointer -fstrict-aliasing -ffast-math
 	STATIC_LINKING = 1
+	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Raspberry Pi 2 (Raspbian)
 else ifeq ($(platform), rpi2)
@@ -241,13 +242,14 @@ else ifeq ($(platform), windows_msvc2003_x86)
 
 	WindowsSdkDir := $(INETSDK)
 
-	export INCLUDE := $(INCLUDE);$(INETSDK)/Include;libretro-common/include/compat/msvc
+	export INCLUDE := $(INCLUDE);$(INETSDK)/Include;src/libretro-common/include/compat/msvc
 	export LIB := $(LIB);$(WindowsSdkDir);$(INETSDK)/Lib
 	TARGET := $(TARGET_NAME)_libretro.dll
 	PSS_STYLE :=2
 	LDFLAGS += -DLL
 	CFLAGS += -D_CRT_SECURE_NO_DEPRECATE
 	WINDOWS_VERSION=1
+	HAS_GCC := 0
 
 # Windows MSVC 2017 all architectures
 else ifneq (,$(findstring windows_msvc2017,$(platform)))
@@ -422,7 +424,7 @@ else ifneq (,$(findstring windows_msvc2017,$(platform)))
 		LIBS += kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib
 	else ifneq (,$(findstring uwp,$(PlatformSuffix)))
 		WinPartition = uwp
-		CFLAGS += -DWINAPI_FAMILY=WINAPI_FAMILY_APP -DWINDLL -D_UNICODE -DUNICODE -DWRL_NO_DEFAULT_LIB
+		CFLAGS += -DWINAPI_FAMILY=WINAPI_FAMILY_APP -D_WINDLL -D_UNICODE -DUNICODE -D__WRL_NO_DEFAULT_LIB__ -EHsc
 		LDFLAGS += -APPCONTAINER -NXCOMPAT -DYNAMICBASE -MANIFEST:NO -LTCG -OPT:REF -SUBSYSTEM:CONSOLE -MANIFESTUAC:NO -OPT:ICF -ERRORREPORT:PROMPT -NOLOGO -TLBID:1 -DEBUG:FULL -WINMD:NO
 		LIBS += WindowsApp.lib
 	endif
@@ -488,6 +490,10 @@ else ifneq (,$(findstring windows_msvc2017,$(platform)))
 	INCLUDE := $(shell IFS=$$'\n'; cygpath -w "$(VcCompilerToolsDir)/include")
 	LIB := $(shell IFS=$$'\n'; cygpath -w "$(VcCompilerToolsDir)/lib/$(TargetArchMoniker)")
 
+	ifneq (,$(findstring uwp,$(PlatformSuffix)))
+		LIB := $(shell IFS=$$'\n'; cygpath -w "$(LIB)/store")
+	endif
+
 	export INCLUDE := $(INCLUDE);$(WindowsSDKSharedIncludeDir);$(WindowsSDKUCRTIncludeDir);$(WindowsSDKUMIncludeDir)
 	export LIB := $(LIB);$(WindowsSDKUCRTLibDir);$(WindowsSDKUMLibDir)
 	TARGET := $(TARGET_NAME)_libretro.dll
@@ -513,7 +519,7 @@ else ifeq ($(platform), windows_msvc2010_x64)
 	WindowsSdkDirInc ?= $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')Include
 
 	INCFLAGS_PLATFORM = -I"$(WindowsSdkDirInc)"
-	export INCLUDE := $(INCLUDE)
+	export INCLUDE := $(INCLUDE);$(INETSDK)/Include
 	export LIB := $(LIB);$(WindowsSdkDir)
 	TARGET := $(TARGET_NAME)_libretro.dll
 	PSS_STYLE :=2
@@ -537,7 +543,7 @@ else ifeq ($(platform), windows_msvc2010_x86)
 	WindowsSdkDirInc ?= $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')Include
 
 	INCFLAGS_PLATFORM = -I"$(WindowsSdkDirInc)"
-	export INCLUDE := $(INCLUDE)
+	export INCLUDE := $(INCLUDE);$(INETSDK)/Include
 	export LIB := $(LIB);$(WindowsSdkDir)
 	TARGET := $(TARGET_NAME)_libretro.dll
 	PSS_STYLE :=2
@@ -557,7 +563,7 @@ else ifeq ($(platform), windows_msvc2005_x86)
 
 	WindowsSdkDir := $(INETSDK)
 
-	export INCLUDE := $(INCLUDE);$(INETSDK)/Include;libretro-common/include/compat/msvc
+	export INCLUDE := $(INCLUDE);$(INETSDK)/Include
 	export LIB := $(LIB);$(WindowsSdkDir);$(INETSDK)/Lib
 	TARGET := $(TARGET_NAME)_libretro.dll
 	PSS_STYLE :=2
@@ -570,6 +576,7 @@ else
 	CC = gcc
 	CXX = g++
 	SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
+	DISABLE_GCC_SECURITY_FLAGS = 1
 endif
 
 CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
@@ -626,11 +633,14 @@ ifeq ($(HAS_GCC), 1)
 		-Werror-implicit-function-declaration \
 		-Wno-uninitialized \
 		-Wno-strict-aliasing \
-		-Wno-overflow \
-		-fno-strict-overflow \
 		-Wformat \
 		-Wformat-security \
-		-Werror=format-security
+	# These flags are not compatible with PS3
+	ifneq ($(platform), ps3)
+		GCC_WARNINGS += -Wno-overflow \
+			-fno-strict-overflow \
+			-Werror=format-security
+	endif
 	ifndef DISABLE_GCC_SECURITY_FLAGS
 		GCC_SECURITY_FLAGS = -D_FORTIFY_SOURCE=2 -fstack-protector
 	endif

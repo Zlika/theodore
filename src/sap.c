@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Tools to manage the SAP file format */
+/* Management of the SAP file format */
 
 #include "sap.h"
 #include <stdio.h>
@@ -97,6 +97,7 @@ static short int compute_crc(char *sap_sector, int sector_size)
 bool sap_readSector(const SapFile *file, int track, int sector, char *data)
 {
   int i;
+  short int expected_crc, actual_crc;
   char sap_sector[SAP_SECTOR_MAX_SIZE];
   int sector_size = SECTOR_SIZE(file->format);
   int sap_sector_size = SAP_SECTOR_SIZE(file->format);
@@ -116,8 +117,8 @@ bool sap_readSector(const SapFile *file, int track, int sector, char *data)
     data[i] = sap_sector[SAP_SECTOR_DATA_OFFSET + i];
   }
   // Check sector CRC
-  short int expected_crc = compute_crc(sap_sector, sap_sector_size);
-  short int actual_crc = (sap_sector[sap_sector_size-2] << 8) + (sap_sector[sap_sector_size-1] & 0xFF);
+  expected_crc = compute_crc(sap_sector, sap_sector_size);
+  actual_crc = (sap_sector[sap_sector_size-2] << 8) + (sap_sector[sap_sector_size-1] & 0xFF);
   if (actual_crc != expected_crc)
   {
     return false;
@@ -128,6 +129,7 @@ bool sap_readSector(const SapFile *file, int track, int sector, char *data)
 bool sap_writeSector(const SapFile *file, int track, int sector, char *data)
 {
   int i;
+  short int crc;
   char sap_sector[SAP_SECTOR_MAX_SIZE];
   int sector_size = SECTOR_SIZE(file->format);
   int sap_sector_size = SAP_SECTOR_SIZE(file->format);
@@ -146,7 +148,7 @@ bool sap_writeSector(const SapFile *file, int track, int sector, char *data)
     sap_sector[SAP_SECTOR_DATA_OFFSET + i] = data[i] ^ SAP_MAGIC_NUM;
   }
   // Compute sector CRC
-  short int crc = compute_crc(sap_sector, sap_sector_size);
+  crc = compute_crc(sap_sector, sap_sector_size);
   sap_sector[sap_sector_size-2] = crc >> 8;
   sap_sector[sap_sector_size-1] = crc & 0xFF;
   if (fwrite(sap_sector, sap_sector_size, 1, file->handle) != 1)
