@@ -129,6 +129,7 @@ else ifeq ($(platform), ps3)
 	AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
 	PLATFORM_DEFINES := -D__CELLOS_LV2__
 	STATIC_LINKING = 1
+	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # sncps3
 else ifeq ($(platform), sncps3)
@@ -140,6 +141,7 @@ else ifeq ($(platform), sncps3)
 	AR = $(CELL_SDK)/host-win32/sn/bin/ps3snarl.exe
 	PLATFORM_DEFINES := -D__CELLOS_LV2__
 	STATIC_LINKING = 1
+	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # PSP
 else ifeq ($(platform), psp1)
@@ -149,6 +151,7 @@ else ifeq ($(platform), psp1)
 	AR = psp-ar$(EXE_EXT)
 	PLATFORM_DEFINES := -DPSP -G0
 	STATIC_LINKING = 1
+	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Vita
 else ifeq ($(platform), vita)
@@ -158,6 +161,7 @@ else ifeq ($(platform), vita)
 	AR = arm-vita-eabi-ar$(EXE_EXT)
 	PLATFORM_DEFINES := -DVITA -fno-short-enums
 	STATIC_LINKING = 1
+	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # CTR(3DS)
 else ifeq ($(platform), ctr)
