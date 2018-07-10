@@ -143,14 +143,16 @@ bool sap_writeSector(const SapFile *file, int track, int sector, char *data)
   sap_sector[1] = 0;
   sap_sector[2] = track;
   sap_sector[3] = sector;
-  for (i = 0; i < sector_size; i++)
-  {
-    sap_sector[SAP_SECTOR_DATA_OFFSET + i] = data[i] ^ SAP_MAGIC_NUM;
-  }
+  memcpy(sap_sector + SAP_SECTOR_DATA_OFFSET, data, sector_size);
   // Compute sector CRC
   crc = compute_crc(sap_sector, sap_sector_size);
   sap_sector[sap_sector_size-2] = crc >> 8;
   sap_sector[sap_sector_size-1] = crc & 0xFF;
+  // Encrypt sector data
+  for (i = 0; i < sector_size; i++)
+  {
+    sap_sector[SAP_SECTOR_DATA_OFFSET + i] ^= SAP_MAGIC_NUM;
+  }
   if (fwrite(sap_sector, sap_sector_size, 1, file->handle) != 1)
   {
     return false;
