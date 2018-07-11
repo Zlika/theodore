@@ -240,8 +240,6 @@ void LoadK7(const char *filename)
   if(filename[0] == '\0') return;
   fk7 = fopen(filename, "rb+");
   if(fk7 == NULL) return;
-  fseek(fk7, 0, SEEK_END);
-  fseek(fk7, 0, SEEK_SET);
 }
 
 void UnloadMemo(void)
