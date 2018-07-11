@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Tools to manage the SAP file format */
+/* Management of the SAP file format */
 
 #include "sap.h"
 #include <stdio.h>
@@ -94,9 +94,10 @@ static short int compute_crc(char *sap_sector, int sector_size)
     return crc;
 }
 
-bool sap_readSector(const SapFile *file, int track, int sector, char *data)
+DiskErrCode sap_readSector(const SapFile *file, int track, int sector, char *data)
 {
   int i;
+  short int expected_crc, actual_crc;
   char sap_sector[SAP_SECTOR_MAX_SIZE];
   int sector_size = SECTOR_SIZE(file->format);
   int sap_sector_size = SAP_SECTOR_SIZE(file->format);
@@ -104,11 +105,11 @@ bool sap_readSector(const SapFile *file, int track, int sector, char *data)
 
   if (fseek(file->handle, offset, SEEK_SET))
   {
-    return false;
+    return DISK_IO_ERROR;
   }
   if (fread(sap_sector, sap_sector_size, 1, file->handle) != 1)
   {
-    return false;
+    return DISK_IO_ERROR;
   }
   for (i = 0; i < sector_size; i++)
   {
@@ -116,18 +117,19 @@ bool sap_readSector(const SapFile *file, int track, int sector, char *data)
     data[i] = sap_sector[SAP_SECTOR_DATA_OFFSET + i];
   }
   // Check sector CRC
-  short int expected_crc = compute_crc(sap_sector, sap_sector_size);
-  short int actual_crc = (sap_sector[sap_sector_size-2] << 8) + (sap_sector[sap_sector_size-1] & 0xFF);
+  expected_crc = compute_crc(sap_sector, sap_sector_size);
+  actual_crc = (sap_sector[sap_sector_size-2] << 8) + (sap_sector[sap_sector_size-1] & 0xFF);
   if (actual_crc != expected_crc)
   {
-    return false;
+    return DISK_IO_ERROR;
   }
-  return true;
+  return DISK_NO_ERROR;
 }
 
-bool sap_writeSector(const SapFile *file, int track, int sector, char *data)
+DiskErrCode sap_writeSector(const SapFile *file, int track, int sector, char *data)
 {
   int i;
+  short int crc;
   char sap_sector[SAP_SECTOR_MAX_SIZE];
   int sector_size = SECTOR_SIZE(file->format);
   int sap_sector_size = SAP_SECTOR_SIZE(file->format);
@@ -135,25 +137,38 @@ bool sap_writeSector(const SapFile *file, int track, int sector, char *data)
 
   if (fseek(file->handle, offset, SEEK_SET))
   {
-    return false;
+    return DISK_IO_ERROR;
   }
-  sap_sector[0] = 0;
-  sap_sector[1] = 0;
-  sap_sector[2] = track;
-  sap_sector[3] = sector;
-  for (i = 0; i < sector_size; i++)
+  // Re-use the same sector's header data then the current one
+  if (fread(sap_sector, SAP_SECTOR_DATA_OFFSET, 1, file->handle) != 1)
   {
-    sap_sector[SAP_SECTOR_DATA_OFFSET + i] = data[i] ^ SAP_MAGIC_NUM;
+    return DISK_IO_ERROR;
   }
+  // Rewind to the beginning of the sector
+  if (fseek(file->handle, offset, SEEK_SET))
+  {
+    return DISK_IO_ERROR;
+  }
+  // Sector protected
+  if (sap_sector[1] != 0)
+  {
+    return DISK_SECTOR_PROTECTED_ERROR;
+  }
+  memcpy(sap_sector + SAP_SECTOR_DATA_OFFSET, data, sector_size);
   // Compute sector CRC
-  short int crc = compute_crc(sap_sector, sap_sector_size);
+  crc = compute_crc(sap_sector, sap_sector_size);
   sap_sector[sap_sector_size-2] = crc >> 8;
   sap_sector[sap_sector_size-1] = crc & 0xFF;
+  // Encrypt sector data
+  for (i = 0; i < sector_size; i++)
+  {
+    sap_sector[SAP_SECTOR_DATA_OFFSET + i] ^= SAP_MAGIC_NUM;
+  }
   if (fwrite(sap_sector, sap_sector_size, 1, file->handle) != 1)
   {
-    return false;
+    return DISK_IO_ERROR;
   }
-  return true;
+  return DISK_NO_ERROR;
 }
 
 bool sap_close(SapFile *file)

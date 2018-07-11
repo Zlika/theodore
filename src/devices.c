@@ -75,7 +75,7 @@ static void Print(void)
 // Read/write error
 static void Diskerror(int n)
 {
-  Mputc(0x604e, n - 1); // error 53 = I/O error
+  Mputc(0x604e, n);     // error code in DK.STA
   CC |= 0x01;           // error indicator
   return;
 }
@@ -86,30 +86,33 @@ static void Readsector(void)
 {
   char buffer[SECTOR_SIZE];
   int i, j, u, p, s;
-  if (ffd == NULL && sap.handle == NULL) {Diskerror(71); return;}
+  int errcode;
+
+  if (ffd == NULL && sap.handle == NULL) {Diskerror(DISK_NO_DISK_ERROR); return;}
   // Drive number (0/1: 2 sides of the internal drive,
   //               2/3: 2 sides of the external drive,
   //               4  : RAM disk)
-  u = Mgetc(0x6049) & 0xff; if(u > 3) {Diskerror(53); return;}
+  u = Mgetc(0x6049) & 0xff; if(u > 3) {Diskerror(DISK_IO_ERROR); return;}
   // Track number (0->79)
-  p = Mgetc(0x604a) & 0xff; if(p != 0) {Diskerror(53); return;}
-  p = Mgetc(0x604b) & 0xff; if(p >= NB_TRACKS) {Diskerror(53); return;}
+  p = Mgetc(0x604a) & 0xff; if(p != 0) {Diskerror(DISK_IO_ERROR); return;}
+  p = Mgetc(0x604b) & 0xff; if(p >= NB_TRACKS) {Diskerror(DISK_IO_ERROR); return;}
   // Sector number
-  s = Mgetc(0x604c) & 0xff; if((s == 0) || (s > SECTORS_PER_TRACK)) {Diskerror(53); return;}
+  s = Mgetc(0x604c) & 0xff; if((s == 0) || (s > SECTORS_PER_TRACK)) {Diskerror(DISK_IO_ERROR); return;}
   for (j = 0; j < SECTOR_SIZE; j++) buffer[j] = 0xe5;
   if (ffd != NULL)
   {
     // FD file
     s += SECTORS_PER_TRACK * p + SECTORS_PER_SIDE * u;
-    if (fseek(ffd, 0, SEEK_END)) {Diskerror(53); return;}
-    if ((s << 8) > ftell(ffd)) {Diskerror(53); return;}
-    if (fseek(ffd, (s - 1) << 8, SEEK_SET)) {Diskerror(53); return;}
-    if (fread(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(53); return;}
+    if (fseek(ffd, 0, SEEK_END)) {Diskerror(DISK_IO_ERROR); return;}
+    if ((s << 8) > ftell(ffd)) {Diskerror(DISK_IO_ERROR); return;}
+    if (fseek(ffd, (s - 1) << 8, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
+    if (fread(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
   }
   else
   {
     // SAP file
-    if (!sap_readSector(&sap, p, s, buffer)) {Diskerror(53); return;}
+    errcode = sap_readSector(&sap, p, s, buffer);
+    if (errcode != DISK_NO_ERROR) {Diskerror(errcode); return;}
   }
   i = ((Mgetc(0x604f) & 0xff) << 8) + (Mgetc(0x6050) & 0xff);
   for (j = 0; j < SECTOR_SIZE; j++) Mputc(i++, buffer[j]);
@@ -121,31 +124,33 @@ static void Writesector(void)
 {
   char buffer[SECTOR_SIZE];
   int i, j, u, p, s;
-  if (ffd == NULL && sap.handle == NULL) {Diskerror(71); return;}
-  // error 72 = write protection
-  if (fdprotection) {Diskerror(72); return;}
+  int errcode;
+
+  if (ffd == NULL && sap.handle == NULL) {Diskerror(DISK_NO_DISK_ERROR); return;}
+  if (fdprotection) {Diskerror(DISK_WRITE_PROTECTION_ERROR); return;}
   // Drive number (0/1: 2 sides of the internal drive,
   //               2/3: 2 sides of the external drive,
   //               4  : RAM disk)
-  u = Mgetc(0x6049) & 0xff; if(u > 3) {Diskerror(53); return;}
+  u = Mgetc(0x6049) & 0xff; if(u > 3) {Diskerror(DISK_IO_ERROR); return;}
   // Track number (0->79)
-  p = Mgetc(0x604a) & 0xff; if(p != 0) {Diskerror(53); return;}
-  p = Mgetc(0x604b) & 0xff; if(p >= NB_TRACKS) {Diskerror(53); return;}
+  p = Mgetc(0x604a) & 0xff; if(p != 0) {Diskerror(DISK_IO_ERROR); return;}
+  p = Mgetc(0x604b) & 0xff; if(p >= NB_TRACKS) {Diskerror(DISK_IO_ERROR); return;}
   // Sector number
-  s = Mgetc(0x604c) & 0xff; if((s == 0) || (s > SECTORS_PER_TRACK)) {Diskerror(53); return;}
+  s = Mgetc(0x604c) & 0xff; if((s == 0) || (s > SECTORS_PER_TRACK)) {Diskerror(DISK_IO_ERROR); return;}
   i = SECTOR_SIZE * (Mgetc(0x604f) & 0xff) + (Mgetc(0x6050) & 0xff);
   for (j = 0; j < SECTOR_SIZE; j++) buffer[j] = Mgetc(i++);
   if (ffd != NULL)
   {
     // FD file
     s += SECTORS_PER_TRACK * p + SECTORS_PER_SIDE * u;
-    if (fseek(ffd, (s - 1) << 8, SEEK_SET)) {Diskerror(53); return;}
-    if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(53); return;}
+    if (fseek(ffd, (s - 1) << 8, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
+    if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
   }
   else
   {
     // SAP file
-    if (!sap_writeSector(&sap, p, s, buffer)) {Diskerror(53); return;}
+    errcode = sap_writeSector(&sap, p, s, buffer);
+    if (errcode != DISK_NO_ERROR) {Diskerror(errcode); return;}
   }
 }
 
@@ -155,29 +160,28 @@ static void Formatdisk(void)
 {
   char buffer[SECTOR_SIZE];
   int i, u, fatlength;
-  if (ffd == NULL) {Diskerror(71); return;}
-  // error 72 = write protection
-  if (fdprotection) {Diskerror(72); return;}
+  if (ffd == NULL) {Diskerror(DISK_NO_DISK_ERROR); return;}
+  if (fdprotection) {Diskerror(DISK_WRITE_PROTECTION_ERROR); return;}
   u = Mgetc(0x6049) & 0xff; if(u > 03) return; // Unit
   u = (SECTORS_PER_SIDE * u) << 8; // Start of the unit in the .fd file
   fatlength = 160;     // 80=160Ko, 160=320Ko
   // rem: fatlength provisoire !!!!! (tester la variable adequate)
   // Initialisation of the whole disk with 0xE5
   for (i = 0; i < SECTOR_SIZE; i++) buffer[i] = 0xe5;
-  if (fseek(ffd, u, SEEK_SET)) {Diskerror(53); return;}
+  if (fseek(ffd, u, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
   for (i = 0; i < (fatlength * 8); i++)
-    if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(53); return;}
+    if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
   // Initialisation of track 20 at 0xFF
   for (i = 0; i < SECTOR_SIZE; i++) buffer[i] = 0xff;
-  if (fseek(ffd, u + 0x14000, SEEK_SET)) {Diskerror(53); return;}
+  if (fseek(ffd, u + 0x14000, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
   for (i = 0; i < SECTORS_PER_TRACK; i++)
-    if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(53); return;}
+    if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
   // Write the FAT
   buffer[0x00] = 0;
   buffer[0x29] = 0xfe; buffer[0x2a] = 0xfe;
   for (i = fatlength + 1; i < SECTOR_SIZE; i++) buffer[i] = 0xfe;
-  if (fseek(ffd, u + 0x14100, SEEK_SET)) {Diskerror(53); return;}
-  if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(53); return;}
+  if (fseek(ffd, u + 0x14100, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
+  if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
 }
 
 void UnloadFloppy(void)

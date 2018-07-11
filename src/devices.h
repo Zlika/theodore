@@ -22,7 +22,7 @@
 #ifndef __DEVICES_H
 #define __DEVICES_H
 
-#include <stdbool.h>
+#include "boolean.h"
 
 // Set or unset the floppy's write protection
 void SetFloppyWriteProtect(bool enabled);

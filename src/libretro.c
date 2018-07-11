@@ -37,8 +37,8 @@
 #endif
 
 #ifdef _3DS
-extern "C" void* linearMemAlign(size_t size, size_t alignment);
-extern "C" void linearFree(void* mem);
+void* linearMemAlign(size_t size, size_t alignment);
+void linearFree(void* mem);
 #endif
 
 #define MAX_CONTROLLERS   2
@@ -71,6 +71,14 @@ static int virtualkb_index = 0;
 // true if a key of the virtual keyboard was being pressed during the last call of update_input()
 static bool virtualkb_pressed = false;
 
+static const struct retro_variable prefs[] = {
+    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D" },
+    { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
+    { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
+    { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
+    { NULL, NULL }
+};
+
 typedef struct
 {
   int address;
@@ -85,14 +93,7 @@ void retro_set_environment(retro_environment_t env)
   env(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
 
   // Emulator's preferences
-  static const struct retro_variable vars[] = {
-      { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D" },
-      { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
-      { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
-      { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
-      { NULL, NULL }
-  };
-  env(RETRO_ENVIRONMENT_SET_VARIABLES, (void *) vars);
+  env(RETRO_ENVIRONMENT_SET_VARIABLES, (void *) prefs);
 
   environ_cb = env;
 }
@@ -124,18 +125,6 @@ void retro_set_input_state(retro_input_state_t input_state)
 
 void retro_init(void)
 {
-  unsigned int level = 4;
-  struct retro_log_callback log;
-  if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
-  {
-    log_cb = log.log;
-  }
-  else
-  {
-    log_cb = NULL;
-  }
-  environ_cb(RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL, &level);
-
   struct retro_input_descriptor desc[] = {
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Left" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Up" },
@@ -160,6 +149,19 @@ void retro_init(void)
 
         { 0 },
   };
+  unsigned int level = 4;
+
+  struct retro_log_callback log;
+  if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
+  {
+    log_cb = log.log;
+  }
+  else
+  {
+    log_cb = NULL;
+  }
+  environ_cb(RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL, &level);
+
   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 
   Hardreset();
@@ -259,7 +261,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char *code)
 static void apply_cheats()
 {
   int i;
-  for (int i = 0; i < MAX_CHEATS; i++)
+  for (i = 0; i < MAX_CHEATS; i++)
   {
     if (cheats[i].address == 0)
     {
@@ -291,6 +293,9 @@ static void print_current_virtualkb_key()
 static void update_input(void)
 {
   int i;
+  int xpointer, ypointer;
+  bool select, start, x, y;
+
   input_poll_cb();
   // Joysticks
   for (i = 0; i < MAX_CONTROLLERS; i++)
@@ -302,8 +307,8 @@ static void update_input(void)
     Joysemul(JOY0_FIRE + i, input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A));
   }
   // Light pen
-  int xpointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
-  int ypointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
+  xpointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
+  ypointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
   pointerToScreenCoordinates(&xpointer, &ypointer);
   xpen = xpointer - 16;
   ypen = (ypointer - 16) / 2;
@@ -315,10 +320,10 @@ static void update_input(void)
     TO8key(libretroKeyCodeToThomsonScanCode[RETROK_b], true);
   }
   // Change letter with Select/X/Y and press it with Start
-  bool select = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
-  bool start = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START);
-  bool x = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X);
-  bool y = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
+  select = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
+  start = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START);
+  x = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X);
+  y = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
   if (!virtualkb_pressed)
   {
     if (select || x)
@@ -383,6 +388,7 @@ static void check_variables(void)
 
 void retro_run(void)
 {
+  bool updated;
   int i;
   int mcycles; // nb of thousandths of cycles between 2 samples
   int icycles; // integer number of cycles between 2 samples
@@ -405,7 +411,7 @@ void retro_run(void)
   update_input();
   apply_cheats();
 
-  bool updated = false;
+  updated = false;
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
   {
     check_variables();
@@ -522,6 +528,7 @@ static void keyboard_cb(bool down, unsigned keycode,
 
 bool retro_load_game(const struct retro_game_info *game)
 {
+  struct retro_keyboard_callback keyb_cb = { keyboard_cb };
   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt) && log_cb)
   {
@@ -529,8 +536,7 @@ bool retro_load_game(const struct retro_game_info *game)
     return false;
   }
 
-  struct retro_keyboard_callback cb = { keyboard_cb };
-  environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &cb);
+  environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &keyb_cb);
 
   check_variables();
 
