@@ -94,7 +94,7 @@ static short int compute_crc(char *sap_sector, int sector_size)
     return crc;
 }
 
-bool sap_readSector(const SapFile *file, int track, int sector, char *data)
+DiskErrCode sap_readSector(const SapFile *file, int track, int sector, char *data)
 {
   int i;
   short int expected_crc, actual_crc;
@@ -105,11 +105,11 @@ bool sap_readSector(const SapFile *file, int track, int sector, char *data)
 
   if (fseek(file->handle, offset, SEEK_SET))
   {
-    return false;
+    return DISK_IO_ERROR;
   }
   if (fread(sap_sector, sap_sector_size, 1, file->handle) != 1)
   {
-    return false;
+    return DISK_IO_ERROR;
   }
   for (i = 0; i < sector_size; i++)
   {
@@ -121,12 +121,12 @@ bool sap_readSector(const SapFile *file, int track, int sector, char *data)
   actual_crc = (sap_sector[sap_sector_size-2] << 8) + (sap_sector[sap_sector_size-1] & 0xFF);
   if (actual_crc != expected_crc)
   {
-    return false;
+    return DISK_IO_ERROR;
   }
-  return true;
+  return DISK_NO_ERROR;
 }
 
-bool sap_writeSector(const SapFile *file, int track, int sector, char *data)
+DiskErrCode sap_writeSector(const SapFile *file, int track, int sector, char *data)
 {
   int i;
   short int crc;
@@ -137,12 +137,23 @@ bool sap_writeSector(const SapFile *file, int track, int sector, char *data)
 
   if (fseek(file->handle, offset, SEEK_SET))
   {
-    return false;
+    return DISK_IO_ERROR;
   }
-  sap_sector[0] = 0;
-  sap_sector[1] = 0;
-  sap_sector[2] = track;
-  sap_sector[3] = sector;
+  // Re-use the same sector's header data then the current one
+  if (fread(sap_sector, SAP_SECTOR_DATA_OFFSET, 1, file->handle) != 1)
+  {
+    return DISK_IO_ERROR;
+  }
+  // Rewind to the beginning of the sector
+  if (fseek(file->handle, offset, SEEK_SET))
+  {
+    return DISK_IO_ERROR;
+  }
+  // Sector protected
+  if (sap_sector[1] != 0)
+  {
+    return DISK_SECTOR_PROTECTED_ERROR;
+  }
   memcpy(sap_sector + SAP_SECTOR_DATA_OFFSET, data, sector_size);
   // Compute sector CRC
   crc = compute_crc(sap_sector, sap_sector_size);
@@ -155,9 +166,9 @@ bool sap_writeSector(const SapFile *file, int track, int sector, char *data)
   }
   if (fwrite(sap_sector, sap_sector_size, 1, file->handle) != 1)
   {
-    return false;
+    return DISK_IO_ERROR;
   }
-  return true;
+  return DISK_NO_ERROR;
 }
 
 bool sap_close(SapFile *file)

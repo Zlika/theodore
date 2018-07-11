@@ -30,15 +30,30 @@ typedef struct
   FILE *handle;
 } SapFile;
 
+// Error code that must be written in the DK.STA register ($604E).
+typedef enum
+{
+  // No error
+  DISK_NO_ERROR = 0,
+  // Protected sector, cannot write
+  DISK_SECTOR_PROTECTED_ERROR = 1,
+  // I/O error
+  DISK_IO_ERROR = 52,
+  // No disk in drive
+  DISK_NO_DISK_ERROR = 70,
+  // Floppy is write protected
+  DISK_WRITE_PROTECTION_ERROR = 71
+} DiskErrCode;
+
 // Opens a SAP file.
 // SapFile.handle is NULL in case of error.
 SapFile sap_open(const char *filename);
 // Reads a given sector from the SAP file and stores its content in the 'data' buffer.
-// Returns true for success, false for failure.
-bool sap_readSector(const SapFile *file, int track, int sector, char *data);
+// Returns the error code to put in DK.STA register if not 0.
+DiskErrCode sap_readSector(const SapFile *file, int track, int sector, char *data);
 // Writes a given sector into the SAP file from the content of the 'data' buffer.
-// Returns true for success, false for failure.
-bool sap_writeSector(const SapFile *file, int track, int sector, char *data);
+// Returns the error code to put in DK.STA register if not 0.
+DiskErrCode sap_writeSector(const SapFile *file, int track, int sector, char *data);
 // Closes the SAP file.
 // Returns true for success, false for failure.
 bool sap_close(SapFile *file);
