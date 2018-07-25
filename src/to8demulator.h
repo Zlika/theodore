@@ -84,7 +84,7 @@ void SetThomsonFlavor(ThomsonFlavor flavor);
 
 // The following functions are used for libretro's save states feature.
 // Returns the amount of data required to serialize the whole state of the emulator.
-int to8d_serialize_size(void);
+unsigned int to8d_serialize_size(void);
 // Serializes the whole state of the emulator.
 void to8d_serialize(void *data);
 // Unserializes the whole state of the emulator.

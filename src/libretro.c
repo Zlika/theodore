@@ -485,6 +485,7 @@ static bool load_file(const char *filename)
 static void keyboard_cb(bool down, unsigned keycode,
     uint32_t character, uint16_t key_modifiers)
 {
+  (void) character; // Unused parameter
   //printf( "Down: %s, Code: %d, Char: %u, Mod: %u.\n",
   //        down ? "yes" : "no", keycode, character, key_modifiers);
 
@@ -556,6 +557,9 @@ bool retro_load_game_special(
   unsigned game_type,
   const struct retro_game_info *info, size_t num_info)
 {
+  (void) game_type; // Unused parameter
+  (void) info;      // Unused parameter
+  (void) num_info;  // Unused parameter
   return false;
 }
 

@@ -206,7 +206,6 @@ void Nextline(void)
 
 static void InitScreen(void)
 {
-  int i;
   pcurrentline = pmin;    //initialisation pointeur ligne courante
   pcurrentpixel = pmin;   //initialisation pointeur pixel courant
   currentlinesegment = 0; //initialisation numero d'octet dans la ligne
@@ -232,7 +231,7 @@ void SetLibRetroVideoBuffer(uint32_t *video_buffer)
   InitScreen();
 }
 
-int video_serialize_size(void)
+unsigned int video_serialize_size(void)
 {
   return sizeof(pcolor) + sizeof(currentvideomemory) + sizeof(currentlinesegment)
       + sizeof(int) + sizeof(int) + sizeof(int);

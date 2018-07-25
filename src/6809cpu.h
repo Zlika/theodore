@@ -57,7 +57,7 @@ int Run6809(void);
 
 // The following functions are used for libretro's save states feature.
 // Returns the amount of data required to serialize the CPU's internal state.
-int cpu_serialize_size(void);
+unsigned int cpu_serialize_size(void);
 // Serializes the CPU's internal state.
 void cpu_serialize(void *data);
 // Unserializes the CPU's internal state.

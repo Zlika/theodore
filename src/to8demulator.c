@@ -364,7 +364,7 @@ static void TO8dpatch(char rom[], int patch[])
 // Hardreset de l'ordinateur emule ///////////////////////////////////////////
 void Hardreset(void)
 {
-  int i;
+  unsigned int i;
   time_t curtime;
   struct tm *loctime;
   for(i = 0; i < sizeof(ram); i++)
@@ -562,7 +562,7 @@ static char Mgetto8d(unsigned short a)
   }
 }
 
-int to8d_serialize_size(void)
+unsigned int to8d_serialize_size(void)
 {
   return sizeof(currentFlavor) + cpu_serialize_size() + video_serialize_size()
       + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(nvideopage) + sizeof(nvideobank)

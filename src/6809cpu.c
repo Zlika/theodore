@@ -1004,7 +1004,7 @@ int Run6809(void)
   }
 }
 
-int cpu_serialize_size(void)
+unsigned int cpu_serialize_size(void)
 {
   return sizeof(dc6809_cycles) + sizeof(dc6809_sync) + sizeof(dc6809_irq)
       + sizeof(dc6809_firq) + sizeof(dc6809_nmi) + sizeof(dc6809_w)
