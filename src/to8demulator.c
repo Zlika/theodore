@@ -66,7 +66,7 @@ static int nctrlbank;       //numero banque controleur (00-03)
 int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
 int carflags;        //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
 //keyboard, joysticks, mouse
-int touche[KEYBOARDKEY_MAX]; //etat touches to8d
+static int touche[KEYBOARDKEY_MAX]; //etat touches to8d
 static int capslock;         //1=capslock, 0 sinon
 static int joysposition;     //position des manches
 static int joysaction;       //position des boutons d'action
