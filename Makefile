@@ -625,7 +625,7 @@ include Makefile.common
 OBJECTS := $(SOURCES_C:.c=.o)
 
 ifeq ($(HAS_GCC), 1)
-	C_VER = -std=gnu99
+	C_VER = -std=c99
 	CFLAGS += -fsigned-char
 	CXXFLAGS += -std=c99
 	CXXFLAGS += -fno-rtti
