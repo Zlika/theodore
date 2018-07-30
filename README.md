@@ -17,6 +17,8 @@ This emulator is available on the following platforms:
 * RetroArch: [Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
 * [Recalbox](https://www.recalbox.com/): Starting from version 2018.06.27, this emulator is built in your favorite retrogaming operating system.
 
+It should be compatible with all the platforms supported by RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
+
 ### How to compile
 
 On Linux (and most other platforms):
@@ -58,6 +60,8 @@ The order of the keys in the virtual keyboard is: digits (0->9) then letters (A-
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
 
+RetroArch already uses lots of keyboard shortcuts for its own need that interfere with the core's keyboard emulation. To avoid this problem, configure RetroArch with a "Hotkey", as indicated in [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
+
 ### :floppy_disk: File formats
 
 The emulator can read the following file formats: *.fd and *.sap (floppy disks), *.k7 (tapes), *.m7 and *.rom (cartridges).
@@ -75,18 +79,4 @@ The emulator supports libretro's "save state" feature. Under RetroArch, use the 
 The emulator supports cheat codes with the following format: 0AAAAA:DD with AAAAA the RAM address (in hexadecimal) and DD the value (in hexadecimal) that will be written at the RAM address after each invocation of retro_run().
 
 Cf. the "cheat" directory for some actual cheat codes, as well as a Python script that helps find cheat codes from a set of save state files.
-
-### Compatibility
-
-The source code is portable and should compile and run on most platforms.
-The Travis job checks that the code builds on Linux and MacOS, and the AppVeyor job checks that the code builds on Windows.
-
-| Platform | Compiles | Runs |
-| --- | :---: | :---: |
-| Linux / amd64 | :heavy_check_mark: | :heavy_check_mark: |
-| Raspbian / Raspberry Pi | :heavy_check_mark: | :heavy_check_mark: |
-| Android | :heavy_check_mark: | :heavy_check_mark: |
-| MacOS | :heavy_check_mark: | :question: |
-| Windows | :heavy_check_mark: | :heavy_check_mark: |
-| Others | :question: | :question: |
 

@@ -1,7 +1,8 @@
-Next Release
+Release 1.2 (2018/07/30)
 ===========
 * Add full support for SAP files (without conversion to FD format).
 * Fix build for 3DS, PS3 and MSVC2003/2005/2010.
+* Release keys pressed through the virtual keyboard (fixes Avenger game).
 
 Release 1.1 (2018/06/21)
 ===========

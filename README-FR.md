@@ -17,6 +17,8 @@ Cet émulateur est disponible sur les plateformes suivantes :
 * RetroArch : [Installer RetroArch](http://www.retroarch.com/?page=platforms), puis démarrer RetroArch et télécharger le core "theodore" via le "Core Updater".
 * [Recalbox](https://www.recalbox.com/) : Theodore est inclus dans votre console de retrogaming préférée depuis la version 2018.06.27.
 
+Il devrait être compatible avec toutes les plateformes supportées par RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
+
 ### Instructions de compilation
 
 Sur Linux (et la plupart des autres plateformes) :
@@ -58,6 +60,8 @@ L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A 
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
 
+RetroArch utilise beaucoup de raccourcis clavier, ce qui interfère avec l'émulation du clavier de ce core. Pour éviter ce problème, il suffit de configurer une "Hotkey" pour RetroArch, comme indiqué dans [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
+
 ### :floppy_disk: Formats de fichiers supportés
 
 L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquettes), *.k7 (cassettes), *.m7 et *.rom (cartouches).
@@ -75,18 +79,4 @@ L'émulateur supporte la fonctionnalité de "save state" (sauvegarde instantané
 L'émulateur permet d'utiliser des codes de triche ("cheat codes") au format suivant : 0AAAAA:DD, avec AAAAA l'adresse en RAM (en hexadécimal) et DD la valeur (en hexadécimal) qui sera écrite à l'adresse en question après chaque invocation de la fonction retro_run().
 
 Cf. le répertoire "cheat" qui contient des exemples de cheat codes ainsi qu'un script Python permettant de trouver des cheat codes à partir de plusieurs fichiers de sauvegarde instantanée (save states).
-
-### Compatibilité
-
-Le code source est portable et devrait compiler et s'exécuter sur la plupart des plateformes.
-La tâche Travis vérifie la compilation sous Linux et MacOS, et la tâche AppVeyor vérifie la compilation sous Windows.
-
-| Platforme | Compile | Exécute |
-| --- | :---: | :---: |
-| Linux / amd64 | :heavy_check_mark: | :heavy_check_mark: |
-| Raspbian / Raspberry Pi | :heavy_check_mark: | :heavy_check_mark: |
-| Android | :heavy_check_mark: | :heavy_check_mark: |
-| MacOS | :heavy_check_mark: | :question: |
-| Windows | :heavy_check_mark: | :heavy_check_mark: |
-| Autres | :question: | :question: |
 
