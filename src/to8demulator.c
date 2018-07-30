@@ -66,7 +66,7 @@ static int nctrlbank;       //numero banque controleur (00-03)
 int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
 int carflags;        //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
 //keyboard, joysticks, mouse
-int touche[KEYBOARDKEY_MAX]; //etat touches to8d
+static int touche[KEYBOARDKEY_MAX]; //etat touches to8d
 static int capslock;         //1=capslock, 0 sinon
 static int joysposition;     //position des manches
 static int joysaction;       //position des boutons d'action
@@ -364,7 +364,7 @@ static void TO8dpatch(char rom[], int patch[])
 // Hardreset de l'ordinateur emule ///////////////////////////////////////////
 void Hardreset(void)
 {
-  int i;
+  unsigned int i;
   time_t curtime;
   struct tm *loctime;
   for(i = 0; i < sizeof(ram); i++)
@@ -562,7 +562,7 @@ static char Mgetto8d(unsigned short a)
   }
 }
 
-int to8d_serialize_size(void)
+unsigned int to8d_serialize_size(void)
 {
   return sizeof(currentFlavor) + cpu_serialize_size() + video_serialize_size()
       + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(nvideopage) + sizeof(nvideobank)

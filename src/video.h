@@ -46,7 +46,7 @@ void Palette(int n, int r, int v, int b);
 
 // The following functions are used for libretro's save states feature.
 // Returns the amount of data required to serialize the internal state of the video module.
-int video_serialize_size(void);
+unsigned int video_serialize_size(void);
 // Serializes the internal state of the video module.
 void video_serialize(void *data);
 // Unserializes the internal state of the video module.

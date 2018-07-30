@@ -70,6 +70,8 @@ static int excess = 0;
 static int virtualkb_index = 0;
 // true if a key of the virtual keyboard was being pressed during the last call of update_input()
 static bool virtualkb_pressed = false;
+// scancode of the last key simulated by the virtual keyboard
+static int virtualkb_lastscancode = 0;
 
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D" },
@@ -294,7 +296,7 @@ static void update_input(void)
 {
   int i;
   int xpointer, ypointer;
-  bool select, start, x, y;
+  bool select, start, x, y, b;
 
   input_poll_cb();
   // Joysticks
@@ -313,20 +315,24 @@ static void update_input(void)
   xpen = xpointer - 16;
   ypen = (ypointer - 16) / 2;
   penbutton = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED);
-  // Virtual keyboard
-  // Emulation of the B key with the B button of the joypad
-  if (input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B))
-  {
-    TO8key(libretroKeyCodeToThomsonScanCode[RETROK_b], true);
-  }
-  // Change letter with Select/X/Y and press it with Start
+  
+  // Virtual keyboard:
+  // - Emulation of the B key with the B button of the joypad
+  // - Change letter with Select/X/Y and press it with Start
+  b = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
   select = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
   start = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START);
   x = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X);
   y = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
   if (!virtualkb_pressed)
   {
-    if (select || x)
+    if (b)
+    {
+      virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
+      TO8key(virtualkb_lastscancode, true);
+      virtualkb_pressed = true;
+    }
+    else if (select || x)
     {
       virtualkb_index = (virtualkb_index + 1) % VIRTUALKB_NB_KEYS;
       print_current_virtualkb_key();
@@ -340,15 +346,17 @@ static void update_input(void)
     }
     else if (start)
     {
-      TO8key(libretroKeyCodeToThomsonScanCode[virtualkb_keysyms[virtualkb_index]], true);
+      virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[virtualkb_keysyms[virtualkb_index]];
+      TO8key(virtualkb_lastscancode, true);
       virtualkb_pressed = true;
     }
   }
   else
   {
-    if (!select && !start && !x && !y)
+    if (!select && !start && !x && !y && !b)
     {
       virtualkb_pressed = false;
+      TO8key(virtualkb_lastscancode, false);
     }
   }
 }
@@ -485,6 +493,7 @@ static bool load_file(const char *filename)
 static void keyboard_cb(bool down, unsigned keycode,
     uint32_t character, uint16_t key_modifiers)
 {
+  (void) character; // Unused parameter
   //printf( "Down: %s, Code: %d, Char: %u, Mod: %u.\n",
   //        down ? "yes" : "no", keycode, character, key_modifiers);
 
@@ -556,6 +565,9 @@ bool retro_load_game_special(
   unsigned game_type,
   const struct retro_game_info *info, size_t num_info)
 {
+  (void) game_type; // Unused parameter
+  (void) info;      // Unused parameter
+  (void) num_info;  // Unused parameter
   return false;
 }
 
