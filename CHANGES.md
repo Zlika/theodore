@@ -1,3 +1,7 @@
+Next Release
+===========
+* Workaround for the protection used by some FIL games (Atomik, Avenger, Way of the Tiger).
+
 Release 1.2 (2018/07/30)
 ===========
 * Add full support for SAP files (without conversion to FD format).

@@ -525,6 +525,34 @@ static void Mputto8d(unsigned short a, char c)
   }
 }
 
+// Basic emulation of the floppy controller to workaround some game protections.
+static char floppy_controller_emu(unsigned short a)
+{
+  // FIL protection (Atomik, Avenger, Way of the Tiger):
+  // This protection makes a direct access to the floppy controller to read out-of-bound data
+  // on a track/sector and compares with the expected value.
+  // - read at e7d0 must return 0x82 (operation pending)
+  // - read at e7d1 must return 0x03 (floppy ready)
+  // - read at e7d3 must return the value expected by the game to work around the protection.
+  // Example of code:
+  // ADDR OPCODE   MNEMONIC      REGISTERS
+  // 8D71 E603     LDB  $03,X    A=03 B=82 X=E7D0 Y=74FF, CC=D8 <= Load content at 0xe7d3 in register B
+  // 8D73 C1FB     CMPB #$FB     A=03 B=00 X=E7D0 Y=74FF, CC=D4 <= Compare with 0xFB
+  // 8D75 26F3     BNE  $8D6A    A=03 B=00 X=E7D0 Y=74FF, CC=D1 <= If not equal, infinite loop
+  // The workaround checks if the code executed is "E603C1" (LDB $03,X followed by CMPB ??)
+  // and then returns the byte just after, which is the value expected by the game.
+  switch (a)
+  {
+    case 0xe7d0: return 0x82; // 10000010 : bit 7 = demande d'opération,
+                              //            bit 1 = identique bit 7 pour opérations intelligentes
+    case 0xe7d1: return 0x03; // 00000010 : bit 1 = information "ready" du lecteur
+    case 0xe7d3:
+      return (((Mgetto8d(dc6809_pc) & 0xff) == 0xc1) && ((Mgetto8d(dc6809_pc-1) & 0xff) == 0x03)
+          && ((Mgetto8d(dc6809_pc-2) & 0xff) == 0xe6)) ? Mgetto8d(dc6809_pc+1) : port[a & 0x3f];
+    default: return port[a & 0x3f];
+  }
+}
+
 // Lecture memoire to8d //////////////////////////////////////////////////////
 static char Mgetto8d(unsigned short a)
 {
@@ -554,8 +582,9 @@ static char Mgetto8d(unsigned short a)
         case 0xe7e6: return port[0x26] & 0x7f;
         case 0xe7e7: return (port[0x24] & 0x01) | Initn() | Iniln();
         default:
-          if(a < 0xe7c0) return(romsys[a]);
-          if(a < 0xe800) return(port[a & 0x3f]);
+          if (a >= 0xe7d0 && a <= 0xe7d3) return floppy_controller_emu(a);
+          if (a < 0xe7c0) return romsys[a];
+          if (a < 0xe800) return port[a & 0x3f];
       }
       return romsys[a];
     default: return romsys[a];

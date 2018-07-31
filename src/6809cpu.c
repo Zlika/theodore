@@ -33,7 +33,7 @@ static short dc6809_w;    //dc6809 work register
 
 //6809 registers
 char  dc6809_cc;   //condition code
-static short dc6809_pc;   //program counter
+short dc6809_pc;   //program counter
 static short dc6809_d;    //D register
 short dc6809_x;    //X register
 short dc6809_y;    //Y register
