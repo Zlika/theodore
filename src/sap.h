@@ -37,6 +37,9 @@ typedef enum
   DISK_NO_ERROR = 0,
   // Protected sector, cannot write
   DISK_SECTOR_PROTECTED_ERROR = 1,
+  // Data error: sector ID is correct
+  // but data cannot be read or incorrect checksum
+  DISK_DATA_ERROR = 8,
   // I/O error
   DISK_IO_ERROR = 52,
   // No disk in drive

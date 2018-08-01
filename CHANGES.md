@@ -2,6 +2,7 @@ Next Release
 ===========
 * Workaround for the protection used by some FIL games (Atomik, Avenger, Way of the Tiger).
 * Workaround for the protection used by some Infogrames games (Dieux du stade 2, Dossier Boerhaave, Le temps d'une histoire).
+* Add support for format=4 in SAP sector (fixes Space Tunnel).
 
 Release 1.2 (2018/07/30)
 ===========

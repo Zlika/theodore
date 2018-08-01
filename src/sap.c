@@ -116,6 +116,11 @@ DiskErrCode sap_readSector(const SapFile *file, int track, int sector, char *dat
     sap_sector[SAP_SECTOR_DATA_OFFSET + i] ^= SAP_MAGIC_NUM;
     data[i] = sap_sector[SAP_SECTOR_DATA_OFFSET + i];
   }
+  // Format = 4
+  if (sap_sector[0] == 4)
+  {
+    return DISK_DATA_ERROR;
+  }
   // Check sector CRC
   expected_crc = compute_crc(sap_sector, sap_sector_size);
   actual_crc = (sap_sector[sap_sector_size-2] << 8) + (sap_sector[sap_sector_size-1] & 0xFF);
