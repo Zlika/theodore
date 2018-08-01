@@ -544,7 +544,7 @@ static char floppy_controller_emu(unsigned short a)
   // The workaround checks if the code executed is "E603C1" (LDB $03,X followed by CMPB ??)
   // and then returns the byte just after, which is the value expected by the game.
   //
-  // Infogrames protection (Dossier Boerhaave, Le temps d'une histoire):
+  // Infogrames protection (Dieux du stade 2, Dossier Boerhaave, Le temps d'une histoire):
   // - read at e7d0 must return 0x80 (intelligent function of the disk controller not used)
   // - read at e7d1 must return 0x03 (floppy ready)
   //                          + 0x08 (floppy track 0 detection)
