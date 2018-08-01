@@ -509,6 +509,8 @@ static void Mputto8d(unsigned short a, char c)
         case 0xe7cd: if(port[0x0f] & 4) sound = c & MAX_SOUND_LEVEL; else port[0x0d] = c; return;
         case 0xe7ce: port[0x0e] = c; return; //registre controle position joysticks
         case 0xe7cf: port[0x0f] = c; return; //registre controle action - musique
+        case 0xe7d0: port[0x10] = c; return; //save the value written to know if an
+                                             //intelligent function of the floppy controller is used
         case 0xe7d8: return;
         case 0xe7da: Palettecolor(c); return;
         case 0xe7db: port[0x1b] = c; return;
@@ -532,7 +534,7 @@ static char floppy_controller_emu(unsigned short a)
   // This protection makes a direct access to the floppy controller to read out-of-bound data
   // on a track/sector and compares with the expected value.
   // - read at e7d0 must return 0x82 (operation pending)
-  // - read at e7d1 must return 0x03 (floppy ready)
+  // - read at e7d1 must return 0x02 (floppy ready)
   // - read at e7d3 must return the value expected by the game to work around the protection.
   // Example of code:
   // ADDR OPCODE   MNEMONIC      REGISTERS
@@ -541,14 +543,34 @@ static char floppy_controller_emu(unsigned short a)
   // 8D75 26F3     BNE  $8D6A    A=03 B=00 X=E7D0 Y=74FF, CC=D1 <= If not equal, infinite loop
   // The workaround checks if the code executed is "E603C1" (LDB $03,X followed by CMPB ??)
   // and then returns the byte just after, which is the value expected by the game.
+  //
+  // Protection for "Le temps d'une histoire" (Infogrames):
+  // - read at e7d0 must return 0x80 (intelligent function of the disk controller not used)
+  // - read at e7d1 must return 0x03 (floppy ready)
+  //                          + 0x08 (floppy track 0 detection)
+  //                          + 0x40 (floppy index detected)
+  // - read at e7d3 : same kind of protection than the "FIL" protection, but uses
+  // the A register instead of the B register.
   switch (a)
   {
-    case 0xe7d0: return 0x82; // 10000010 : bit 7 = demande d'opération,
-                              //            bit 1 = identique bit 7 pour opérations intelligentes
-    case 0xe7d1: return 0x03; // 00000010 : bit 1 = information "ready" du lecteur
+    case 0xe7d0:
+      // Opération intelligente en cours
+      if ((port[a & 0x3f] & 0x03) != 0)
+        return 0x82; // 10000010 : bit 7 = demande d'opération,
+                     //            bit 1 = identique bit 7 pour opérations intelligentes
+      // Pas d'opération intelligente en cours
+      return 0x80;   // 10000000 : bit 7 = demande d'opération
+    case 0xe7d1: return 0x4a; // 01001010 : bit 6 = détection d'index pour le floppy
+                              //            bit 3 = détection de la piste 0 pour le floppy
+                              //            bit 1 = information "ready" du lecteur
     case 0xe7d3:
-      return (((Mgetto8d(dc6809_pc) & 0xff) == 0xc1) && ((Mgetto8d(dc6809_pc-1) & 0xff) == 0x03)
-          && ((Mgetto8d(dc6809_pc-2) & 0xff) == 0xe6)) ? Mgetto8d(dc6809_pc+1) : port[a & 0x3f];
+      // Detect sequence LDB $03,X / CMPB #$??
+      if (((Mgetto8d(dc6809_pc) & 0xff) == 0xc1) && ((Mgetto8d(dc6809_pc-1) & 0xff) == 0x03)
+          && ((Mgetto8d(dc6809_pc-2) & 0xff) == 0xe6)) return Mgetto8d(dc6809_pc+1);
+      // Detect sequence LDA $03,X / CMPA #$??
+      else if (((Mgetto8d(dc6809_pc) & 0xff) == 0x81) && ((Mgetto8d(dc6809_pc-1) & 0xff) == 0x03)
+          && ((Mgetto8d(dc6809_pc-2) & 0xff) == 0xa6)) return Mgetto8d(dc6809_pc+1);
+      else return port[a & 0x3f];
     default: return port[a & 0x3f];
   }
 }

@@ -1,6 +1,7 @@
 Next Release
 ===========
 * Workaround for the protection used by some FIL games (Atomik, Avenger, Way of the Tiger).
+* Workaround for the protection used by Infogrames game "Le temps d'une histoire".
 
 Release 1.2 (2018/07/30)
 ===========
