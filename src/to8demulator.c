@@ -25,6 +25,7 @@
 #include <time.h>
 
 #include "6809cpu.h"
+#include "debugger.h"
 #include "devices.h"
 #include "video.h"
 #include "rom/to8dbasic.h"
@@ -425,6 +426,7 @@ int Run(int ncyclesmax)
   ncycles = 0;
   while(ncycles < ncyclesmax)
   {
+    debug(dc6809_pc);
     //execution d'une instruction
     opcycles = Run6809();
     if(opcycles < 0) {RunIoOpcode(-opcycles); opcycles = 64;}

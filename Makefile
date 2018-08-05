@@ -1,4 +1,5 @@
 DEBUG = 0
+DASM = 0
 GIT_VERSION := "$(shell git describe --dirty --always --tags)"
 HAS_GCC = 1
 
@@ -586,6 +587,7 @@ endif
 CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 CXXFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 
+# Enable debug compiler options
 ifeq ($(DEBUG), 1)
 	ifneq (,$(findstring msvc,$(platform)))
 		ifeq ($(STATIC_LINKING),1)
@@ -616,6 +618,12 @@ else
 		CFLAGS += -O2 -DNDEBUG
 		CXXFLAGS += -O2 -DNDEBUG
 	endif
+endif
+
+# Enable disassembler feature
+ifeq ($(DASM), 1)
+	CFLAGS += -DDASM
+	CXXFLAGS += -DDASM
 endif
 
 CORE_DIR = .
