@@ -86,7 +86,7 @@ typedef struct
   int address;
   char value;
 } Cheat;
-static Cheat cheats[MAX_CHEATS] = { {0} };
+static Cheat cheats[MAX_CHEATS] = { {0, 0} };
 
 void retro_set_environment(retro_environment_t env)
 {
@@ -149,7 +149,7 @@ void retro_init(void)
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y, "Light Pen Y" },
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED, "Light Pen Button" },
 
-        { 0 },
+        { 0, 0, 0, 0, 0 },
   };
   unsigned int level = 4;
 
@@ -363,7 +363,7 @@ static void update_input(void)
 
 static void check_variables(void)
 {
-  struct retro_variable var = {0};
+  struct retro_variable var = {0, 0};
 
   var.key = PACKAGE_NAME"_floppy_write_protect";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
