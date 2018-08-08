@@ -25,8 +25,11 @@ typedef enum
 {
   /* Debugger disabled: no disassembly. */
   DEBUG_DISABLED,
-  /* Debugger enabled: disassembles and prints all the instructions. */
+  /* Debugger enabled but no instruction is printed until a breakpoint is reached
+     (the debugger will then switch to DEBUG_STEP mode). */
   DEBUG_RUN,
+  /* Debugger enabled: disassembles and prints all the instructions. */
+  DEBUG_TRACE,
   /* Step-by-step mode: disassembles and prints an instruction and wait for a keystroke. */
   DEBUG_STEP
 } DebuggerMode;
@@ -35,5 +38,9 @@ typedef enum
 void debugger_setMode(DebuggerMode mode);
 /* Debug the instruction at the given address. */
 void debug(int address);
+/* Check if a breakpoint is set for a memory read at the given address. */
+void debug_mem_read(int address);
+/* Check if a breakpoint is set for a memory write at the given address. */
+void debug_mem_write(int address);
 
 #endif

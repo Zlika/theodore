@@ -20,6 +20,9 @@
 /* Thomson TO8D emulator */
 
 #include "to8demulator.h"
+#ifdef DASM
+#include "debugger.h"
+#endif
 
 #include <string.h>
 #include <time.h>
@@ -426,7 +429,9 @@ int Run(int ncyclesmax)
   ncycles = 0;
   while(ncycles < ncyclesmax)
   {
-    debug(dc6809_pc);
+#ifdef DASM
+    debug(dc6809_pc & 0xFFFF);
+#endif
     //execution d'une instruction
     opcycles = Run6809();
     if(opcycles < 0) {RunIoOpcode(-opcycles); opcycles = 64;}
@@ -478,6 +483,9 @@ int Run(int ncyclesmax)
 // Ecriture memoire to8d /////////////////////////////////////////////////////
 static void Mputto8d(unsigned short a, char c)
 {
+#ifdef DASM
+  debug_mem_write(a & 0xFFFF);
+#endif
   switch(a >> 12)
   {
     //subtilite :
@@ -580,6 +588,9 @@ static char floppy_controller_emu(unsigned short a)
 // Lecture memoire to8d //////////////////////////////////////////////////////
 static char Mgetto8d(unsigned short a)
 {
+#ifdef DASM
+  debug_mem_read(a && 0xFFFF);
+#endif
   switch(a >> 12)
   {
     //subtilite : quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inverses

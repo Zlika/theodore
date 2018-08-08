@@ -23,7 +23,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef DASM
 #include "debugger.h"
+#endif
 #include "devices.h"
 #include "keymap.h"
 #include "sap.h"
