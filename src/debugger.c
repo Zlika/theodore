@@ -163,7 +163,7 @@ static void read_debugger_command()
   }
 }
 
-bool check_breakpoint(unsigned short *bp_list, unsigned short address)
+static bool check_breakpoint(unsigned short *bp_list, unsigned short address)
 {
   int i = 0;
   while (i < BP_LENGTH && bp_list[i] != 0)
