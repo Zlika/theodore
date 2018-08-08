@@ -28,7 +28,7 @@
 #include "boolean.h"
 
 #define DBG_ARRAY_LENGTH 100
-#define BP_LENGTH 10
+#define BP_LENGTH 20
 
 static DebuggerMode dbg_mode = DEBUG_DISABLED;
 static char dbg_instruction[DBG_ARRAY_LENGTH] = { 0 };
@@ -36,11 +36,11 @@ static char dbg_registers[DBG_ARRAY_LENGTH] = { 0 };
 static char dbg_command[DBG_ARRAY_LENGTH] = { 0 };
 
 // Breakpoints on the values of the program counter
-static int bp_pc[BP_LENGTH] = { 0 };
+static unsigned short bp_pc[BP_LENGTH] = { 0 };
 // Breakpoints on memory read addresses
-static int bp_read_mem[BP_LENGTH] = { 0 };
+static unsigned short bp_read_mem[BP_LENGTH] = { 0 };
 // Breakpoints on memory write addresses
-static int bp_write_mem[BP_LENGTH] = { 0 };
+static unsigned short bp_write_mem[BP_LENGTH] = { 0 };
 
 void debugger_setMode(DebuggerMode mode)
 {
@@ -66,13 +66,13 @@ static void list_breakpoints()
   for (i = 0; i < BP_LENGTH; i++)
   {
     if (bp_read_mem[i] == 0) break;
-    printf("%04x\n", bp_pc[i]);
+    printf("%04x\n", bp_read_mem[i]);
   }
   printf("Breakpoints on memory write addresses:\n");
   for (i = 0; i < BP_LENGTH; i++)
   {
     if (bp_write_mem[i] == 0) break;
-    printf("%04x\n", bp_pc[i]);
+    printf("%04x\n", bp_write_mem[i]);
   }
 }
 static void clear_breakpoints()
@@ -82,10 +82,10 @@ static void clear_breakpoints()
   memset(bp_write_mem, 0, BP_LENGTH);
 }
 
-static void add_breakpoint(int *bp_list, char *value)
+static void add_breakpoint(unsigned short *bp_list, char *value)
 {
   int i;
-  int val = (int) strtol(value, NULL, 16);
+  unsigned short val = (unsigned short) strtol(value, NULL, 16);
   if (val == 0)
   {
     printf("Invalid address value\n");
@@ -148,12 +148,12 @@ static void read_debugger_command()
     // Add a breakpoint when reading at the given address (in hex)
     else if (strncmp(dbg_command, "bp read ", 8) == 0)
     {
-      add_breakpoint(bp_pc, dbg_command + 8);
+      add_breakpoint(bp_read_mem, dbg_command + 8);
     }
     // Add a breakpoint when writing at the givent address (in hex)
     else if (strncmp(dbg_command, "bp write ", 9) == 0)
     {
-      add_breakpoint(bp_pc, dbg_command + 9);
+      add_breakpoint(bp_write_mem, dbg_command + 9);
     }
     // Unknown command
     else
@@ -163,7 +163,7 @@ static void read_debugger_command()
   }
 }
 
-bool check_breakpoint(int *bp_list, int address)
+bool check_breakpoint(unsigned short *bp_list, unsigned short address)
 {
   int i = 0;
   while (i < BP_LENGTH && bp_list[i] != 0)
@@ -177,7 +177,7 @@ bool check_breakpoint(int *bp_list, int address)
   return false;
 }
 
-void debug(int address)
+void debug(unsigned short address)
 {
   if (dbg_mode != DEBUG_DISABLED)
   {
@@ -186,10 +186,10 @@ void debug(int address)
       printf("Breakpoint at PC=%04x\n", address);
       debugger_setMode(DEBUG_STEP);
     }
+    dasm6809(address, dbg_instruction);
+    print_registers(dbg_registers);
     if (dbg_mode != DEBUG_RUN)
     {
-      dasm6809(address, dbg_instruction);
-      print_registers(dbg_registers);
       printf("%s %s\n", dbg_instruction, dbg_registers);
       if (dbg_mode == DEBUG_STEP)
       {
@@ -199,26 +199,31 @@ void debug(int address)
   }
 }
 
-void debug_mem_read(int address)
+static void debug_mem(unsigned short address, bool is_read)
 {
   if (dbg_mode != DEBUG_DISABLED)
   {
-    if (check_breakpoint(bp_read_mem, address))
+    if (check_breakpoint(is_read ? bp_read_mem : bp_write_mem, address))
     {
-      printf("Breakpoint: memory read at %04x\n", address);
+      printf("Breakpoint: memory %s at %04x\n", is_read ? "read" : "write", address);
+      // If in RUN mode, print the current instruction
+      // (in other modes, it was already printed)
+      if (dbg_mode == DEBUG_RUN)
+      {
+        printf("%s %s\n", dbg_instruction, dbg_registers);
+      }
       debugger_setMode(DEBUG_STEP);
+      read_debugger_command();
     }
   }
 }
 
-void debug_mem_write(int address)
+void debug_mem_read(unsigned short address)
 {
-  if (dbg_mode != DEBUG_DISABLED)
-  {
-    if (check_breakpoint(bp_write_mem, address))
-    {
-      printf("Breakpoint: memory write at %04x\n", address);
-      debugger_setMode(DEBUG_STEP);
-    }
-  }
+  debug_mem(address, true);
+}
+
+void debug_mem_write(unsigned short address)
+{
+  debug_mem(address, false);
 }

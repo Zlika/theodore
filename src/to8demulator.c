@@ -484,7 +484,7 @@ int Run(int ncyclesmax)
 static void Mputto8d(unsigned short a, char c)
 {
 #ifdef DASM
-  debug_mem_write(a & 0xFFFF);
+  debug_mem_write(a);
 #endif
   switch(a >> 12)
   {
@@ -589,7 +589,7 @@ static char floppy_controller_emu(unsigned short a)
 static char Mgetto8d(unsigned short a)
 {
 #ifdef DASM
-  debug_mem_read(a && 0xFFFF);
+  debug_mem_read(a);
 #endif
   switch(a >> 12)
   {

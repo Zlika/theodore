@@ -37,10 +37,10 @@ typedef enum
 /* Sets the debugger mode. */
 void debugger_setMode(DebuggerMode mode);
 /* Debug the instruction at the given address. */
-void debug(int address);
+void debug(unsigned short address);
 /* Check if a breakpoint is set for a memory read at the given address. */
-void debug_mem_read(int address);
+void debug_mem_read(unsigned short address);
 /* Check if a breakpoint is set for a memory write at the given address. */
-void debug_mem_write(int address);
+void debug_mem_write(unsigned short address);
 
 #endif
