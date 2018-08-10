@@ -80,3 +80,25 @@ L'émulateur permet d'utiliser des codes de triche ("cheat codes") au format sui
 
 Cf. le répertoire "cheat" qui contient des exemples de cheat codes ainsi qu'un script Python permettant de trouver des cheat codes à partir de plusieurs fichiers de sauvegarde instantanée (save states).
 
+### Désassembleur / Debugger
+
+L'émulateur dispose d'un petit désassembleur / debugger. Il nécessite l'accès à la ligne de commande, et n'est donc pas disponible sur les plateformes pour lesquelles les entrée/sortie standards ne sont pas disponibles ou facilement accessibles.
+L'émulateur doit être compilé avec l'option "DASM=1" pour activer cette fonctionnalité (les binaires produits par le buildbot de libretro n'activent pas cette fonctionnalité, donc vous devez compiler l'émulateur par vous-même).
+```
+make DASM=1
+```
+RetroArch doit être lancé depuis la ligne de commande :
+```
+retroarch -L theodore_libretro.so /chemin/vers/jeu
+```
+Ensuite, il faut ouvrir le menu de RetroArch et activer l'option "Interactive disassembler" de l'émulateur.
+Depuis la ligne de commande, les commandes suivantes sont ensuite disponibles :
+* Appuie sur la touche `Entrée` : debuggage pas-à-pas. A chaque pas sont affichés l'adresse courante (registre Program Counter), l'instruction exécutée, et la valeur courante des registres du processeur.
+* `trace` ou `t` : mode "trace". L'émulateur va afficher toutes les instructions exécutées au fil de l'eau et sans arrêt (sauf si un point d'arrêt est rencontré).
+* `run` ou `r` : mode "run". L'émulateur va exécuter toutes les instructions au fil de l'eau mais sans les afficher et sans arrêt (sauf si un point d'arrêt est rencontré).
+* `exit` ou `quit` ou `q` : quitte le désassembleur / debugger.
+* `bp clear` : efface tous les points d'arrêts.
+* `bp list` : affiche la list des points d'arrêt actuellement définis.
+* `bp pc xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt pour la valeur donnée du registre Program Counter.
+* `bp read xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de la lecture à l'adresse donnée.
+* `bp write xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de l'écriture à l'adresse donnée.

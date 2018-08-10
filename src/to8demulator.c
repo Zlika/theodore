@@ -20,7 +20,7 @@
 /* Thomson TO8D emulator */
 
 #include "to8demulator.h"
-#ifdef DASM
+#ifdef THEODORE_DASM
 #include "debugger.h"
 #endif
 
@@ -429,7 +429,7 @@ int Run(int ncyclesmax)
   ncycles = 0;
   while(ncycles < ncyclesmax)
   {
-#ifdef DASM
+#ifdef THEODORE_DASM
     debug(dc6809_pc & 0xFFFF);
 #endif
     //execution d'une instruction
@@ -483,7 +483,7 @@ int Run(int ncyclesmax)
 // Ecriture memoire to8d /////////////////////////////////////////////////////
 static void Mputto8d(unsigned short a, char c)
 {
-#ifdef DASM
+#ifdef THEODORE_DASM
   debug_mem_write(a);
 #endif
   switch(a >> 12)
@@ -588,7 +588,7 @@ static char floppy_controller_emu(unsigned short a)
 // Lecture memoire to8d //////////////////////////////////////////////////////
 static char Mgetto8d(unsigned short a)
 {
-#ifdef DASM
+#ifdef THEODORE_DASM
   debug_mem_read(a);
 #endif
   switch(a >> 12)

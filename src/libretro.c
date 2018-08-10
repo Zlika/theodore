@@ -23,7 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#ifdef DASM
+#ifdef THEODORE_DASM
 #include "debugger.h"
 #endif
 #include "devices.h"
@@ -81,7 +81,7 @@ static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
-#ifdef DASM
+#ifdef THEODORE_DASM
     { PACKAGE_NAME"_disassembler", "Interactive disassembler; disabled|enabled" },
 #endif
     { NULL, NULL }
@@ -398,7 +398,7 @@ static void check_variables(void)
       SetThomsonFlavor(TO8);
     }
   }
-#ifdef DASM
+#ifdef THEODORE_DASM
   var.key = PACKAGE_NAME"_disassembler";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {

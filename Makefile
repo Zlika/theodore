@@ -1,4 +1,6 @@
+# DEBUG=1 to enable debug build
 DEBUG = 0
+# DASM=1 to enable theodore's disassembler/debugger
 DASM = 0
 GIT_VERSION := "$(shell git describe --dirty --always --tags)"
 HAS_GCC = 1
@@ -622,8 +624,8 @@ endif
 
 # Enable disassembler feature
 ifeq ($(DASM), 1)
-	CFLAGS += -DDASM
-	CXXFLAGS += -DDASM
+	CFLAGS += -DTHEODORE_DASM
+	CXXFLAGS += -DTHEODORE_DASM
 endif
 
 CORE_DIR = .

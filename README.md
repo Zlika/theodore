@@ -80,3 +80,25 @@ The emulator supports cheat codes with the following format: 0AAAAA:DD with AAAA
 
 Cf. the "cheat" directory for some actual cheat codes, as well as a Python script that helps find cheat codes from a set of save state files.
 
+### Disassembler / Debugger
+
+A simple disassembler / debugger is available. It requires the use of the command-line, and then is not available on platforms where the standard input & output are not (easily) available.
+The core must be compiled with the "DASM=1" option to enable this feature (binaries produced by the libretro buildbot does not enable this feature, so you have to compile the core by yourself).
+```
+make DASM=1
+```
+RetroArch must then be launched from the command-line:
+```
+retroarch -L theodore_libretro.so /path/to/game
+```
+Then open the RetroArch menu and enable the core's option "Interactive disassembler".
+From the command-line, the following commands are then available:
+* Press `Enter` key: step-by-step debugging. The following data is printed at each step: current address (value of the Program Counter register), executed instruction, current value of the CPU's registers.
+* `trace` or `t`: switch to "trace" mode. The core will print each instruction executed without any stop (except if a breakpoint is met).
+* `run` or `r`: switch to "run" mode. The core will run the instructions without printing them and without any stop (except if a breakpoint is met).
+* `exit` or `quit` or `q`: exit the disassembler/debugger.
+* `bp clear`: clear all the breakpoints.
+* `bp list`: print the list of the currently defined breakpoints.
+* `bp pc xxxx` (with xxxx an hexadecimal number): add a breakpoint at for the given Program Counter value.
+* `bp read xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator reads memory at the given address.
+* `bp write xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator writes memory at the given address.
