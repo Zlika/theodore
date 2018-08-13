@@ -3,7 +3,7 @@ compiler: gcc
 os: linux
 dist: trusty
 
-script: make -DASM=1
+script: make DASM=1
 
 env:
   global:
@@ -20,6 +20,6 @@ addons:
       name: "Zlika/theodore"
       description: "Thomson 8-bit computer emulator"
     notification_email: na78hh8gv4ra68r@jetable.org
-    build_command: "make -DASM=1"
+    build_command: "make DASM=1"
     branch_pattern: coverity_scan
 
