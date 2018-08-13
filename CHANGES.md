@@ -1,4 +1,4 @@
-Next Release
+Release 1.3 (2018/08/13)
 ===========
 * Workaround for the protection used by some FIL games (Atomik, Avenger, Way of the Tiger).
 * Workaround for the protection used by some Infogrames games (Dieux du stade 2, Dossier Boerhaave, Le temps d'une histoire).
