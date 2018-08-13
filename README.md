@@ -17,6 +17,8 @@ This emulator is available on the following platforms:
 * RetroArch: [Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
 * [Recalbox](https://www.recalbox.com/): Starting from version 2018.06.27, this emulator is built in your favorite retrogaming operating system.
 
+It should be compatible with all the platforms supported by RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
+
 ### How to compile
 
 On Linux (and most other platforms):
@@ -58,6 +60,8 @@ The order of the keys in the virtual keyboard is: digits (0->9) then letters (A-
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
 
+RetroArch already uses lots of keyboard shortcuts for its own need that interfere with the core's keyboard emulation. To avoid this problem, configure RetroArch with a "Hotkey", as indicated in [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
+
 ### :floppy_disk: File formats
 
 The emulator can read the following file formats: *.fd and *.sap (floppy disks), *.k7 (tapes), *.m7 and *.rom (cartridges).
@@ -76,17 +80,25 @@ The emulator supports cheat codes with the following format: 0AAAAA:DD with AAAA
 
 Cf. the "cheat" directory for some actual cheat codes, as well as a Python script that helps find cheat codes from a set of save state files.
 
-### Compatibility
+### Disassembler / Debugger
 
-The source code is portable and should compile and run on most platforms.
-The Travis job checks that the code builds on Linux and MacOS, and the AppVeyor job checks that the code builds on Windows.
-
-| Platform | Compiles | Runs |
-| --- | :---: | :---: |
-| Linux / amd64 | :heavy_check_mark: | :heavy_check_mark: |
-| Raspbian / Raspberry Pi | :heavy_check_mark: | :heavy_check_mark: |
-| Android | :heavy_check_mark: | :heavy_check_mark: |
-| MacOS | :heavy_check_mark: | :question: |
-| Windows | :heavy_check_mark: | :heavy_check_mark: |
-| Others | :question: | :question: |
-
+A simple disassembler / debugger is available. It requires the use of the command-line, and then is not available on platforms where the standard input & output are not (easily) available.
+The core must be compiled with the "DASM=1" option to enable this feature (binaries produced by the libretro buildbot does not enable this feature, so you have to compile the core by yourself).
+```
+make DASM=1
+```
+RetroArch must then be launched from the command-line:
+```
+retroarch -L theodore_libretro.so /path/to/game
+```
+Then open the RetroArch menu and enable the core's option "Interactive disassembler".
+From the command-line, the following commands are then available:
+* Press `Enter` key: step-by-step debugging. The following data is printed at each step: current address (value of the Program Counter register), executed instruction, current value of the CPU's registers.
+* `trace` or `t`: switch to "trace" mode. The core will print each instruction executed without any stop (except if a breakpoint is met).
+* `run` or `r`: switch to "run" mode. The core will run the instructions without printing them and without any stop (except if a breakpoint is met).
+* `exit` or `quit` or `q`: exit the disassembler/debugger.
+* `bp clear`: clear all the breakpoints.
+* `bp list`: print the list of the currently defined breakpoints.
+* `bp pc xxxx` (with xxxx an hexadecimal number): add a breakpoint at for the given Program Counter value.
+* `bp read xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator reads memory at the given address.
+* `bp write xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator writes memory at the given address.

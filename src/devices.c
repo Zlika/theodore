@@ -205,6 +205,19 @@ void LoadSap(const char *filename)
   sap = sap_open(filename);
 }
 
+void UnloadK7(void)
+{
+  if(fk7) {fclose(fk7); fk7 = NULL;}
+}
+
+void LoadK7(const char *filename)
+{
+  UnloadK7();
+  if(filename[0] == '\0') return;
+  fk7 = fopen(filename, "rb+");
+  if(fk7 == NULL) return;
+}
+
 // Tape drive: read a byte
 static void Readbytek7(void)
 {
@@ -214,7 +227,7 @@ static void Readbytek7(void)
   if(byte == EOF)
   {
     Initprog();
-    fseek(fk7, 0, SEEK_SET);
+    if (fseek(fk7, 0, SEEK_SET)) UnloadK7();
     return;
   }
   A = byte; Mputc(0x2045, byte);
@@ -227,19 +240,6 @@ static void Writebytek7(void)
   if(k7protection) {Initprog(); return;}
   if(fputc(A, fk7) == EOF) {Initprog(); return;}
   Mputc(0x2045, 0);
-}
-
-void UnloadK7(void)
-{
-  if(fk7) {fclose(fk7); fk7 = NULL;}
-}
-
-void LoadK7(const char *filename)
-{
-  UnloadK7();
-  if(filename[0] == '\0') return;
-  fk7 = fopen(filename, "rb+");
-  if(fk7 == NULL) return;
 }
 
 void UnloadMemo(void)

@@ -38,6 +38,8 @@ extern char  dc6809_cc;
 extern short dc6809_x;
 //Y register
 extern short dc6809_y;
+//Program Counter
+extern unsigned short dc6809_pc;
 
 //pointer to A register
 extern char *dc6809_a;

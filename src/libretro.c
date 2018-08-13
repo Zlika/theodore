@@ -23,6 +23,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef THEODORE_DASM
+#include "debugger.h"
+#endif
 #include "devices.h"
 #include "keymap.h"
 #include "sap.h"
@@ -78,6 +81,9 @@ static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
+#ifdef THEODORE_DASM
+    { PACKAGE_NAME"_disassembler", "Interactive disassembler; disabled|enabled" },
+#endif
     { NULL, NULL }
 };
 
@@ -86,7 +92,7 @@ typedef struct
   int address;
   char value;
 } Cheat;
-static Cheat cheats[MAX_CHEATS] = { {0} };
+static Cheat cheats[MAX_CHEATS] = { {0, 0} };
 
 void retro_set_environment(retro_environment_t env)
 {
@@ -149,7 +155,7 @@ void retro_init(void)
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y, "Light Pen Y" },
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED, "Light Pen Button" },
 
-        { 0 },
+        { 0, 0, 0, 0, 0 },
   };
   unsigned int level = 4;
 
@@ -363,7 +369,7 @@ static void update_input(void)
 
 static void check_variables(void)
 {
-  struct retro_variable var = {0};
+  struct retro_variable var = {0, 0};
 
   var.key = PACKAGE_NAME"_floppy_write_protect";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
@@ -392,6 +398,20 @@ static void check_variables(void)
       SetThomsonFlavor(TO8);
     }
   }
+#ifdef THEODORE_DASM
+  var.key = PACKAGE_NAME"_disassembler";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    if (strcmp(var.value, "enabled") == 0)
+    {
+      debugger_setMode(DEBUG_STEP);
+    }
+    else
+    {
+      debugger_setMode(DEBUG_DISABLED);
+    }
+  }
+#endif
 }
 
 void retro_run(void)

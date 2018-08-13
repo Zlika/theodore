@@ -1,4 +1,7 @@
+# DEBUG=1 to enable debug build
 DEBUG = 0
+# DASM=1 to enable theodore's disassembler/debugger
+DASM = 0
 GIT_VERSION := "$(shell git describe --dirty --always --tags)"
 HAS_GCC = 1
 
@@ -586,6 +589,7 @@ endif
 CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 CXXFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 
+# Enable debug compiler options
 ifeq ($(DEBUG), 1)
 	ifneq (,$(findstring msvc,$(platform)))
 		ifeq ($(STATIC_LINKING),1)
@@ -618,6 +622,12 @@ else
 	endif
 endif
 
+# Enable disassembler feature
+ifeq ($(DASM), 1)
+	CFLAGS += -DTHEODORE_DASM
+	CXXFLAGS += -DTHEODORE_DASM
+endif
+
 CORE_DIR = .
 
 include Makefile.common
@@ -645,7 +655,7 @@ ifeq ($(HAS_GCC), 1)
 	endif
 endif
 
-DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES) $(GCC_FLAGS) -g $(GCC_WARNINGS) $(GCC_SECURITY_FLAGS) -DNST_NO_ZLIB $(INCFLAGS) $(INCFLAGS_PLATFORM)
+DEFINES := -D__LIBRETRO__ $(PLATFORM_DEFINES) $(GCC_FLAGS) $(GCC_WARNINGS) $(GCC_SECURITY_FLAGS) -DNST_NO_ZLIB $(INCFLAGS) $(INCFLAGS_PLATFORM)
 
 CFLAGS += $(fpic) $(DEFINES) $(C_VER)
 CXXFLAGS += $(fpic) $(DEFINES)

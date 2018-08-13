@@ -17,6 +17,8 @@ Cet émulateur est disponible sur les plateformes suivantes :
 * RetroArch : [Installer RetroArch](http://www.retroarch.com/?page=platforms), puis démarrer RetroArch et télécharger le core "theodore" via le "Core Updater".
 * [Recalbox](https://www.recalbox.com/) : Theodore est inclus dans votre console de retrogaming préférée depuis la version 2018.06.27.
 
+Il devrait être compatible avec toutes les plateformes supportées par RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
+
 ### Instructions de compilation
 
 Sur Linux (et la plupart des autres plateformes) :
@@ -58,6 +60,8 @@ L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A 
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
 
+RetroArch utilise beaucoup de raccourcis clavier, ce qui interfère avec l'émulation du clavier de ce core. Pour éviter ce problème, il suffit de configurer une "Hotkey" pour RetroArch, comme indiqué dans [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
+
 ### :floppy_disk: Formats de fichiers supportés
 
 L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquettes), *.k7 (cassettes), *.m7 et *.rom (cartouches).
@@ -76,17 +80,25 @@ L'émulateur permet d'utiliser des codes de triche ("cheat codes") au format sui
 
 Cf. le répertoire "cheat" qui contient des exemples de cheat codes ainsi qu'un script Python permettant de trouver des cheat codes à partir de plusieurs fichiers de sauvegarde instantanée (save states).
 
-### Compatibilité
+### Désassembleur / Debugger
 
-Le code source est portable et devrait compiler et s'exécuter sur la plupart des plateformes.
-La tâche Travis vérifie la compilation sous Linux et MacOS, et la tâche AppVeyor vérifie la compilation sous Windows.
-
-| Platforme | Compile | Exécute |
-| --- | :---: | :---: |
-| Linux / amd64 | :heavy_check_mark: | :heavy_check_mark: |
-| Raspbian / Raspberry Pi | :heavy_check_mark: | :heavy_check_mark: |
-| Android | :heavy_check_mark: | :heavy_check_mark: |
-| MacOS | :heavy_check_mark: | :question: |
-| Windows | :heavy_check_mark: | :heavy_check_mark: |
-| Autres | :question: | :question: |
-
+L'émulateur dispose d'un petit désassembleur / debugger. Il nécessite l'accès à la ligne de commande, et n'est donc pas disponible sur les plateformes pour lesquelles les entrée/sortie standards ne sont pas disponibles ou facilement accessibles.
+L'émulateur doit être compilé avec l'option "DASM=1" pour activer cette fonctionnalité (les binaires produits par le buildbot de libretro n'activent pas cette fonctionnalité, donc vous devez compiler l'émulateur par vous-même).
+```
+make DASM=1
+```
+RetroArch doit être lancé depuis la ligne de commande :
+```
+retroarch -L theodore_libretro.so /chemin/vers/jeu
+```
+Ensuite, il faut ouvrir le menu de RetroArch et activer l'option "Interactive disassembler" de l'émulateur.
+Depuis la ligne de commande, les commandes suivantes sont ensuite disponibles :
+* Appuie sur la touche `Entrée` : debuggage pas-à-pas. A chaque pas sont affichés l'adresse courante (registre Program Counter), l'instruction exécutée, et la valeur courante des registres du processeur.
+* `trace` ou `t` : mode "trace". L'émulateur va afficher toutes les instructions exécutées au fil de l'eau et sans arrêt (sauf si un point d'arrêt est rencontré).
+* `run` ou `r` : mode "run". L'émulateur va exécuter toutes les instructions au fil de l'eau mais sans les afficher et sans arrêt (sauf si un point d'arrêt est rencontré).
+* `exit` ou `quit` ou `q` : quitte le désassembleur / debugger.
+* `bp clear` : efface tous les points d'arrêts.
+* `bp list` : affiche la list des points d'arrêt actuellement définis.
+* `bp pc xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt pour la valeur donnée du registre Program Counter.
+* `bp read xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de la lecture à l'adresse donnée.
+* `bp write xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de l'écriture à l'adresse donnée.
