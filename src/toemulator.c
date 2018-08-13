@@ -17,9 +17,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Thomson TO8D emulator */
+/* Thomson TO8/TO9 emulator */
 
-#include "to8demulator.h"
+#include "toemulator.h"
 #ifdef THEODORE_DASM
 #include "debugger.h"
 #endif
@@ -31,9 +31,10 @@
 #include "debugger.h"
 #include "devices.h"
 #include "video.h"
-#include "rom/to8dbasic.h"
-#include "rom/to8dmoniteur.h"
-#include "rom/to8moniteur.h"
+#include "rom/rom_to8.inc"
+#include "rom/rom_to8d.inc"
+#include "rom/rom_to9.inc"
+#include "rom/rom_to9p.inc"
 
 #define VBL_NUMBER_MAX  2
 // Number of keys of the TO8D keyboard
@@ -42,11 +43,21 @@
 // Sound level on 6 bits
 #define MAX_SOUND_LEVEL 0x3f
 
+typedef struct
+{
+  char *rom_data;
+  int *rom_patch;
+  unsigned int monitor_offset;
+} SystemRom;
+
+static SystemRom ROM_TO8 = { to8_rom, to8_rom_patch, TO8_MONITOR_OFFSET };
+static SystemRom ROM_TO8D = { to8d_rom, to8d_rom_patch, TO8D_MONITOR_OFFSET };
+static SystemRom ROM_TO9 = { to9_rom, to9_rom_patch, TO9_MONITOR_OFFSET };
+static SystemRom ROM_TO9P = { to9p_rom, to9p_rom_patch, TO9P_MONITOR_OFFSET };
+
 static ThomsonFlavor currentFlavor = TO8;
-static char *basic = to8dbasic;
-static int *basicpatch = to8dbasicpatch;
-static char *moniteur = to8moniteur;
-static int *moniteurpatch = to8moniteurpatch;
+static SystemRom *rom = &ROM_TO8;
+
 // memory
 char car[CARTRIDGE_MEM_SIZE];   //espace cartouche 4x16K
 char ram[RAM_SIZE];             //ram 512K
@@ -91,8 +102,8 @@ static int keyb_irqcount;   //nombre de cycles avant la fin de l'irq clavier
 static int timer_irqcount;  //nombre de cycles avant la fin de l'irq timer
 
 //Forward declarations
-static char Mgetto8d(unsigned short a);
-static void Mputto8d(unsigned short a, char c);
+static char Mgetto(unsigned short a);
+static void Mputto(unsigned short a, char c);
 
 // Registres du 6846 //////////////////////////////////////////////////////////
 /*
@@ -146,18 +157,17 @@ void SetThomsonFlavor(ThomsonFlavor flavor)
   {
     switch (flavor)
     {
-      case TO8D:
-        basic = to8dbasic;
-        basicpatch = to8dbasicpatch;
-        moniteur = to8dmoniteur;
-        moniteurpatch = to8dmoniteurpatch;
-        break;
       case TO8:
-        // Same basic then TO8D
-        basic = to8dbasic;
-        basicpatch = to8dbasicpatch;
-        moniteur = to8moniteur;
-        moniteurpatch = to8moniteurpatch;
+        rom = &ROM_TO8;
+        break;
+      case TO8D:
+        rom = &ROM_TO8D;
+        break;
+      case TO9:
+        rom = &ROM_TO9;
+        break;
+      case TO9P:
+        rom = &ROM_TO9P;
         break;
       default:
         return;
@@ -168,7 +178,7 @@ void SetThomsonFlavor(ThomsonFlavor flavor)
 }
 
 // Emulation du clavier TO8 ///////////////////////////////////////////////////
-void TO8key(int scancode, bool down)
+void key(int scancode, bool down)
 {
   int i;
   touche[scancode] = down ? 0x00 : 0x80;
@@ -193,8 +203,8 @@ void TO8key(int scancode, bool down)
     case 0x27: case 0x2a: case 0x2b: case 0x2f: case 0x32: case 0x33: case 0x3a:
     case 0x3b: case 0x42: case 0x43: case 0x4a: case 0x4b: i = 0x80; break;
   }
-  moniteur[0x30f8] = scancode | i;         //scancode + indicateur de touche SHIFT
-  moniteur[0x3125] = touche[0x53] ? 0 : 1; //indicateur de touche CTRL
+  rom->rom_data[rom->monitor_offset+0x30f8] = scancode | i;         //scancode + indicateur de touche SHIFT
+  rom->rom_data[rom->monitor_offset+0x3125] = touche[0x53] ? 0 : 1; //indicateur de touche CTRL
   port[0x08] |= 0x01; //bit 0 de E7C8 = 1 (touche enfoncee)
   port[0x00] |= 0x82; //bit CP1 = interruption clavier
   keyb_irqcount = 500000; //positionne le signal d'irq pour 500 ms maximum
@@ -202,15 +212,15 @@ void TO8key(int scancode, bool down)
 }
 
 // Selection de banques memoire //////////////////////////////////////////////
-static void TO8videoram(void)
+static void selectVideoram(void)
 {
   nvideopage = port[0x03] & 1;
   ramvideo = ram - 0x4000 + (nvideopage << 13);
   nsystbank = (port[0x03] & 0x10) >> 4;
-  romsys = moniteur - 0xe000 + (nsystbank << 13);
+  romsys = rom->rom_data + rom->monitor_offset - 0xe000 + (nsystbank << 13);
 }
 
-static void TO8rambank(void)
+static void selectRambank(void)
 {
   //mode TO8 par e7e5
   if(port[0x27] & 0x10)
@@ -233,7 +243,7 @@ static void TO8rambank(void)
   rambank = ram - 0x2000 + (nrambank << 14);
 }
 
-static void TO8rombank(void)
+static void selectRombank(void)
 {
   //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
   //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
@@ -250,7 +260,7 @@ static void TO8rombank(void)
   if(port[0x03] & 0x04)
   {
     nrombank = carflags & 3;
-    rombank = basic + (nrombank << 14);
+    rombank = rom->rom_data + (nrombank << 14);
   }
   else
   {
@@ -259,7 +269,7 @@ static void TO8rombank(void)
   }
 }
 
-static void Videopage_bordercolor(char c)
+static void videopage_bordercolor(char c)
 {
   port[0x1d] = c;
   pagevideo = ram + ((c & 0xc0) << 8);
@@ -267,7 +277,7 @@ static void Videopage_bordercolor(char c)
 }
 
 // Selection video ////////////////////////////////////////////////////////////
-static void TO8videomode(char c)
+static void selectVideomode(char c)
 {
   port[0x1c] = c;
   switch(c)
@@ -341,19 +351,19 @@ void Initprog(void)
   joysposition = 0xff;                      //manettes au centre
   joysaction = 0xc0;                        //boutons relaches
   carflags &= 0xec;
-  Mputc = Mputto8d;
-  Mgetc = Mgetto8d;
+  Mputc = Mputto;
+  Mgetc = Mgetto;
   SetVideoMode(VIDEO_320X16);
   ramuser = ram - 0x2000;
-  Videopage_bordercolor(port[0x1d]);
-  TO8videoram();
-  TO8rambank();
-  TO8rombank();
+  videopage_bordercolor(port[0x1d]);
+  selectVideoram();
+  selectRambank();
+  selectRombank();
   Reset6809();
 }
 
 // Patch de la rom ////////////////////////////////////////////////////////////
-static void TO8dpatch(char rom[], int patch[])
+static void patch_rom(char rom_data[], int patch[])
 {
   int i, j, a, n;
   i = 0;
@@ -361,7 +371,7 @@ static void TO8dpatch(char rom[], int patch[])
   {
     a = patch[i++];  //debut de la banque
     a += patch[i++]; //adresse dans la banque
-    for(j = 0; j < n; j++) rom[a++] = patch[i++];
+    for(j = 0; j < n; j++) rom_data[a++] = patch[i++];
   }
 }
 
@@ -385,19 +395,18 @@ void Hardreset(void)
     car[i] = 0;
   }
   //patch de la rom
-  TO8dpatch(basic, basicpatch);
-  TO8dpatch(moniteur - 0xe000, moniteurpatch);
+  patch_rom(rom->rom_data, rom->rom_patch);
   //en rom : remplacer jj-mm-aa par la date courante
   curtime = time(NULL);
   loctime = localtime(&curtime);
-  strftime(basic + 0xeb90, 9, "%d-%m-%y", loctime);
-  basic[0xeb98] = 0x1f;
+  strftime(rom->rom_data + 0xeb90, 9, "%d-%m-%y", loctime);
+  rom->rom_data[0xeb98] = 0x1f;
   //en rom : au reset initialiser la date courante
   //24E2 8E2B90  LDX  #$2B90
   //24E5 BD29C8  BSR  $29C8
-  basic[0xe4e2] = 0x8e; basic[0xe4e3] = 0x2b;
-  basic[0xe4e4] = 0x90; basic[0xe4e5] = 0xbd;
-  basic[0xe4e6] = 0x29; basic[0xe4e7] = 0xc8;
+  rom->rom_data[0xe4e2] = 0x8e; rom->rom_data[0xe4e3] = 0x2b;
+  rom->rom_data[0xe4e4] = 0x90; rom->rom_data[0xe4e5] = 0xbd;
+  rom->rom_data[0xe4e6] = 0x29; rom->rom_data[0xe4e7] = 0xc8;
   nvideobank = 0;
   nrambank = 0;
   nsystbank = 0;
@@ -480,8 +489,8 @@ int Run(int ncyclesmax)
   return(ncycles - ncyclesmax); //retour du nombre de cycles en trop (extracycles)
 }
 
-// Ecriture memoire to8d /////////////////////////////////////////////////////
-static void Mputto8d(unsigned short a, char c)
+// TO8/TO9 memory write /////////////////////////////////////////////////////
+static void Mputto(unsigned short a, char c)
 {
 #ifdef THEODORE_DASM
   debug_mem_write(a);
@@ -491,7 +500,7 @@ static void Mputto8d(unsigned short a, char c)
     //subtilite :
     //quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inverses
     case 0x0: case 0x1:
-      if(!(port[0x26] & 0x20)) {carflags = (carflags & 0xfc) | (a & 3); TO8rombank();}
+      if(!(port[0x26] & 0x20)) {carflags = (carflags & 0xfc) | (a & 3); selectRombank();}
       if((port[0x26] & 0x60) != 0x60) return;
       if(port[0x26] & 0x20) rombank[a + 0x2000] = c; else rombank[a] = c; return;
     case 0x2: case 0x3: if((port[0x26] & 0x60) != 0x60) return;
@@ -505,7 +514,7 @@ static void Mputto8d(unsigned short a, char c)
         case 0xe7c0: port[0x00] = c; return;
         case 0xe7c1: port[0x01] = c; mute = c & 8; return;
         case 0xe7c3: port[0x03] = (c & 0x3d); if((c & 0x20) == 0) keyb_irqcount = 0;
-        TO8videoram(); TO8rombank(); return;
+        selectVideoram(); selectRombank(); return;
         case 0xe7c5: port[0x05] = c; Timercontrol(); return; //controle timer
         case 0xe7c6: latch6846 = (latch6846 & 0xff) | ((c & 0xff) << 8); return;
         case 0xe7c7: latch6846 = (latch6846 & 0xff00) | (c & 0xff); return;
@@ -514,7 +523,7 @@ static void Mputto8d(unsigned short a, char c)
         //e7c9= registre de direction ou de donnees port B
         //e7ca= registre de controle port A (CRA)
         //e7cb= registre de controle port B (CRB)
-        case 0xe7c9: port[0x09] = c; TO8rambank(); return;
+        case 0xe7c9: port[0x09] = c; selectRambank(); return;
         case 0xe7cc: port[0x0c] = c; return;
         case 0xe7cd: if(port[0x0f] & 4) sound = c & MAX_SOUND_LEVEL; else port[0x0d] = c; return;
         case 0xe7ce: port[0x0e] = c; return; //registre controle position joysticks
@@ -524,12 +533,12 @@ static void Mputto8d(unsigned short a, char c)
         case 0xe7d8: return;
         case 0xe7da: Palettecolor(c); return;
         case 0xe7db: port[0x1b] = c; return;
-        case 0xe7dc: TO8videomode(c); return;
-        case 0xe7dd: Videopage_bordercolor(c); return;
+        case 0xe7dc: selectVideomode(c); return;
+        case 0xe7dd: videopage_bordercolor(c); return;
         case 0xe7e4: port[0x24] = c; return;
-        case 0xe7e5: port[0x25] = c; TO8rambank(); return;
-        case 0xe7e6: port[0x26] = c; TO8rombank(); return;
-        case 0xe7e7: port[0x27] = c; TO8rambank(); return;
+        case 0xe7e5: port[0x25] = c; selectRambank(); return;
+        case 0xe7e6: port[0x26] = c; selectRombank(); return;
+        case 0xe7e7: port[0x27] = c; selectRambank(); return;
         default: return;
       }
       return;
@@ -575,18 +584,18 @@ static char floppy_controller_emu(unsigned short a)
                               //            bit 1 = information "ready" du lecteur
     case 0xe7d3:
       // Detect sequence LDB $03,X / CMPB #$??
-      if (((Mgetto8d(dc6809_pc) & 0xff) == 0xc1) && ((Mgetto8d(dc6809_pc-1) & 0xff) == 0x03)
-          && ((Mgetto8d(dc6809_pc-2) & 0xff) == 0xe6)) return Mgetto8d(dc6809_pc+1);
+      if (((Mgetto(dc6809_pc) & 0xff) == 0xc1) && ((Mgetto(dc6809_pc-1) & 0xff) == 0x03)
+          && ((Mgetto(dc6809_pc-2) & 0xff) == 0xe6)) return Mgetto(dc6809_pc+1);
       // Detect sequence LDA $03,X / CMPA #$??
-      else if (((Mgetto8d(dc6809_pc) & 0xff) == 0x81) && ((Mgetto8d(dc6809_pc-1) & 0xff) == 0x03)
-          && ((Mgetto8d(dc6809_pc-2) & 0xff) == 0xa6)) return Mgetto8d(dc6809_pc+1);
+      else if (((Mgetto(dc6809_pc) & 0xff) == 0x81) && ((Mgetto(dc6809_pc-1) & 0xff) == 0x03)
+          && ((Mgetto(dc6809_pc-2) & 0xff) == 0xa6)) return Mgetto(dc6809_pc+1);
       else return port[a & 0x3f];
     default: return port[a & 0x3f];
   }
 }
 
-// Lecture memoire to8d //////////////////////////////////////////////////////
-static char Mgetto8d(unsigned short a)
+// TO8/TO9 memory read //////////////////////////////////////////////////////
+static char Mgetto(unsigned short a)
 {
 #ifdef THEODORE_DASM
   debug_mem_read(a);
@@ -626,7 +635,7 @@ static char Mgetto8d(unsigned short a)
   }
 }
 
-unsigned int to8d_serialize_size(void)
+unsigned int toemulator_serialize_size(void)
 {
   return sizeof(currentFlavor) + cpu_serialize_size() + video_serialize_size()
       + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(nvideopage) + sizeof(nvideobank)
@@ -638,7 +647,7 @@ unsigned int to8d_serialize_size(void)
       + sizeof(timer6846) + sizeof(latch6846) + sizeof(keyb_irqcount) + sizeof(timer_irqcount);
 }
 
-void to8d_serialize(void *data)
+void toemulator_serialize(void *data)
 {
   int offset = 0;
   char *buffer = (char *) data;
@@ -708,7 +717,7 @@ void to8d_serialize(void *data)
   memcpy(buffer+offset, &timer_irqcount, sizeof(timer_irqcount));
 }
 
-void to8d_unserialize(const void *data)
+void toemulator_unserialize(const void *data)
 {
   int offset = 0;
   const char *buffer = (const char *) data;
@@ -778,8 +787,8 @@ void to8d_unserialize(const void *data)
   offset += sizeof(keyb_irqcount);
   memcpy(&timer_irqcount, buffer+offset, sizeof(timer_irqcount));
 
-  Videopage_bordercolor(port[0x1d]);
-  TO8videoram();
-  TO8rambank();
-  TO8rombank();
+  videopage_bordercolor(port[0x1d]);
+  selectVideoram();
+  selectRambank();
+  selectRombank();
 }
