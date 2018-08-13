@@ -335,7 +335,7 @@ static void update_input(void)
     if (b)
     {
       virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
-      key(virtualkb_lastscancode, true);
+      keyboard(virtualkb_lastscancode, true);
       virtualkb_pressed = true;
     }
     else if (select || x)
@@ -353,7 +353,7 @@ static void update_input(void)
     else if (start)
     {
       virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[virtualkb_keysyms[virtualkb_index]];
-      key(virtualkb_lastscancode, true);
+      keyboard(virtualkb_lastscancode, true);
       virtualkb_pressed = true;
     }
   }
@@ -362,7 +362,7 @@ static void update_input(void)
     if (!select && !start && !x && !y && !b)
     {
       virtualkb_pressed = false;
-      key(virtualkb_lastscancode, false);
+      keyboard(virtualkb_lastscancode, false);
     }
   }
 }
@@ -538,19 +538,19 @@ static void keyboard_cb(bool down, unsigned keycode,
   // F6-F10 <-> SHIFT+F1-F5
   if (key_modifiers & RETROKMOD_SHIFT)
   {
-    key(THOMSON_LEFT_SHIFT, down);
+    keyboard(THOMSON_LEFT_SHIFT, down);
   }
   if (key_modifiers & RETROKMOD_CTRL)
   {
-    key(THOMSON_CNT, down);
+    keyboard(THOMSON_CNT, down);
   }
   if (key_modifiers & RETROKMOD_ALT)
   {
-    key(THOMSON_ACC, down);
+    keyboard(THOMSON_ACC, down);
   }
   if (key_modifiers & RETROKMOD_CAPSLOCK)
   {
-    key(THOMSON_CAPSLOCK, down);
+    keyboard(THOMSON_CAPSLOCK, down);
   }
 
   if (keycode < 320)
@@ -558,7 +558,7 @@ static void keyboard_cb(bool down, unsigned keycode,
     unsigned char scancode = libretroKeyCodeToThomsonScanCode[keycode];
     if (scancode != 0xFF)
     {
-      key(scancode, down);
+      keyboard(scancode, down);
     }
   }
 }

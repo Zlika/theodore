@@ -71,8 +71,8 @@ typedef enum { TO8, TO8D, TO9, TO9P } ThomsonFlavor;
 int16_t GetAudioSample();
 // Joystick emulation
 void Joysemul(JoystickAxis axis, bool isOn);
-// TO8 keyboard emulation
-void key(int scancode, bool down);
+// Keyboard emulation
+void keyboard(int scancode, bool down);
 // Initialisation of the computer
 void Initprog(void);
 // Execution of n CPU cycles

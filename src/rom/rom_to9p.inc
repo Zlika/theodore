@@ -11,9 +11,9 @@
 int to9p_rom_patch[] =
 {
     // basic
-    1,0xc000,0x2e51,0xf6, // b7 (STA EXT) -> f6 (LDB EXT)
-    1,0xc000,0x2e5f,0xb6, // b7 (STA EXT) -> b6 (LDA EXT)
-    1,0xc000,0x2ea1,0xf6, // f7 (STB EXT) -> f6 (LDB EXT)
+    1,0xc000,0x2e51,0xf6,           // b7 (STA EXT) -> f6 (LDB EXT)
+    1,0xc000,0x2e5f,0xb6,           // b7 (STA EXT) -> b6 (LDA EXT)
+    1,0xc000,0x2ea1,0xf6,           // f7 (STB EXT) -> f6 (LDB EXT)
     2,0xc000,0x3273,0x20,0x0e,      //open lecture ou ecriture
     1,0xc000,0x328c,0x01,           //suppression io device error
     2,0xc000,0x32f1,0x45,0x39,      //ecriture octet cassette
