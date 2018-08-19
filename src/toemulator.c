@@ -45,15 +45,15 @@
 
 typedef struct
 {
-  char *rom_data;
-  int *rom_patch;
-  unsigned int monitor_offset;
+  char *rom_data; // Full content of the ROM
+  int *rom_patch; // Patch to apply to the ROM
+  char *monitor;  // Pointer to the beginning of the "monitor" part of the ROM
 } SystemRom;
 
-static SystemRom ROM_TO8 = { to8_rom, to8_rom_patch, TO8_MONITOR_OFFSET };
-static SystemRom ROM_TO8D = { to8d_rom, to8d_rom_patch, TO8D_MONITOR_OFFSET };
-static SystemRom ROM_TO9 = { to9_rom, to9_rom_patch, TO9_MONITOR_OFFSET };
-static SystemRom ROM_TO9P = { to9p_rom, to9p_rom_patch, TO9P_MONITOR_OFFSET };
+static SystemRom ROM_TO8 = { to8_rom, to8_rom_patch, to8_rom + TO8_MONITOR_OFFSET };
+static SystemRom ROM_TO8D = { to8d_rom, to8d_rom_patch, to8d_rom + TO8D_MONITOR_OFFSET };
+static SystemRom ROM_TO9 = { to9_rom, to9_rom_patch, to9_rom + TO9_MONITOR_OFFSET };
+static SystemRom ROM_TO9P = { to9p_rom, to9p_rom_patch, to9p_rom + TO9P_MONITOR_OFFSET };
 
 static ThomsonFlavor currentFlavor = TO8;
 static SystemRom *rom = &ROM_TO8;
@@ -61,7 +61,7 @@ static SystemRom *rom = &ROM_TO8;
 // memory
 char car[CARTRIDGE_MEM_SIZE];   //espace cartouche 4x16K
 char ram[RAM_SIZE];             //ram 512K
-char port[IO_MEM_SIZE];         //ports d'entree/sortie
+char port[IO_MEM_SIZE];         //ports d'entree/sortie (0xE7C0 -> 0xE7FF)
 static char x7da[PALETTE_SIZE]; //stockage de la palette de couleurs
 // pointers
 char *pagevideo;            //pointeur page video affichee
@@ -232,8 +232,8 @@ void keyboard(int scancode, bool down)
   }
   if (currentFlavor == TO8 || currentFlavor == TO8D)
   {
-    rom->rom_data[rom->monitor_offset+0x30f8] = scancode | i;         //scancode + indicateur de touche SHIFT
-    rom->rom_data[rom->monitor_offset+0x3125] = touche[0x53] ? 0 : 1; //indicateur de touche CTRL
+    rom->monitor[0x30f8] = scancode | i;         //scancode + indicateur de touche SHIFT
+    rom->monitor[0x3125] = touche[0x53] ? 0 : 1; //indicateur de touche CTRL
     port[0x08] |= 0x01; //bit 0 de E7C8 = 1 (touche enfoncee)
     port[0x00] |= 0x82; //bit CP1 = interruption clavier
     keyb_irqcount = 500000; //positionne le signal d'irq pour 500 ms maximum
@@ -259,28 +259,32 @@ void keyboard(int scancode, bool down)
 static void selectVideoram(void)
 {
   nvideopage = port[0x03] & 1;
+  // The "video" data (either from RAMA or RAMB) is mapped in memory at 0x4000-0x5FFF
   ramvideo = ram - 0x4000 + (nvideopage << 13);
-  nsystbank = (port[0x03] & 0x10) >> 4;
-  romsys = rom->rom_data + 0x2000 + (nsystbank << 13);
+  nsystbank = (currentFlavor != TO9) ? (port[0x03] & 0x10) >> 4 : 0;
+  // The "monitor" software is mapped in memory starting at address 0xe000
+  romsys = rom->monitor - 0xe000 + (nsystbank << 13);
 }
 
 static void selectRambank(void)
 {
-  //mode TO8 par e7e5
-  if(port[0x27] & 0x10)
+  // TO8 mode (5 lower bits of e7e5 = RAM page number)
+  // (bit D4 of gate array mode page's "system 1" register at e7e7 = 0
+  // if RAM bank switching is done via PIA bits for TO7-70/TO9 emulation)
+  if ((port[0x27] & 0x10) && (currentFlavor != TO9))
   {
     nrambank = port[0x25] & 0x1f;
     rambank = ram - 0xa000 + (nrambank << 14);
     return;
   }
-  //mode compatibilite TO7/70 par e7c9
-  switch(port[0x09] & 0xf8)
+  // TO7-70/TO9 compatibility mode via e7c9
+  switch (port[0x09] & 0xf8)
   {
     case 0x08: nrambank = 0; break;
     case 0x10: nrambank = 1; break;
     case 0xe0: nrambank = 2; break;
-    case 0xa0: nrambank = 3; break;  //banques 5 et 6
-    case 0x60: nrambank = 4; break;  //inversees/TO770&TO9
+    case 0xa0: nrambank = currentFlavor == TO9 ? 4 : 3; break;  // banks 3 and 4
+    case 0x60: nrambank = currentFlavor == TO9 ? 3 : 4; break;  // inverted/TO7-70&TO9
     case 0x20: nrambank = 5; break;
     default: return;
   }
@@ -289,27 +293,54 @@ static void selectRambank(void)
 
 static void selectRombank(void)
 {
-  //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
-  //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
-  //par la banque RAM definie par les 5 bits de poids faible de e7e6
-  //subtilite : les deux segments de 8K de la banque sont inverses.
-  if(port[0x26] & 0x20)
+  if (currentFlavor != TO9)
   {
-    //e7c3 |= 4;
-    rombank = ram + ((port[0x26] & 0x1f) << 14);
-    //rombank += (carflags & 3) << 14;
-    return;
+    //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
+    //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
+    //par la banque RAM definie par les 5 bits de poids faible de e7e6
+    //subtilite : les deux segments de 8K de la banque sont inverses.
+    if (port[0x26] & 0x20)
+    {
+      rombank = ram + ((port[0x26] & 0x1f) << 14);
+    }
+    //sinon le bit2 de e7c3 commute entre ROM interne et cartouche
+    else if (port[0x03] & 0x04)
+    {
+      nrombank = carflags & 3;
+      rombank = rom->rom_data + (nrombank << 14);
+    }
+    else
+    {
+      nrombank = -1;
+      rombank = car + ((carflags & 3) << 14);
+    }
   }
-  //sinon le bit2 de e7c3 commute entre ROM interne et cartouche
-  if(port[0x03] & 0x04)
+  else // TO9
   {
-    nrombank = carflags & 3;
-    rombank = rom->rom_data + (nrombank << 14);
-  }
-  else
-  {
-    nrombank = -1;
-    rombank = car + ((carflags & 3) << 14);
+    // bits P5 & P4 from the 6846 (at 0xe7c3) are used to select the ROM slot.
+    // slot 0 = BASIC 128 (bank 0), extramon (bank 1), BASIC 1 (bank 2), iconic DOS (bank 3)
+    // slot 1/2 = PARAGRAPHE and FICHES ET DOSSIERS software
+    // slot 3 = cartridge
+    switch ((port[0x03] & 0x30) >> 4)
+    {
+      case 0: // slot 0 (64ko, 4 banks)
+        nrombank = carflags & 3;
+        rombank = rom->rom_data + (nrombank << 14);
+        break;
+      case 1: // slot 1 (32ko, 2 banks)
+        nrombank = 4 + (carflags & 3);
+        rombank = rom->rom_data + (nrombank << 14);
+        break;
+      case 2: // slot 2 (32ko, 2 banks)
+        nrombank = 6 + (carflags & 3);
+        rombank = rom->rom_data + (nrombank << 14);
+        break;
+      case 3: // cartridge
+        nrombank = -1;
+        rombank = car + ((carflags & 3) << 14);
+        break;
+      default: break;
+    }
   }
 }
 
@@ -433,24 +464,27 @@ void Hardreset(void)
   {
     port[i] = 0;
   }
-  port[0x09] = 0x0f;
+  port[0x09] = 0x0f; // RAM bank 0 selected
   for(i = 0; i < sizeof(car); i++)
   {
     car[i] = 0;
   }
   //patch de la rom
   patch_rom(rom->rom_data, rom->rom_patch);
-  //en rom : remplacer jj-mm-aa par la date courante
-  curtime = time(NULL);
-  loctime = localtime(&curtime);
-  strftime(rom->rom_data + 0xeb90, 9, "%d-%m-%y", loctime);
-  rom->rom_data[0xeb98] = 0x1f;
-  //en rom : au reset initialiser la date courante
-  //24E2 8E2B90  LDX  #$2B90
-  //24E5 BD29C8  BSR  $29C8
-  rom->rom_data[0xe4e2] = 0x8e; rom->rom_data[0xe4e3] = 0x2b;
-  rom->rom_data[0xe4e4] = 0x90; rom->rom_data[0xe4e5] = 0xbd;
-  rom->rom_data[0xe4e6] = 0x29; rom->rom_data[0xe4e7] = 0xc8;
+  if (currentFlavor != TO9)
+  {
+    //en rom : remplacer jj-mm-aa par la date courante
+    curtime = time(NULL);
+    loctime = localtime(&curtime);
+    strftime(rom->rom_data + 0xeb90, 9, "%d-%m-%y", loctime);
+    rom->rom_data[0xeb98] = 0x1f;
+    //en rom : au reset initialiser la date courante
+    //24E2 8E2B90  LDX  #$2B90
+    //24E5 BD29C8  BSR  $29C8
+    rom->rom_data[0xe4e2] = 0x8e; rom->rom_data[0xe4e3] = 0x2b;
+    rom->rom_data[0xe4e4] = 0x90; rom->rom_data[0xe4e5] = 0xbd;
+    rom->rom_data[0xe4e6] = 0x29; rom->rom_data[0xe4e7] = 0xc8;
+  }
   nvideobank = 0;
   nrambank = 0;
   nsystbank = 0;
@@ -541,12 +575,21 @@ static void Mputto(unsigned short a, char c)
 #endif
   switch(a >> 12)
   {
-    //subtilite :
-    //quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inverses
     case 0x0: case 0x1:
-      if(!(port[0x26] & 0x20)) {carflags = (carflags & 0xfc) | (a & 3); selectRombank();}
-      if((port[0x26] & 0x60) != 0x60) return;
-      if(port[0x26] & 0x20) rombank[a + 0x2000] = c; else rombank[a] = c; return;
+      if (currentFlavor != TO9)
+      {
+        //subtilite :
+        //quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inverses
+        if(!(port[0x26] & 0x20)) {carflags = (carflags & 0xfc) | (a & 3); selectRombank();}
+        if((port[0x26] & 0x60) != 0x60) return;
+        if(port[0x26] & 0x20) rombank[a + 0x2000] = c; else rombank[a] = c; return;
+      }
+      else
+      {
+        carflags = (carflags & 0xfc) | (a & 3);
+        selectRombank();
+        return;
+      }
     case 0x2: case 0x3: if((port[0x26] & 0x60) != 0x60) return;
     if(port[0x26] & 0x20) rombank[a - 0x2000] = c; else rombank[a] = c; return;
     case 0x4: case 0x5: ramvideo[a] = c; return;

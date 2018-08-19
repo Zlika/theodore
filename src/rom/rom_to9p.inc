@@ -8,6 +8,7 @@
 // Offset in the ROM where starts the "monitor" software
 #define TO9P_MONITOR_OFFSET 0x10000
 
+// Patch data taken from DCTO8D/DCTO9P
 int to9p_rom_patch[] =
 {
     // basic

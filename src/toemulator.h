@@ -37,7 +37,7 @@
 extern char car[];
 //ram 512K
 extern char ram[];
-//ports d'entree/sortie
+//ports d'entree/sortie (0xE7C0 -> 0xE7FF)
 extern char port[];
 
 //flags cartouche
