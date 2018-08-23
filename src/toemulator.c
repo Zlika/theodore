@@ -45,15 +45,16 @@
 
 typedef struct
 {
-  char *rom_data; // Full content of the ROM
-  int *rom_patch; // Patch to apply to the ROM
-  char *monitor;  // Pointer to the beginning of the "monitor" part of the ROM
+  char *basic;        // "BASIC and other embedded software" part of the ROM
+  int *basic_patch;   // Patch to apply to the "BASIC and other embedded software" part of the ROM
+  char *monitor;      // Pointer to the beginning of the "monitor" part of the ROM
+  int *monitor_patch; // Path to apply to the "monitor" part of the ROM
 } SystemRom;
 
-static SystemRom ROM_TO8 = { to8_rom, to8_rom_patch, to8_rom + TO8_MONITOR_OFFSET };
-static SystemRom ROM_TO8D = { to8d_rom, to8d_rom_patch, to8d_rom + TO8D_MONITOR_OFFSET };
-static SystemRom ROM_TO9 = { to9_rom, to9_rom_patch, to9_rom + TO9_MONITOR_OFFSET };
-static SystemRom ROM_TO9P = { to9p_rom, to9p_rom_patch, to9p_rom + TO9P_MONITOR_OFFSET };
+static SystemRom ROM_TO8 = { to8_basic_rom, to8_basic_patch, to8_monitor_rom, to8_monitor_patch };
+static SystemRom ROM_TO8D = { to8_basic_rom, to8_basic_patch, to8d_monitor_rom, to8d_monitor_patch };
+static SystemRom ROM_TO9 = { to9_basic_rom, to9_basic_patch, to9_monitor_rom, to9_monitor_patch };
+static SystemRom ROM_TO9P = { to9p_basic_rom, to9p_basic_patch, to9p_monitor_rom, to9p_monitor_patch };
 
 static ThomsonFlavor currentFlavor = TO8;
 static SystemRom *rom = &ROM_TO8;
@@ -307,7 +308,7 @@ static void selectRombank(void)
     else if (port[0x03] & 0x04)
     {
       nrombank = carflags & 3;
-      rombank = rom->rom_data + (nrombank << 14);
+      rombank = rom->basic + (nrombank << 14);
     }
     else
     {
@@ -325,15 +326,15 @@ static void selectRombank(void)
     {
       case 0: // slot 0 (64ko, 4 banks)
         nrombank = carflags & 3;
-        rombank = rom->rom_data + (nrombank << 14);
+        rombank = rom->basic + (nrombank << 14);
         break;
       case 1: // slot 1 (32ko, 2 banks)
         nrombank = 4 + (carflags & 3);
-        rombank = rom->rom_data + (nrombank << 14);
+        rombank = rom->basic + (nrombank << 14);
         break;
       case 2: // slot 2 (32ko, 2 banks)
         nrombank = 6 + (carflags & 3);
-        rombank = rom->rom_data + (nrombank << 14);
+        rombank = rom->basic + (nrombank << 14);
         break;
       case 3: // cartridge
         nrombank = -1;
@@ -470,20 +471,21 @@ void Hardreset(void)
     car[i] = 0;
   }
   //patch de la rom
-  patch_rom(rom->rom_data, rom->rom_patch);
+  patch_rom(rom->basic, rom->basic_patch);
+  patch_rom(rom->monitor, rom->monitor_patch);
   if (currentFlavor != TO9)
   {
     //en rom : remplacer jj-mm-aa par la date courante
     curtime = time(NULL);
     loctime = localtime(&curtime);
-    strftime(rom->rom_data + 0xeb90, 9, "%d-%m-%y", loctime);
-    rom->rom_data[0xeb98] = 0x1f;
+    strftime(rom->basic + 0xeb90, 9, "%d-%m-%y", loctime);
+    rom->basic[0xeb98] = 0x1f;
     //en rom : au reset initialiser la date courante
     //24E2 8E2B90  LDX  #$2B90
     //24E5 BD29C8  BSR  $29C8
-    rom->rom_data[0xe4e2] = 0x8e; rom->rom_data[0xe4e3] = 0x2b;
-    rom->rom_data[0xe4e4] = 0x90; rom->rom_data[0xe4e5] = 0xbd;
-    rom->rom_data[0xe4e6] = 0x29; rom->rom_data[0xe4e7] = 0xc8;
+    rom->basic[0xe4e2] = 0x8e; rom->basic[0xe4e3] = 0x2b;
+    rom->basic[0xe4e4] = 0x90; rom->basic[0xe4e5] = 0xbd;
+    rom->basic[0xe4e6] = 0x29; rom->basic[0xe4e7] = 0xc8;
   }
   nvideobank = 0;
   nrambank = 0;
