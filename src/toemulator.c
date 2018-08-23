@@ -205,7 +205,7 @@ void SetThomsonFlavor(ThomsonFlavor flavor)
   }
 }
 
-// Emulation du clavier TO8 ///////////////////////////////////////////////////
+// Emulation du clavier TO8/TO9 ///////////////////////////////////////////////
 void keyboard(int scancode, bool down)
 {
   int i;
@@ -329,11 +329,11 @@ static void selectRombank(void)
         rombank = rom->basic + (nrombank << 14);
         break;
       case 1: // slot 1 (32ko, 2 banks)
-        nrombank = 4 + (carflags & 3);
+        nrombank = 4 + (carflags & 1);
         rombank = rom->basic + (nrombank << 14);
         break;
       case 2: // slot 2 (32ko, 2 banks)
-        nrombank = 6 + (carflags & 3);
+        nrombank = 6 + (carflags & 1);
         rombank = rom->basic + (nrombank << 14);
         break;
       case 3: // cartridge
