@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "toemulator.h"
 #include "video.h"
-#include "to8demulator.h"
 
 #define NB_VIDEO_MODES 5
 #define SEGMENT_SIZE  16

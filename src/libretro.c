@@ -29,7 +29,7 @@
 #include "devices.h"
 #include "keymap.h"
 #include "sap.h"
-#include "to8demulator.h"
+#include "toemulator.h"
 #include "video.h"
 
 #define PACKAGE_NAME "theodore"
@@ -77,7 +77,7 @@ static bool virtualkb_pressed = false;
 static int virtualkb_lastscancode = 0;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D" },
+    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9+" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
@@ -335,7 +335,7 @@ static void update_input(void)
     if (b)
     {
       virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
-      TO8key(virtualkb_lastscancode, true);
+      keyboard(virtualkb_lastscancode, true);
       virtualkb_pressed = true;
     }
     else if (select || x)
@@ -353,7 +353,7 @@ static void update_input(void)
     else if (start)
     {
       virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[virtualkb_keysyms[virtualkb_index]];
-      TO8key(virtualkb_lastscancode, true);
+      keyboard(virtualkb_lastscancode, true);
       virtualkb_pressed = true;
     }
   }
@@ -362,7 +362,7 @@ static void update_input(void)
     if (!select && !start && !x && !y && !b)
     {
       virtualkb_pressed = false;
-      TO8key(virtualkb_lastscancode, false);
+      keyboard(virtualkb_lastscancode, false);
     }
   }
 }
@@ -389,13 +389,17 @@ static void check_variables(void)
   var.key = PACKAGE_NAME"_rom";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
-    if (strcmp(var.value, "TO8D") == 0)
+    if (strcmp(var.value, "TO8") == 0)
+    {
+      SetThomsonFlavor(TO8);
+    }
+    else if (strcmp(var.value, "TO8D") == 0)
     {
       SetThomsonFlavor(TO8D);
     }
-    else if (strcmp(var.value, "TO8") == 0)
+    else if (strcmp(var.value, "TO9+") == 0)
     {
-      SetThomsonFlavor(TO8);
+      SetThomsonFlavor(TO9P);
     }
   }
 #ifdef THEODORE_DASM
@@ -451,20 +455,20 @@ void retro_run(void)
 
 size_t retro_serialize_size(void)
 {
-  return to8d_serialize_size();
+  return toemulator_serialize_size();
 }
 
 bool retro_serialize(void *data, size_t size)
 {
-  if (size != to8d_serialize_size()) return false;
-  to8d_serialize(data);
+  if (size != toemulator_serialize_size()) return false;
+  toemulator_serialize(data);
   return true;
 }
 
 bool retro_unserialize(const void *data, size_t size)
 {
-  if (size != to8d_serialize_size()) return false;
-  to8d_unserialize(data);
+  if (size != toemulator_serialize_size()) return false;
+  toemulator_unserialize(data);
   return true;
 }
 
@@ -530,19 +534,19 @@ static void keyboard_cb(bool down, unsigned keycode,
   // F6-F10 <-> SHIFT+F1-F5
   if (key_modifiers & RETROKMOD_SHIFT)
   {
-    TO8key(THOMSON_LEFT_SHIFT, down);
+    keyboard(THOMSON_LEFT_SHIFT, down);
   }
   if (key_modifiers & RETROKMOD_CTRL)
   {
-    TO8key(THOMSON_CNT, down);
+    keyboard(THOMSON_CNT, down);
   }
   if (key_modifiers & RETROKMOD_ALT)
   {
-    TO8key(THOMSON_ACC, down);
+    keyboard(THOMSON_ACC, down);
   }
   if (key_modifiers & RETROKMOD_CAPSLOCK)
   {
-    TO8key(THOMSON_CAPSLOCK, down);
+    keyboard(THOMSON_CAPSLOCK, down);
   }
 
   if (keycode < 320)
@@ -550,7 +554,7 @@ static void keyboard_cb(bool down, unsigned keycode,
     unsigned char scancode = libretroKeyCodeToThomsonScanCode[keycode];
     if (scancode != 0xFF)
     {
-      TO8key(scancode, down);
+      keyboard(scancode, down);
     }
   }
 }

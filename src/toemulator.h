@@ -17,10 +17,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Thomson TO8D emulator */
+/* Thomson TO8/TO9 emulator */
 
-#ifndef __TO8DEMULATOR_H
-#define __TO8DEMULATOR_H
+#ifndef __TOEMULATOR_H
+#define __TOEMULATOR_H
 
 #include <stdint.h>
 #include "boolean.h"
@@ -37,7 +37,7 @@
 extern char car[];
 //ram 512K
 extern char ram[];
-//ports d'entree/sortie
+//ports d'entree/sortie (0xE7C0 -> 0xE7FF)
 extern char port[];
 
 //flags cartouche
@@ -65,29 +65,29 @@ typedef enum { JOY0_UP, JOY0_DOWN, JOY0_LEFT, JOY0_RIGHT,
                JOY1_UP, JOY1_DOWN, JOY1_LEFT, JOY1_RIGHT,
                JOY0_FIRE, JOY1_FIRE } JoystickAxis;
 
-typedef enum { TO8, TO8D } ThomsonFlavor;
+typedef enum { TO8, TO8D, TO9P } ThomsonFlavor;
 
 // Returns the current level of the speaker as a signed 16-bit integer
 int16_t GetAudioSample();
 // Joystick emulation
 void Joysemul(JoystickAxis axis, bool isOn);
-// TO8 keyboard emulation
-void TO8key(int scancode, bool down);
+// Keyboard emulation
+void keyboard(int scancode, bool down);
 // Initialisation of the computer
 void Initprog(void);
 // Execution of n CPU cycles
 int Run(int ncyclesmax);
 // Hardreset of the computer
 void Hardreset(void);
-// Sets the Thomson version emulated (default=TO8D)
+// Sets the Thomson version emulated (default=TO8)
 void SetThomsonFlavor(ThomsonFlavor flavor);
 
 // The following functions are used for libretro's save states feature.
 // Returns the amount of data required to serialize the whole state of the emulator.
-unsigned int to8d_serialize_size(void);
+unsigned int toemulator_serialize_size(void);
 // Serializes the whole state of the emulator.
-void to8d_serialize(void *data);
+void toemulator_serialize(void *data);
 // Unserializes the whole state of the emulator.
-void to8d_unserialize(const void *data);
+void toemulator_unserialize(const void *data);
 
-#endif /* __TO8DEMULATION_H */
+#endif /* __TOEMULATION_H */
