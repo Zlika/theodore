@@ -1,7 +1,7 @@
 [:gb:](https://github.com/Zlika/theodore/blob/master/README.md)
 [:fr:](https://github.com/Zlika/theodore/blob/master/README-FR.md)
 
-Theodore - Emulateur Thomson TO8/TO8D
+Theodore - Emulateur Thomson TO8/TO9
 =====================================
 
 [![Build status](https://travis-ci.org/Zlika/theodore.svg?branch=master)](https://travis-ci.org/Zlika/theodore)
@@ -9,7 +9,7 @@ Theodore - Emulateur Thomson TO8/TO8D
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson TO8/TO8D](https://fr.wikipedia.org/wiki/Thomson_TO8). Cet émulateur est dérivé de l'émulateur [DCTO8D](http://dcto8.free.fr/) de Daniel Coulom.
+Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson](https://fr.wikipedia.org/wiki/Gamme_MOTO). Cet émulateur est dérivé de l'émulateur [DCTO8D](http://dcto8.free.fr/) de Daniel Coulom, et supporte actuellement les modèles suivants: TO8, TO8D, TO9+.
 
 ### Instructions d'installation
 
@@ -68,7 +68,7 @@ L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquet
 
 ### Variantes Thomson émulées
 
-Par défaut, un ordinateur T08 est émulé. En utilisant l'option "Thomson flavor", il est possible d'émuler un TO8D.
+Par défaut, un ordinateur T08 est émulé. En utilisant l'option "Thomson flavor", il est possible d'émuler d'autres versions (actuellement : TO8, TO8D, TO9+).
 
 ### Sauvegardes instantanées
 

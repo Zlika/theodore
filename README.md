@@ -1,7 +1,7 @@
 [:gb:](https://github.com/Zlika/theodore/blob/master/README.md)
 [:fr:](https://github.com/Zlika/theodore/blob/master/README-FR.md)
 
-Theodore - Thomson TO8/TO8D emulator
+Theodore - Thomson TO8/TO9 emulator
 ====================================
 
 [![Build status](https://travis-ci.org/Zlika/theodore.svg?branch=master)](https://travis-ci.org/Zlika/theodore)
@@ -9,7 +9,7 @@ Theodore - Thomson TO8/TO8D emulator
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-This is a [libretro](https://github.com/libretro) core for emulation of the [Thomson TO8/TO8D computers](https://en.wikipedia.org/wiki/Thomson_TO8). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator.
+This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator, and currently supports the following models: TO8, TO8D, TO9+.
 
 ### How to install
 
@@ -68,7 +68,7 @@ The emulator can read the following file formats: *.fd and *.sap (floppy disks),
 
 ### Thomson flavors
 
-By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to a T08D computer.
+By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to other models (currently: TO8, TO8D, TO9+).
 
 ### Save states
 

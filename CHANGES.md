@@ -1,3 +1,7 @@
+Next release
+===========
+* Add TO9+ emulation.
+
 Release 1.3 (2018/08/13)
 ===========
 * Workaround for the protection used by some FIL games (Atomik, Avenger, Way of the Tiger).
