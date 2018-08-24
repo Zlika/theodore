@@ -29,7 +29,7 @@
 #include "devices.h"
 #include "keymap.h"
 #include "sap.h"
-#include <toemulator.h>
+#include "toemulator.h"
 #include "video.h"
 
 #define PACKAGE_NAME "theodore"
