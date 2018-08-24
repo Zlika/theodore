@@ -79,7 +79,7 @@ void Initprog(void);
 int Run(int ncyclesmax);
 // Hardreset of the computer
 void Hardreset(void);
-// Sets the Thomson version emulated (default=TO8D)
+// Sets the Thomson version emulated (default=TO8)
 void SetThomsonFlavor(ThomsonFlavor flavor);
 
 // The following functions are used for libretro's save states feature.
