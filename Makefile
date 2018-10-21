@@ -397,6 +397,21 @@ else ifeq ($(platform), switch)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).$(EXT)
 	include $(LIBTRANSISTOR_HOME)/libtransistor.mk
 	STATIC_LINKING=1
+	DISABLE_GCC_SECURITY_FLAGS = 1
+
+# Nintendo Switch (libnx)
+else ifeq ($(platform), libnx)
+	include $(DEVKITPRO)/libnx/switch_rules
+	EXT=a
+	TARGET := $(TARGET_NAME)_libretro_$(platform).$(EXT)
+	DEFINES := -DSWITCH=1 -U__linux__ -U__linux -DRARCH_INTERNAL
+	CFLAGS := $(DEFINES) -g -O3 -fPIE -I$(LIBNX)/include/ -ffunction-sections -fdata-sections -ftls-model=local-exec -Wl,--allow-multiple-definition -specs=$(LIBNX)/switch.specs
+	CFLAGS += $(INCDIRS)
+	CFLAGS += $(INCLUDE)  -D__SWITCH__ -DHAVE_LIBNX -march=armv8-a -mtune=cortex-a57 -mtp=soft
+	CXXFLAGS := $(ASFLAGS) $(CFLAGS) -fno-rtti -std=gnu++11
+	CFLAGS += -std=gnu11
+	STATIC_LINKING = 1
+	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
