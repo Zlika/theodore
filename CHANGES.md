@@ -1,6 +1,7 @@
-Next release
+Release 1.4 (2018/11/24)
 ===========
 * Add TO9+ emulation.
+* Add support for Nintendo Switch platform.
 
 Release 1.3 (2018/08/13)
 ===========
