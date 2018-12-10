@@ -9,7 +9,7 @@ Theodore - Emulateur Thomson TO8/TO9
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson](https://fr.wikipedia.org/wiki/Gamme_MOTO). Cet émulateur est dérivé de l'émulateur [DCTO8D](http://dcto8.free.fr/) de Daniel Coulom, et supporte actuellement les modèles suivants: TO8, TO8D, TO9+.
+Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson](https://fr.wikipedia.org/wiki/Gamme_MOTO). Cet émulateur est dérivé de l'émulateur [DCTO8D](http://dcto8.free.fr/) de Daniel Coulom, et supporte actuellement les modèles suivants: TO8, TO8D, TO9, TO9+.
 
 ### Instructions d'installation
 
@@ -68,7 +68,7 @@ L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquet
 
 ### Variantes Thomson émulées
 
-Par défaut, un ordinateur T08 est émulé. En utilisant l'option "Thomson flavor", il est possible d'émuler d'autres versions (actuellement : TO8, TO8D, TO9+).
+Par défaut, un ordinateur T08 est émulé. En utilisant l'option "Thomson flavor", il est possible d'émuler d'autres versions (actuellement : TO8, TO8D, TO9, TO9+).
 
 ### Sauvegardes instantanées
 
@@ -102,3 +102,5 @@ Depuis la ligne de commande, les commandes suivantes sont ensuite disponibles :
 * `bp pc xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt pour la valeur donnée du registre Program Counter.
 * `bp read xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de la lecture à l'adresse donnée.
 * `bp write xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de l'écriture à l'adresse donnée.
+* `read xxxx` (avec xxxx un nombre hexadécimal): lit la valeur en mémoire à l'adresse données.
+* `write xxxx yy` (avec xxxx et yy des nombres hexadécimaux): écrit la valeur yy en mémoire à l'adresse xxxx.

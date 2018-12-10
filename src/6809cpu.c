@@ -44,7 +44,7 @@ static short dc6809_da;   //direct address (DP register = high byte of direct ad
 //pointers to register bytes
 char *dc6809_a;    //pointer to A register
 char *dc6809_b;    //pointer to B register
-static char *dc6809_dp;   //pointer to DP register
+char *dc6809_dp;   //pointer to DP register
 static char *dc6809_dd;   //pointer to direct address low byte
 static char *dc6809_pch;  //pointer to PC low byte
 static char *dc6809_pcl;  //pointer to PC high byte

@@ -9,7 +9,7 @@ Theodore - Thomson TO8/TO9 emulator
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator, and currently supports the following models: TO8, TO8D, TO9+.
+This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator, and currently supports the following models: TO8, TO8D, TO9, TO9+.
 
 ### How to install
 
@@ -68,7 +68,7 @@ The emulator can read the following file formats: *.fd and *.sap (floppy disks),
 
 ### Thomson flavors
 
-By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to other models (currently: TO8, TO8D, TO9+).
+By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to other models (currently: TO8, TO8D, TO9, TO9+).
 
 ### Save states
 
@@ -102,3 +102,5 @@ From the command-line, the following commands are then available:
 * `bp pc xxxx` (with xxxx an hexadecimal number): add a breakpoint at for the given Program Counter value.
 * `bp read xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator reads memory at the given address.
 * `bp write xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator writes memory at the given address.
+* `read xxxx` (with xxxx an hexadecimal number): read the value at the given memory address.
+* `write xxxx yy` (with xxxx and yy hexadecimal numbers): write the value yy at memory address xxxx.

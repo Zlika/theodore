@@ -1,3 +1,7 @@
+Next Release
+===========
+* Add TO9 emulation.
+
 Release 1.4 (2018/11/24)
 ===========
 * Add TO9+ emulation.

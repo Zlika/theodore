@@ -77,7 +77,7 @@ static bool virtualkb_pressed = false;
 static int virtualkb_lastscancode = 0;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9+" },
+    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
@@ -396,6 +396,10 @@ static void check_variables(void)
     else if (strcmp(var.value, "TO8D") == 0)
     {
       SetThomsonFlavor(TO8D);
+    }
+    else if (strcmp(var.value, "TO9") == 0)
+    {
+      SetThomsonFlavor(TO9);
     }
     else if (strcmp(var.value, "TO9+") == 0)
     {

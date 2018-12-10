@@ -21,6 +21,7 @@
 #include "debugger.h"
 #include "6809disasm.h"
 #include "6809cpu.h"
+#include "toemulator.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,8 +50,8 @@ void debugger_setMode(DebuggerMode mode)
 
 static void print_registers(char* string)
 {
-  sprintf(string, "A=%02X B=%02X X=%04X Y=%04X CC=%02X",
-      *dc6809_a & 0xFF, *dc6809_b & 0xFF, dc6809_x & 0xFFFF, dc6809_y & 0xFFFF, dc6809_cc & 0xFF);
+  sprintf(string, "A=%02X B=%02X X=%04X Y=%04X DP=%02X CC=%02X",
+      *dc6809_a & 0xFF, *dc6809_b & 0xFF, dc6809_x & 0xFFFF, dc6809_y & 0xFFFF, *dc6809_dp & 0xFF, dc6809_cc & 0xFF);
 }
 
 static void list_breakpoints()
@@ -75,6 +76,7 @@ static void list_breakpoints()
     printf("%04x\n", bp_write_mem[i]);
   }
 }
+
 static void clear_breakpoints()
 {
   memset(bp_pc, 0, BP_LENGTH);
@@ -155,10 +157,33 @@ static void read_debugger_command()
     {
       add_breakpoint(bp_write_mem, dbg_command + 9);
     }
+    // Read a memory location
+    else if (strncmp(dbg_command, "read ", 5) == 0)
+    {
+      unsigned short address = (unsigned short) strtol(dbg_command + 5, NULL, 16);
+      if (address == 0)
+      {
+        printf("Invalid address value\n");
+        return;
+      }
+      printf("ram[%04x] = %02x\n", address, Mgetc(address));
+    }
+    // Write a memory location
+    else if (strncmp(dbg_command, "write ", 6) == 0)
+    {
+      unsigned short address = (unsigned short) strtol(dbg_command + 6, NULL, 16);
+      char value = (char) strtol(dbg_command + 10, NULL, 16);
+      if (address == 0)
+      {
+        printf("Invalid address value\n");
+        return;
+      }
+      Mputc(address, value);
+    }
     // Unknown command
     else
     {
-      printf("???\n");
+      printf("Unknown command\n");
     }
   }
 }
