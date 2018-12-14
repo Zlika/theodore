@@ -607,12 +607,12 @@ static void Mputto(unsigned short a, char c)
         case 0xe7c5: port[0x05] = c; Timercontrol(); return; //controle timer
         case 0xe7c6: latch6846 = (latch6846 & 0xff) | ((c & 0xff) << 8); return;
         case 0xe7c7: latch6846 = (latch6846 & 0xff00) | (c & 0xff); return;
-        //6821 systeme: 2 ports 8 bits
-        //e7c8= registre de direction ou de donnees port A (6821 systeme)
-        //e7c9= registre de direction ou de donnees port B
-        //e7ca= registre de controle port A (CRA)
-        //e7cb= registre de controle port B (CRB)
         case 0xe7c9: port[0x09] = c; selectRambank(); return;
+        // Extension musique et jeux (Motorola 6821)
+        //e7cc= registre de direction ou de donnees port A (6821 systeme)
+        //e7cd= registre de direction ou de donnees port B
+        //e7ce= registre de controle port A (CRA)
+        //e7cf= registre de controle port B (CRB)
         case 0xe7cc: port[0x0c] = c; return;
         case 0xe7cd: if(port[0x0f] & 4) sound = c & MAX_SOUND_LEVEL; else port[0x0d] = c; return;
         case 0xe7ce: port[0x0e] = c; return; //registre controle position joysticks
@@ -711,6 +711,11 @@ static char Mgetto(unsigned short a)
         case 0xe7c6: return (timer6846 >> 11 & 0xff);
         case 0xe7c7: return (timer6846 >> 3 & 0xff);
         case 0xe7ca: return (videolinenumber < 200) ? 0 : 2; //non, registre de controle PIA
+        // Extension musique et jeux (Motorola 6821)
+        //e7cc= registre de direction ou de donnees port A (6821 systeme)
+        //e7cd= registre de direction ou de donnees port B
+        //e7ce= registre de controle port A (CRA)
+        //e7cf= registre de controle port B (CRB)
         case 0xe7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
         case 0xe7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
         case 0xe7ce: return 0x04;
