@@ -40,7 +40,7 @@ ndk-build
 
 A => Bouton "Action"
 
-B => Simule la frappe sur la touche 'B' du clavier (permet de démarrer la plupart des jeux sans avoir besoin d'un clavier)
+B => Simule la frappe d'une touche sur le clavier pour démarrer un jeu. TO8/TO8D/TO9+ : touche 'B' (BASIC 512), TO9 : touche 'D' (BASIC 128). Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilisé. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier.
 
 **Fonctionnalité de clavier virtuel :** les boutons Y/X de la manette permettent de faire défiler des chiffres/lettres (Y=défilement vers le bas, X=défilement vers le haut). La bouton "start" simule un appui sur la touche choisie. Pour les manettes sans boutons Y/X, le bouton "select" peut être aussi utilisé pour faire défiler les touches du clavier virtuel.
 L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A à Z) puis "Espace" puis "Entrée".

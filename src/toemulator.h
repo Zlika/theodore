@@ -81,6 +81,8 @@ int Run(int ncyclesmax);
 void Hardreset(void);
 // Sets the Thomson version emulated (default=TO8)
 void SetThomsonFlavor(ThomsonFlavor flavor);
+// Gets the currently emulated Thomson version
+ThomsonFlavor GetThomsonFlavor();
 
 // The following functions are used for libretro's save states feature.
 // Returns the amount of data required to serialize the whole state of the emulator.

@@ -334,7 +334,16 @@ static void update_input(void)
   {
     if (b)
     {
-      virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
+      // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
+      // and the 'D' key (Basic 128) on TO9
+      if (GetThomsonFlavor() == TO9)
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_d];
+      }
+      else
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
+      }
       keyboard(virtualkb_lastscancode, true);
       virtualkb_pressed = true;
     }

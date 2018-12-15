@@ -40,7 +40,7 @@ ndk-build
 
 A => "Fire" button
 
-B => Simulates a keystroke on the 'B' key of the keyboard (allows to start most games without the need for a keyboard)
+B => Simulates a keystroke on the keyboard to start a game. TO8/TO8D/TO9+: 'B' key (BASIC 512), TO9: 'D' key (BASIC 128). If the game does not start, then maybe another BASIC must be used. This feature allows to start most games without the need for a keyboard.
 
 **Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the start button simulates a keystroke on the selected key. On controllers without Y/X keys, select can also be used to roll the virtual keyboard up.
 The order of the keys in the virtual keyboard is: digits (0->9) then letters (A->Z) then "Space" then "Enter".

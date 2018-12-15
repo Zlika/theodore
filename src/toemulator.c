@@ -205,6 +205,11 @@ void SetThomsonFlavor(ThomsonFlavor flavor)
   }
 }
 
+ThomsonFlavor GetThomsonFlavor()
+{
+  return currentFlavor;
+}
+
 // Emulation du clavier TO8/TO9 ///////////////////////////////////////////////
 void keyboard(int scancode, bool down)
 {
