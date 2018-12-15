@@ -557,7 +557,7 @@ static void keyboard_cb(bool down, unsigned keycode,
   {
     keyboard(THOMSON_ACC, down);
   }
-  if (key_modifiers & RETROKMOD_CAPSLOCK)
+  if (keycode == RETROK_CAPSLOCK && (key_modifiers & RETROKMOD_CAPSLOCK))
   {
     keyboard(THOMSON_CAPSLOCK, down);
   }

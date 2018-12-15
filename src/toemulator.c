@@ -214,14 +214,17 @@ ThomsonFlavor GetThomsonFlavor()
 void keyboard(int scancode, bool down)
 {
   int i;
+  // Filter false key down events when the key was already down
+  if (down && !touche[scancode]) return;
   touche[scancode] = down ? 0x00 : 0x80;
-  if(touche[scancode]) //touche relachee
+  if (!down) //touche relachee
   {
-    //s'il reste une touche enfoncee ne rien faire
+    //s'il reste une touche enfoncee, ne rien faire
     for(i = 0; i < 0x50; i++) if(touche[i] == 0) return;
     //si toutes les touches sont relachees
     port[0x08] = 0x00; //bit 0 de E7C8 = 0 (toutes les touches relachees)
-    keyb_irqcount = 0; return;
+    keyb_irqcount = 0;
+    return;
   }
   //touche enfoncee
   if(scancode == 0x50) capslock = 1 - capslock; //capslock
