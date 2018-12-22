@@ -504,7 +504,7 @@ static bool load_file(const char *filename)
 {
   if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".k7"))
   {
-    LoadK7(filename);
+    LoadTape(filename);
   }
   else if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".fd"))
   {
@@ -610,7 +610,7 @@ bool retro_load_game_special(
 
 void retro_unload_game(void)
 {
-  UnloadK7();
+  UnloadTape();
   UnloadFloppy();
   UnloadMemo();
 }

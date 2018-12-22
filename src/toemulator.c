@@ -80,7 +80,7 @@ static int nsystbank;       //numero banque systeme (00-01)
 static int nctrlbank;       //numero banque controleur (00-03)
 //flags cartouche
 int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
-int carflags;        //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
+int carflags = 0;    //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
 //keyboard, joysticks, mouse
 static int touche[KEYBOARDKEY_MAX]; //etat touches to8d
 static int capslock;         //1=capslock, 0 sinon
@@ -427,13 +427,15 @@ void Joysemul(JoystickAxis axis, bool isOn)
   if(n > 0) {if(!isOn) joysposition |= n; else joysposition &= (~n);}
 }
 
-// Initialisation programme de l'ordinateur emule ////////////////////////////
+// Initialisation of the emulated computer ////////////////////////////////////
 void Initprog(void)
 {
   int i;
-  for(i = 0; i < KEYBOARDKEY_MAX; i++) touche[i] = 0x80; //touches relachees
-  joysposition = 0xff;                      //manettes au centre
-  joysaction = 0xc0;                        //boutons relaches
+  // keyboards's keys released
+  for(i = 0; i < KEYBOARDKEY_MAX; i++) touche[i] = 0x80;
+  // joystick centered and buttons released
+  joysposition = 0xff;
+  joysaction = 0xc0;
   carflags &= 0xec;
   Mputc = Mputto;
   Mgetc = Mgetto;
@@ -446,7 +448,7 @@ void Initprog(void)
   Reset6809();
 }
 
-// Patch de la rom ////////////////////////////////////////////////////////////
+// Patch of the ROM ///////////////////////////////////////////////////////////
 static void patch_rom(char rom_data[], int patch[])
 {
   int i, j, a, n;
@@ -459,7 +461,7 @@ static void patch_rom(char rom_data[], int patch[])
   }
 }
 
-// Hardreset de l'ordinateur emule ///////////////////////////////////////////
+// Hardreset of the emulated computer /////////////////////////////////////////
 void Hardreset(void)
 {
   unsigned int i;
@@ -474,11 +476,13 @@ void Hardreset(void)
     port[i] = 0;
   }
   port[0x09] = 0x0f; // RAM bank 0 selected
-  for(i = 0; i < sizeof(car); i++)
+  // Reset cartridge space only if no cartridge is present
+  if (carflags == 0)
   {
-    car[i] = 0;
+    memset(car, 0, CARTRIDGE_MEM_SIZE);
   }
-  //patch de la rom
+  RewindTape();
+  // Patch the ROM
   patch_rom(rom->basic, rom->basic_patch);
   patch_rom(rom->monitor, rom->monitor_patch);
   if (currentFlavor != TO9)

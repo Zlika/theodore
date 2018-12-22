@@ -205,21 +205,28 @@ void LoadSap(const char *filename)
   sap = sap_open(filename);
 }
 
-void UnloadK7(void)
+void UnloadTape(void)
 {
   if(fk7) {fclose(fk7); fk7 = NULL;}
 }
 
-void LoadK7(const char *filename)
+void LoadTape(const char *filename)
 {
-  UnloadK7();
+  UnloadTape();
   if(filename[0] == '\0') return;
   fk7 = fopen(filename, "rb+");
-  if(fk7 == NULL) return;
+}
+
+void RewindTape(void)
+{
+  if (fk7 != NULL)
+  {
+    if (fseek(fk7, 0, SEEK_SET)) UnloadTape();
+  }
 }
 
 // Tape drive: read a byte
-static void Readbytek7(void)
+static void ReadByteTape(void)
 {
   int byte = 0;
   if(fk7 == NULL) {Initprog(); return;}
@@ -227,14 +234,14 @@ static void Readbytek7(void)
   if(byte == EOF)
   {
     Initprog();
-    if (fseek(fk7, 0, SEEK_SET)) UnloadK7();
+    RewindTape();
     return;
   }
   A = byte; Mputc(0x2045, byte);
 }
 
 // Tape drive: write a byte
-static void Writebytek7(void)
+static void WriteByteTape(void)
 {
   if(fk7 == NULL) {Initprog(); return;}
   if(k7protection) {Initprog(); return;}
@@ -257,7 +264,8 @@ void LoadMemo(const char *filename)
   if(fp == NULL) {UnloadMemo(); return;}
   // Loading
   carsize = 0;
-  while(((c = fgetc(fp)) != EOF) && (carsize < 0x10000)) car[carsize++] = c;
+  memset(car, 0, CARTRIDGE_MEM_SIZE);
+  while(((c = fgetc(fp)) != EOF) && (carsize < CARTRIDGE_MEM_SIZE)) car[carsize++] = c;
   fclose(fp);
   for(i = 0; i < 0xc000; i++) ram[i] = -((i & 0x80) >> 7);
   cartype = 0; // cartridge <= 16 Ko
@@ -296,8 +304,8 @@ void RunIoOpcode(int opcode)
     case 0x14: Readsector(); break;      // read floppy sector
     case 0x15: Writesector(); break;     // write floppy sector
     case 0x18: Formatdisk(); break;      // format floppy
-    case 0x42: Readbytek7(); break;      // read tape byte
-    case 0x45: Writebytek7(); break;     // write tape byte
+    case 0x42: ReadByteTape(); break;      // read tape byte
+    case 0x45: WriteByteTape(); break;     // write tape byte
     case 0x4b: Readpenxy(0); break;      // read light pen position
     case 0x4e: Readpenxy(1); break;      // read mouse position
     case 0x51: Print(); break;           // print a character
