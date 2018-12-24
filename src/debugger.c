@@ -50,8 +50,9 @@ void debugger_setMode(DebuggerMode mode)
 
 static void print_registers(char* string)
 {
-  sprintf(string, "A=%02X B=%02X X=%04X Y=%04X DP=%02X CC=%02X",
-      *dc6809_a & 0xFF, *dc6809_b & 0xFF, dc6809_x & 0xFFFF, dc6809_y & 0xFFFF, *dc6809_dp & 0xFF, dc6809_cc & 0xFF);
+  sprintf(string, "A=%02X B=%02X X=%04X Y=%04X U=%04X S=%04X DP=%02X CC=%02X",
+      *dc6809_a & 0xFF, *dc6809_b & 0xFF, dc6809_x & 0xFFFF, dc6809_y & 0xFFFF,
+      dc6809_u & 0xFFFF, dc6809_s & 0xFFFF, *dc6809_dp & 0xFF, dc6809_cc & 0xFF);
 }
 
 static void list_breakpoints()
