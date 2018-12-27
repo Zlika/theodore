@@ -77,7 +77,7 @@ static bool virtualkb_pressed = false;
 static int virtualkb_lastscancode = 0;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9+" },
+    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
@@ -334,7 +334,16 @@ static void update_input(void)
   {
     if (b)
     {
-      virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
+      // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
+      // and the 'D' key (Basic 128) on TO9
+      if (GetThomsonFlavor() == TO9)
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_d];
+      }
+      else
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
+      }
       keyboard(virtualkb_lastscancode, true);
       virtualkb_pressed = true;
     }
@@ -396,6 +405,10 @@ static void check_variables(void)
     else if (strcmp(var.value, "TO8D") == 0)
     {
       SetThomsonFlavor(TO8D);
+    }
+    else if (strcmp(var.value, "TO9") == 0)
+    {
+      SetThomsonFlavor(TO9);
     }
     else if (strcmp(var.value, "TO9+") == 0)
     {
@@ -491,7 +504,7 @@ static bool load_file(const char *filename)
 {
   if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".k7"))
   {
-    LoadK7(filename);
+    LoadTape(filename);
   }
   else if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".fd"))
   {
@@ -544,7 +557,7 @@ static void keyboard_cb(bool down, unsigned keycode,
   {
     keyboard(THOMSON_ACC, down);
   }
-  if (key_modifiers & RETROKMOD_CAPSLOCK)
+  if (keycode == RETROK_CAPSLOCK && (key_modifiers & RETROKMOD_CAPSLOCK))
   {
     keyboard(THOMSON_CAPSLOCK, down);
   }
@@ -597,7 +610,7 @@ bool retro_load_game_special(
 
 void retro_unload_game(void)
 {
-  UnloadK7();
+  UnloadTape();
   UnloadFloppy();
   UnloadMemo();
 }

@@ -37,14 +37,14 @@ unsigned short dc6809_pc; //program counter
 static short dc6809_d;    //D register
 short dc6809_x;    //X register
 short dc6809_y;    //Y register
-static short dc6809_u;    //U register
-static short dc6809_s;    //S register
+short dc6809_u;    //U register
+short dc6809_s;    //S register
 static short dc6809_da;   //direct address (DP register = high byte of direct address)
 
 //pointers to register bytes
 char *dc6809_a;    //pointer to A register
 char *dc6809_b;    //pointer to B register
-static char *dc6809_dp;   //pointer to DP register
+char *dc6809_dp;   //pointer to DP register
 static char *dc6809_dd;   //pointer to direct address low byte
 static char *dc6809_pch;  //pointer to PC low byte
 static char *dc6809_pcl;  //pointer to PC high byte

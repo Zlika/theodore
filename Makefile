@@ -268,7 +268,7 @@ else ifneq (,$(findstring windows_msvc2017,$(platform)))
 		LIBS += kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib
 	else ifneq (,$(findstring uwp,$(PlatformSuffix)))
 		WinPartition = uwp
-		MSVC2017CompileFlags = -DWINAPI_FAMILY=WINAPI_FAMILY_APP -DWINDLL -D_UNICODE -DUNICODE -DWRL_NO_DEFAULT_LIB
+		MSVC2017CompileFlags = -DWINAPI_FAMILY=WINAPI_FAMILY_APP -D_WINDLL -D_UNICODE -DUNICODE -D__WRL_NO_DEFAULT_LIB__ -EHsc
 		LDFLAGS += -APPCONTAINER -NXCOMPAT -DYNAMICBASE -MANIFEST:NO -LTCG -OPT:REF -SUBSYSTEM:CONSOLE -MANIFESTUAC:NO -OPT:ICF -ERRORREPORT:PROMPT -NOLOGO -TLBID:1 -DEBUG:FULL -WINMD:NO
 		LIBS += WindowsApp.lib
 	endif
@@ -338,6 +338,10 @@ else ifneq (,$(findstring windows_msvc2017,$(platform)))
 	INCLUDE := $(shell IFS=$$'\n'; cygpath -w "$(VcCompilerToolsDir)/include")
 	LIB := $(shell IFS=$$'\n'; cygpath -w "$(VcCompilerToolsDir)/lib/$(TargetArchMoniker)")
 
+	ifneq (,$(findstring uwp,$(PlatformSuffix)))
+		LIB := $(shell IFS=$$'\n'; cygpath -w "$(LIB)/store")
+	endif
+
 	export INCLUDE := $(INCLUDE);$(WindowsSDKSharedIncludeDir);$(WindowsSDKUCRTIncludeDir);$(WindowsSDKUMIncludeDir)
 	export LIB := $(LIB);$(WindowsSDKUCRTLibDir);$(WindowsSDKUMLibDir)
 	TARGET := $(TARGET_NAME)_libretro.dll
@@ -393,6 +397,21 @@ else ifeq ($(platform), switch)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).$(EXT)
 	include $(LIBTRANSISTOR_HOME)/libtransistor.mk
 	STATIC_LINKING=1
+	DISABLE_GCC_SECURITY_FLAGS = 1
+
+# Nintendo Switch (libnx)
+else ifeq ($(platform), libnx)
+	include $(DEVKITPRO)/libnx/switch_rules
+	EXT=a
+	TARGET := $(TARGET_NAME)_libretro_$(platform).$(EXT)
+	DEFINES := -DSWITCH=1 -U__linux__ -U__linux -DRARCH_INTERNAL
+	CFLAGS := $(DEFINES) -g -O3 -fPIE -I$(LIBNX)/include/ -ffunction-sections -fdata-sections -ftls-model=local-exec -Wl,--allow-multiple-definition -specs=$(LIBNX)/switch.specs
+	CFLAGS += $(INCDIRS)
+	CFLAGS += $(INCLUDE)  -D__SWITCH__ -DHAVE_LIBNX -march=armv8-a -mtune=cortex-a57 -mtp=soft
+	CXXFLAGS := $(ASFLAGS) $(CFLAGS) -fno-rtti -std=gnu++11
+	CFLAGS += -std=gnu11
+	STATIC_LINKING = 1
+	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # ARM
 else ifneq (,$(findstring armv,$(platform)))

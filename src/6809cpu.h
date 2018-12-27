@@ -38,6 +38,10 @@ extern char  dc6809_cc;
 extern short dc6809_x;
 //Y register
 extern short dc6809_y;
+//U register
+extern short dc6809_u;
+//S register
+extern short dc6809_s;
 //Program Counter
 extern unsigned short dc6809_pc;
 
@@ -45,6 +49,8 @@ extern unsigned short dc6809_pc;
 extern char *dc6809_a;
 //pointer to B register
 extern char *dc6809_b;
+//pointer to DP register
+extern char *dc6809_dp;
 
 //irq trigger  (0=disabled, 1=enabled)
 extern int dc6809_irq;

@@ -36,15 +36,17 @@ void LoadFd(const char *filename);
 // Load a floppy disk (sap format)
 void LoadSap(const char *filename);
 // Load a tape
-void LoadK7(const char *filename);
+void LoadTape(const char *filename);
 // Load a memo7 cartridge
 void LoadMemo(const char *filename);
 // Unload the floppy disk
 void UnloadFloppy(void);
 // Unload the tape
-void UnloadK7(void);
+void UnloadTape(void);
 // Unload the cartridge
 void UnloadMemo(void);
+// Rewind the tape
+void RewindTape(void);
 
 // Run an input/output related opcode.
 // These "wrong" opcodes come from the patching of the ROM

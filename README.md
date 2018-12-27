@@ -1,7 +1,7 @@
 [:gb:](https://github.com/Zlika/theodore/blob/master/README.md)
 [:fr:](https://github.com/Zlika/theodore/blob/master/README-FR.md)
 
-Theodore - Thomson TO8/TO8D emulator
+Theodore - Thomson TO8/TO9 emulator
 ====================================
 
 [![Build status](https://travis-ci.org/Zlika/theodore.svg?branch=master)](https://travis-ci.org/Zlika/theodore)
@@ -9,7 +9,7 @@ Theodore - Thomson TO8/TO8D emulator
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-This is a [libretro](https://github.com/libretro) core for emulation of the [Thomson TO8/TO8D computers](https://en.wikipedia.org/wiki/Thomson_TO8). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator.
+This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator, and currently supports the following models: TO8, TO8D, TO9, TO9+.
 
 ### How to install
 
@@ -40,7 +40,7 @@ ndk-build
 
 A => "Fire" button
 
-B => Simulates a keystroke on the 'B' key of the keyboard (allows to start most games without the need for a keyboard)
+B => Simulates a keystroke on the keyboard to start a game. TO8/TO8D/TO9+: 'B' key (BASIC 512), TO9: 'D' key (BASIC 128). If the game does not start, then maybe another BASIC must be used. This feature allows to start most games without the need for a keyboard.
 
 **Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the start button simulates a keystroke on the selected key. On controllers without Y/X keys, select can also be used to roll the virtual keyboard up.
 The order of the keys in the virtual keyboard is: digits (0->9) then letters (A->Z) then "Space" then "Enter".
@@ -68,7 +68,7 @@ The emulator can read the following file formats: *.fd and *.sap (floppy disks),
 
 ### Thomson flavors
 
-By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to a T08D computer.
+By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to other models (currently: TO8, TO8D, TO9, TO9+).
 
 ### Save states
 
@@ -102,3 +102,5 @@ From the command-line, the following commands are then available:
 * `bp pc xxxx` (with xxxx an hexadecimal number): add a breakpoint at for the given Program Counter value.
 * `bp read xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator reads memory at the given address.
 * `bp write xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator writes memory at the given address.
+* `read xxxx` (with xxxx an hexadecimal number): read the value at the given memory address.
+* `write xxxx yy` (with xxxx and yy hexadecimal numbers): write the value yy at memory address xxxx.

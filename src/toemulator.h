@@ -65,7 +65,7 @@ typedef enum { JOY0_UP, JOY0_DOWN, JOY0_LEFT, JOY0_RIGHT,
                JOY1_UP, JOY1_DOWN, JOY1_LEFT, JOY1_RIGHT,
                JOY0_FIRE, JOY1_FIRE } JoystickAxis;
 
-typedef enum { TO8, TO8D, TO9P } ThomsonFlavor;
+typedef enum { TO8, TO8D, TO9, TO9P } ThomsonFlavor;
 
 // Returns the current level of the speaker as a signed 16-bit integer
 int16_t GetAudioSample();
@@ -81,6 +81,8 @@ int Run(int ncyclesmax);
 void Hardreset(void);
 // Sets the Thomson version emulated (default=TO8)
 void SetThomsonFlavor(ThomsonFlavor flavor);
+// Gets the currently emulated Thomson version
+ThomsonFlavor GetThomsonFlavor();
 
 // The following functions are used for libretro's save states feature.
 // Returns the amount of data required to serialize the whole state of the emulator.

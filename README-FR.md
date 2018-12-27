@@ -1,7 +1,7 @@
 [:gb:](https://github.com/Zlika/theodore/blob/master/README.md)
 [:fr:](https://github.com/Zlika/theodore/blob/master/README-FR.md)
 
-Theodore - Emulateur Thomson TO8/TO8D
+Theodore - Emulateur Thomson TO8/TO9
 =====================================
 
 [![Build status](https://travis-ci.org/Zlika/theodore.svg?branch=master)](https://travis-ci.org/Zlika/theodore)
@@ -9,7 +9,7 @@ Theodore - Emulateur Thomson TO8/TO8D
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson TO8/TO8D](https://fr.wikipedia.org/wiki/Thomson_TO8). Cet émulateur est dérivé de l'émulateur [DCTO8D](http://dcto8.free.fr/) de Daniel Coulom.
+Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson](https://fr.wikipedia.org/wiki/Gamme_MOTO). Cet émulateur est dérivé de l'émulateur [DCTO8D](http://dcto8.free.fr/) de Daniel Coulom, et supporte actuellement les modèles suivants: TO8, TO8D, TO9, TO9+.
 
 ### Instructions d'installation
 
@@ -40,7 +40,7 @@ ndk-build
 
 A => Bouton "Action"
 
-B => Simule la frappe sur la touche 'B' du clavier (permet de démarrer la plupart des jeux sans avoir besoin d'un clavier)
+B => Simule la frappe d'une touche sur le clavier pour démarrer un jeu. TO8/TO8D/TO9+ : touche 'B' (BASIC 512), TO9 : touche 'D' (BASIC 128). Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilisé. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier.
 
 **Fonctionnalité de clavier virtuel :** les boutons Y/X de la manette permettent de faire défiler des chiffres/lettres (Y=défilement vers le bas, X=défilement vers le haut). La bouton "start" simule un appui sur la touche choisie. Pour les manettes sans boutons Y/X, le bouton "select" peut être aussi utilisé pour faire défiler les touches du clavier virtuel.
 L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A à Z) puis "Espace" puis "Entrée".
@@ -68,7 +68,7 @@ L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquet
 
 ### Variantes Thomson émulées
 
-Par défaut, un ordinateur T08 est émulé. En utilisant l'option "Thomson flavor", il est possible d'émuler un TO8D.
+Par défaut, un ordinateur T08 est émulé. En utilisant l'option "Thomson flavor", il est possible d'émuler d'autres versions (actuellement : TO8, TO8D, TO9, TO9+).
 
 ### Sauvegardes instantanées
 
@@ -102,3 +102,5 @@ Depuis la ligne de commande, les commandes suivantes sont ensuite disponibles :
 * `bp pc xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt pour la valeur donnée du registre Program Counter.
 * `bp read xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de la lecture à l'adresse donnée.
 * `bp write xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de l'écriture à l'adresse donnée.
+* `read xxxx` (avec xxxx un nombre hexadécimal): lit la valeur en mémoire à l'adresse données.
+* `write xxxx yy` (avec xxxx et yy des nombres hexadécimaux): écrit la valeur yy en mémoire à l'adresse xxxx.
