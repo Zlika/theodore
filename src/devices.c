@@ -237,7 +237,8 @@ static void ReadByteTape(void)
     RewindTape();
     return;
   }
-  A = byte; Mputc(0x2045, byte);
+  // B register will be popped from the stack and should contain the read byte
+  Mputc(dc6809_s+4, byte);
 }
 
 // Tape drive: write a byte
@@ -245,8 +246,8 @@ static void WriteByteTape(void)
 {
   if(fk7 == NULL) {Initprog(); return;}
   if(k7protection) {Initprog(); return;}
-  if(fputc(A, fk7) == EOF) {Initprog(); return;}
-  Mputc(0x2045, 0);
+  // B register contains the byte to write
+  if(fputc(B, fk7) == EOF) {Initprog(); return;}
 }
 
 void UnloadMemo(void)

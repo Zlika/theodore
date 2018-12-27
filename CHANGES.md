@@ -4,6 +4,7 @@ Next Release
 * On TO9, the 'B' button of the gamepad simulates a keystroke on the 'D' key of the keyboard (BASIC 128), instead of the 'B' key for TO8/TO8D/TO9+ (BASIC 512).
 * Fix Caps Lock emulation.
 * Fix cartridge/tape no longer working after reset or change of Thomson version.
+* Fix tape drive emulation.
 
 Release 1.4 (2018/11/24)
 ===========
