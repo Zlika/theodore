@@ -1056,7 +1056,8 @@ static void Reglist(int type)
                          "A,","B,","CC,","DP,","?,","?,","?,","?,"};
   param[0] = 0;
   c = Mgetc(pc++) & 0xff;
-  sprintf(w, "%02X", c); strcat(hexa, w);
+  sprintf(w, "%02X", c);
+  strcat(hexa, w);
   switch(type)
   {
     case 0: sprintf(param, "%s%s", r[(c & 0xf0) >> 4], r[c & 0x0f]); break;
@@ -1094,7 +1095,7 @@ static void Indexed()
     case 0x20: reg = 'Y'; break;
     case 0x40: reg = 'U'; break;
     case 0x60: reg = 'S'; break;
-    default : reg = ' ';
+    default :  reg = ' ';
   }
   switch(x & 0x9f)
   {
@@ -1172,18 +1173,9 @@ int dasm6809(int address, char *string)
     case REG4: Reglist(4); break;
     default: param[0] = 0; break;
   }
-  // write disassembled line
-  strcpy(string, hexa);
-  for(i = strlen(string); i < 14; i++) strcat(string, " ");
-  strcat(string, mnemonique[instruction[code] >> 16]);
-  for(i = strlen(string); i < 19; i++) strcat(string, " ");
-  strcat(string, param);
   n += instruction[code] & 0xff;
-  if(n == 0) strcpy(w, "?");
-  if(n > 0) sprintf(w, "%i", n);
-  if(n > 50) sprintf(w, "%i/%i", n / 10, n - 10 * (n / 10));
-  for(i = strlen(string); i < 29 - strlen(w); i++) strcat(string, " ");
-  strcat(string, w);
+  if (n == 0) strcpy(w, "?"); else sprintf(w, "%i", n);
+  sprintf(string, "%-13s %-5s %-13s %2s", hexa, mnemonique[instruction[code] >> 16], param, w);
   // return address of next instruction
-  return(pc);
+  return pc;
 }

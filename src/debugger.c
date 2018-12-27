@@ -167,7 +167,7 @@ static void read_debugger_command()
         printf("Invalid address value\n");
         return;
       }
-      printf("ram[%04x] = %02x\n", address, Mgetc(address));
+      printf("ram[%04x] = %02x\n", address, Mgetc(address) & 0xFF);
     }
     // Write a memory location
     else if (strncmp(dbg_command, "write ", 6) == 0)
