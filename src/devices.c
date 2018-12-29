@@ -305,8 +305,8 @@ void RunIoOpcode(int opcode)
     case 0x14: Readsector(); break;      // read floppy sector
     case 0x15: Writesector(); break;     // write floppy sector
     case 0x18: Formatdisk(); break;      // format floppy
-    case 0x42: ReadByteTape(); break;      // read tape byte
-    case 0x45: WriteByteTape(); break;     // write tape byte
+    case 0x42: ReadByteTape(); break;    // read tape byte
+    case 0x45: WriteByteTape(); break;   // write tape byte
     case 0x4b: Readpenxy(0); break;      // read light pen position
     case 0x4e: Readpenxy(1); break;      // read mouse position
     case 0x51: Print(); break;           // print a character
