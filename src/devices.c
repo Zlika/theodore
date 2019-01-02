@@ -24,7 +24,7 @@
 
 #include "6809cpu.h"
 #include "sap.h"
-#include "toemulator.h"
+#include "motoemulator.h"
 
 #define SECTOR_SIZE      256  // Size in bytes of a double density sector
 #define NB_TRACKS         80  // Number of tracks in a floppy

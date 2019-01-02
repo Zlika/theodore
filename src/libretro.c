@@ -29,7 +29,7 @@
 #include "devices.h"
 #include "keymap.h"
 #include "sap.h"
-#include "toemulator.h"
+#include "motoemulator.h"
 #include "video.h"
 
 #define PACKAGE_NAME "theodore"
@@ -77,7 +77,7 @@ static bool virtualkb_pressed = false;
 static int virtualkb_lastscancode = 0;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+" },
+    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+|MO5" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
@@ -204,7 +204,7 @@ void retro_get_system_info(struct retro_system_info *info)
   memset(info, 0, sizeof(*info));
   info->library_name = PACKAGE_NAME;
   info->library_version = PACKAGE_VERSION;
-  info->valid_extensions = "fd|sap|k7|m7|rom";
+  info->valid_extensions = "fd|sap|k7|m7|m5|rom";
   info->need_fullpath = true;
   info->block_extract = false;
 }
@@ -414,6 +414,10 @@ static void check_variables(void)
     {
       SetThomsonFlavor(TO9P);
     }
+    else if (strcmp(var.value, "MO5") == 0)
+    {
+      SetThomsonFlavor(MO5);
+    }
   }
 #ifdef THEODORE_DASM
   var.key = PACKAGE_NAME"_disassembler";
@@ -511,7 +515,8 @@ static bool load_file(const char *filename)
     LoadFd(filename);
   }
   else if (strlen(filename) > 4 && (streq_nocase(filename + strlen(filename) - 4, ".rom")
-      || streq_nocase(filename + strlen(filename) - 3, ".m7")))
+      || streq_nocase(filename + strlen(filename) - 3, ".m7")
+      || streq_nocase(filename + strlen(filename) - 3, ".m5")))
   {
     LoadMemo(filename);
   }

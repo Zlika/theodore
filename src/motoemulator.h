@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Thomson TO8/TO9 emulator */
+/* Thomson MO/TO emulator */
 
 #ifndef __TOEMULATOR_H
 #define __TOEMULATOR_H
@@ -65,7 +65,7 @@ typedef enum { JOY0_UP, JOY0_DOWN, JOY0_LEFT, JOY0_RIGHT,
                JOY1_UP, JOY1_DOWN, JOY1_LEFT, JOY1_RIGHT,
                JOY0_FIRE, JOY1_FIRE } JoystickAxis;
 
-typedef enum { TO8, TO8D, TO9, TO9P } ThomsonFlavor;
+typedef enum { TO8, TO8D, TO9, TO9P, MO5 } ThomsonFlavor;
 
 // Returns the current level of the speaker as a signed 16-bit integer
 int16_t GetAudioSample();

@@ -21,7 +21,7 @@
 #include "debugger.h"
 #include "6809disasm.h"
 #include "6809cpu.h"
-#include "toemulator.h"
+#include "motoemulator.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "toemulator.h"
+#include "motoemulator.h"
 #include "video.h"
 
 #define NB_VIDEO_MODES 5
