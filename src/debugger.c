@@ -38,10 +38,13 @@ static char dbg_command[DBG_ARRAY_LENGTH] = { 0 };
 
 // Breakpoints on the values of the program counter
 static unsigned short bp_pc[BP_LENGTH] = { 0 };
+static int bp_pc_numitems = 0;
 // Breakpoints on memory read addresses
 static unsigned short bp_read_mem[BP_LENGTH] = { 0 };
+static int bp_read_mem_numitems = 0;
 // Breakpoints on memory write addresses
 static unsigned short bp_write_mem[BP_LENGTH] = { 0 };
+static int bp_write_mem_numitems = 0;
 
 void debugger_setMode(DebuggerMode mode)
 {
@@ -59,21 +62,18 @@ static void list_breakpoints()
 {
   int i;
   printf("Breakpoints at PC addresses:\n");
-  for (i = 0; i < BP_LENGTH; i++)
+  for (i = 0; i < bp_pc_numitems; i++)
   {
-    if (bp_pc[i] == 0) break;
     printf("%04x\n", bp_pc[i]);
   }
   printf("Breakpoints on memory read addresses:\n");
-  for (i = 0; i < BP_LENGTH; i++)
+  for (i = 0; i < bp_read_mem_numitems; i++)
   {
-    if (bp_read_mem[i] == 0) break;
     printf("%04x\n", bp_read_mem[i]);
   }
   printf("Breakpoints on memory write addresses:\n");
-  for (i = 0; i < BP_LENGTH; i++)
+  for (i = 0; i < bp_write_mem_numitems; i++)
   {
-    if (bp_write_mem[i] == 0) break;
     printf("%04x\n", bp_write_mem[i]);
   }
 }
@@ -81,31 +81,34 @@ static void list_breakpoints()
 static void clear_breakpoints()
 {
   memset(bp_pc, 0, BP_LENGTH);
+  bp_pc_numitems = 0;
   memset(bp_read_mem, 0, BP_LENGTH);
+  bp_read_mem_numitems = 0;
   memset(bp_write_mem, 0, BP_LENGTH);
+  bp_write_mem_numitems = 0;
 }
 
-static void add_breakpoint(unsigned short *bp_list, char *value)
+static void add_breakpoint(unsigned short *bp_list, int *bp_num_items, char *value)
 {
-  int i;
-  unsigned short val = (unsigned short) strtol(value, NULL, 16);
-  if (val == 0)
+  char *endptr;
+  unsigned short val = (unsigned short) strtol(value, &endptr, 16);
+  if (val == 0 && *endptr != '\n')
   {
     printf("Invalid address value\n");
     return;
   }
-  for (i  = 0; i < BP_LENGTH; i++)
+  if (*bp_num_items < BP_LENGTH)
   {
-    if (bp_list[i] == 0)
-    {
-      bp_list[i] = val;
-      break;
-    }
+    bp_list[(*bp_num_items)++] = val;
   }
 }
 
 static void read_debugger_command()
 {
+  char *endptr = NULL;
+  unsigned short address;
+  char value;
+
   while (fgets(dbg_command, DBG_ARRAY_LENGTH, stdin) != NULL)
   {
     // Continue to next opcode
@@ -146,23 +149,23 @@ static void read_debugger_command()
     // Add a breakpoint at the given program address (in hex)
     else if (strncmp(dbg_command, "bp pc ", 6) == 0)
     {
-      add_breakpoint(bp_pc, dbg_command + 6);
+      add_breakpoint(bp_pc, &bp_pc_numitems, dbg_command + 6);
     }
     // Add a breakpoint when reading at the given address (in hex)
     else if (strncmp(dbg_command, "bp read ", 8) == 0)
     {
-      add_breakpoint(bp_read_mem, dbg_command + 8);
+      add_breakpoint(bp_read_mem, &bp_read_mem_numitems, dbg_command + 8);
     }
     // Add a breakpoint when writing at the givent address (in hex)
     else if (strncmp(dbg_command, "bp write ", 9) == 0)
     {
-      add_breakpoint(bp_write_mem, dbg_command + 9);
+      add_breakpoint(bp_write_mem, &bp_write_mem_numitems, dbg_command + 9);
     }
     // Read a memory location
     else if (strncmp(dbg_command, "read ", 5) == 0)
     {
-      unsigned short address = (unsigned short) strtol(dbg_command + 5, NULL, 16);
-      if (address == 0)
+      address = (unsigned short) strtol(dbg_command + 5, &endptr, 16);
+      if (address == 0 && *endptr != '\n')
       {
         printf("Invalid address value\n");
         return;
@@ -172,11 +175,16 @@ static void read_debugger_command()
     // Write a memory location
     else if (strncmp(dbg_command, "write ", 6) == 0)
     {
-      unsigned short address = (unsigned short) strtol(dbg_command + 6, NULL, 16);
-      char value = (char) strtol(dbg_command + 10, NULL, 16);
-      if (address == 0)
+      address = (unsigned short) strtol(dbg_command + 6, &endptr, 16);
+      if (address == 0 && *endptr != '\n')
       {
         printf("Invalid address value\n");
+        return;
+      }
+      value = (char) strtol(dbg_command + 10, &endptr, 16);
+      if (value == 0 && *endptr != '\n')
+      {
+        printf("Invalid value\n");
         return;
       }
       Mputc(address, value);
@@ -189,10 +197,10 @@ static void read_debugger_command()
   }
 }
 
-static bool check_breakpoint(unsigned short *bp_list, unsigned short address)
+static bool check_breakpoint(unsigned short *bp_list, int bp_list_numitems, unsigned short address)
 {
   int i = 0;
-  while (i < BP_LENGTH && bp_list[i] != 0)
+  while (i < bp_list_numitems)
   {
     if (bp_list[i] == address)
     {
@@ -207,7 +215,7 @@ void debug(unsigned short address)
 {
   if (dbg_mode != DEBUG_DISABLED)
   {
-    if (check_breakpoint(bp_pc, address))
+    if (check_breakpoint(bp_pc, bp_pc_numitems, address))
     {
       printf("Breakpoint at PC=%04x\n", address);
       debugger_setMode(DEBUG_STEP);
@@ -229,7 +237,8 @@ static void debug_mem(unsigned short address, bool is_read)
 {
   if (dbg_mode != DEBUG_DISABLED)
   {
-    if (check_breakpoint(is_read ? bp_read_mem : bp_write_mem, address))
+    if (is_read ? check_breakpoint(bp_read_mem, bp_read_mem_numitems, address)
+                : check_breakpoint(bp_write_mem, bp_write_mem_numitems, address))
     {
       printf("Breakpoint: memory %s at %04x\n", is_read ? "read" : "write", address);
       // If in RUN mode, print the current instruction
