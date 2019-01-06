@@ -1,7 +1,7 @@
 /*
  * This file is part of theodore (https://github.com/Zlika/theodore),
- * a Thomson emulator based on Daniel Coulom's DCTO8D emulator
- * (http://dcto8.free.fr/).
+ * a Thomson emulator based on Daniel Coulom's DCTO8D/DCTO9P/DCMO5
+ * emulators (http://dcmoto.free.fr/).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -233,6 +233,10 @@ void keyboard(int scancode, bool down)
   // Filter false key down events when the key was already down
   if (down && !touche[scancode]) return;
   touche[scancode] = down ? 0x00 : 0x80;
+  if (currentFlavor == MO5)
+  {
+    return;
+  }
   if (!down) //touche relachee
   {
     //s'il reste une touche enfoncee, ne rien faire
@@ -293,7 +297,11 @@ static void selectVideoRamTo(void)
 
 static void selectVideoRamMo(void)
 {
-  ramvideo = ram + ((port[0] & 1) << 13);
+  nvideopage = port[0] & 1;
+  // The "video" data (either from RAMA or RAMB) is mapped in memory at 0x0000-0x1FFF
+  ramvideo = ram + (nvideopage << 13);
+  // The "monitor" software is mapped in memory starting at address 0xf000
+  romsys = rom->monitor - 0xf000;
   bordercolor = (port[0] >> 1) & 0x0f;
 }
 
@@ -428,36 +436,28 @@ static void Palettecolor(char c)
   }
 }
 
-// Signaux de synchronisation ligne et trame /////////////////////////////////
-static int InilnTo(void)
-{//11 microsecondes - 41 microsecondes - 12 microsecondes
+// Line sync signal //////////////////////////////////////////////////////////
+static int Iniln(void)
+{
+  // Duration of 1 line = 64 microseconds.
+  // The useful part of the screen (working window) represents a zone of
+  // 40 microseconds wide, surrounded by 2 unused zones (frame) of 12 microseconds each.
+  // 11 microsecondes - 41 microsecondes - 12 microsecondes
   if(videolinecycle < 11) return 0;
   if(videolinecycle > 51) return 0;
   return 0x20;
 }
 
-static int InilnMo(void)
-{//11 microsecondes - 41 microsecondes - 12 microsecondes
- if(videolinecycle < 23) return 0;
- return 0x20;
-}
-
-static int InitnTo(void)
-{//debut a 12 microsecondes ligne 56, fin a 51 microsecondes ligne 255
+// Frame sync signal /////////////////////////////////////////////////////////
+static int Initn(void)
+{
+  // The useful part of the screen (working window) is composed of 200 lines of 64 microseconds.
+  // It starts at 12 microsecondes line 56, and ends at 51 microsecondes line 255.
   if(videolinenumber < 56) return 0;
   if(videolinenumber > 255) return 0;
   if(videolinenumber == 56) if(videolinecycle < 12) return 0;
   if(videolinenumber == 255) if(videolinecycle > 50) return 0;
   return 0x80;
-}
-
-static int InitnMo(void)
-{//debut à 12 microsecondes ligne 56, fin à 51 microsecondes ligne 255
- if(videolinenumber < 56) return 0;
- if(videolinenumber > 255) return 0;
- if(videolinenumber == 56) if (videolinecycle < 24) return 0;
- if(videolinenumber == 255) if (videolinecycle > 62) return 0;
- return 0x80;
 }
 
 // Joystick emulation ////////////////////////////////////////////////////////
@@ -493,27 +493,30 @@ void Initprog(void)
   joysposition = 0xff;
   joysaction = 0xc0;
   carflags &= 0xec;
+
+  SetVideoMode(VIDEO_320X16);
+  ramuser = ram - 0x2000;
+
   if (currentFlavor != MO5)
   {
     Mputc = MputTo;
     Mgetc = MgetTo;
     selectVideoRam = selectVideoRamTo;
     selectRomBank = selectRomBankTo;
+    videopage_bordercolor(port[0x1d]);
+    port[0x09] = 0x0f; // RAM bank 0 selected
+    selectRamBankTo();
   }
   else
   {
+    SetVideoMode(VIDEO_320_16_MO5);
+    pagevideo = ram;
     Mputc = MputMo;
     Mgetc = MgetMo;
     selectVideoRam = selectVideoRamMo;
     selectRomBank = selectRomBankMo;
   }
-  SetVideoMode(VIDEO_320X16);
-  ramuser = ram - 0x2000;
-  if (currentFlavor != MO5)
-  {
-    videopage_bordercolor(port[0x1d]);
-    selectRamBankTo();
-  }
+
   selectVideoRam();
   selectRomBank();
   Reset6809();
@@ -565,7 +568,6 @@ void Hardreset(void)
   {
     port[i] = 0;
   }
-  port[0x09] = 0x0f; // RAM bank 0 selected
   // Reset cartridge space only if no cartridge is present
   if (carflags == 0)
   {
@@ -589,6 +591,7 @@ void Hardreset(void)
   videolinecycle = 0;
   videolinenumber = 0;
   vblnumber = 0;
+  InitPalette();
   Initprog();
   latch6846 = 65535;
   timer6846 = 65535;
@@ -633,11 +636,7 @@ int Run(int ncyclesmax)
         videolinenumber -= 312;
         if(++vblnumber >= VBL_NUMBER_MAX) vblnumber = 0;
       }
-      displayflag = 0;
-      if(vblnumber == 0)
-        if(videolinenumber > 47)
-          if(videolinenumber < 264)
-            displayflag = 1;
+      displayflag = ((vblnumber == 0) && (videolinenumber > 47) && (videolinenumber < 264));
     }
     //decompte du temps de presence du signal irq timer
     if(timer_irqcount > 0) timer_irqcount -= opcycles;
@@ -817,7 +816,7 @@ static char MgetTo(unsigned short a)
         case 0xe7e4: return port[0x1d] & 0xf0;
         case 0xe7e5: return port[0x25] & 0x1f;
         case 0xe7e6: return port[0x26] & 0x7f;
-        case 0xe7e7: return (port[0x24] & 0x01) | InitnTo() | InilnTo();
+        case 0xe7e7: return (port[0x24] & 0x01) | Initn() | Iniln();
         default:
           if (a >= 0xe7d0 && a <= 0xe7d3) return floppy_controller_emu(a);
           if (a < 0xe7c0) return romsys[a];
@@ -831,6 +830,9 @@ static char MgetTo(unsigned short a)
 // MO5 memory write ///////////////////////////////////////////////////////////
 void MputMo(unsigned short a, char c)
 {
+#ifdef THEODORE_DASM
+  debug_mem_write(a);
+#endif
   switch(a >> 12)
   {
     case 0x0: case 0x1: ramvideo[a] = c; break;
@@ -859,6 +861,9 @@ void MputMo(unsigned short a, char c)
 // MO5 memory read ////////////////////////////////////////////////////////////
 char MgetMo(unsigned short a)
 {
+#ifdef THEODORE_DASM
+  debug_mem_read(a);
+#endif
   switch(a >> 12)
   {
     case 0x0: case 0x1: return ramvideo[a];
@@ -868,15 +873,15 @@ char MgetMo(unsigned short a)
         case 0xa7c0: return port[0] | 0x80 | (penbutton << 5);
         case 0xa7c1: return port[1] | touche[(port[1] & 0xfe)>> 1];
         case 0xa7c2: return port[2];
-        case 0xa7c3: return port[3] | ~InitnMo();
+        case 0xa7c3: return port[3] | ~Initn();
         case 0xa7cb: return (carflags&0x3f)|((carflags&0x80)>>1)|((carflags&0x40)<<1);
         case 0xa7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
         case 0xa7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
         case 0xa7ce: return 4;
-        case 0xa7d8: return ~InitnMo(); //octet etat disquette
+        case 0xa7d8: return ~Initn(); //octet etat disquette
         case 0xa7e1: return 0xff;     //zero provoque erreur 53 sur imprimante
-        case 0xa7e6: return InilnMo() << 1;
-        case 0xa7e7: return InitnMo();
+        case 0xa7e6: return Iniln() << 1;
+        case 0xa7e7: return Initn();
         default: if(a < 0xa7c0) return(cd90_640_rom[a & 0x7ff]);
              if(a < 0xa800) return(port[a & 0x3f]);
              return(0);

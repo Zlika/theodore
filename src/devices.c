@@ -1,7 +1,7 @@
 /*
  * This file is part of theodore (https://github.com/Zlika/theodore),
- * a Thomson emulator based on Daniel Coulom's DCTO8D emulator
- * (http://dcto8.free.fr/).
+ * a Thomson emulator based on Daniel Coulom's DCTO8D/DCTO9P/DCMO5
+ * emulators (http://dcmoto.free.fr/).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
