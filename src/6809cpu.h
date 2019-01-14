@@ -54,6 +54,8 @@ extern char *dc6809_dp;
 
 //irq trigger  (0=disabled, 1=enabled)
 extern int dc6809_irq;
+//interrupt request
+extern int Irq(void);
 
 // Processor reset
 void Reset6809(void);

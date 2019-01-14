@@ -100,7 +100,7 @@ static int displayflag;     //indicateur pour l'affichage
 int bordercolor;            //couleur de la bordure de l'écran
 //divers
 int sound;                  //niveau du haut-parleur
-int mute;                   // mute flag
+int mute;                   //mute flag
 static int timer6846;       //compteur du timer 6846
 static int latch6846;       //registre latch du timer 6846
 static int keyb_irqcount;   //nombre de cycles avant la fin de l'irq clavier
@@ -495,10 +495,10 @@ void Initprog(void)
   carflags &= 0xec;
 
   SetVideoMode(VIDEO_320X16);
-  ramuser = ram - 0x2000;
 
   if (currentFlavor != MO5)
   {
+    ramuser = ram - 0x2000;
     Mputc = MputTo;
     Mgetc = MgetTo;
     selectVideoRam = selectVideoRamTo;
@@ -509,6 +509,7 @@ void Initprog(void)
   }
   else
   {
+    ramuser = ram + 0x2000;
     SetVideoMode(VIDEO_320_16_MO5);
     pagevideo = ram;
     Mputc = MputMo;
@@ -623,10 +624,12 @@ int Run(int ncyclesmax)
     ncycles += opcycles;
     videolinecycle += opcycles;
     if(displayflag) Displaysegment();
+    // Attente d'une fin de ligne
     if(videolinecycle >= 64)
     {
       videolinecycle -= 64;
       if(displayflag) Nextline();
+      // Attente d'une fin de trame
       if(++videolinenumber > 311)
         //valeurs de videolinenumber :
         //000-047 hors ecran, 048-055 bord haut
@@ -635,27 +638,31 @@ int Run(int ncyclesmax)
       {
         videolinenumber -= 312;
         if(++vblnumber >= VBL_NUMBER_MAX) vblnumber = 0;
+        if (currentFlavor == MO5) Irq();
       }
       displayflag = ((vblnumber == 0) && (videolinenumber > 47) && (videolinenumber < 264));
     }
-    //decompte du temps de presence du signal irq timer
-    if(timer_irqcount > 0) timer_irqcount -= opcycles;
-    if(timer_irqcount <= 0) port[0x00] &= 0xfe;
-    //decompte du temps de presence du signal irq clavier
-    if(keyb_irqcount > 0) keyb_irqcount -= opcycles;
-    if(keyb_irqcount <= 0) port[0x00] &= 0xfd;
-    //clear signal irq si aucune irq active
-    if((port[0x00] & 0x07) == 0) {port[0x00] &= 0x7f; dc6809_irq = 0;}
-    //countdown du timer 6846
-    if((port[0x05] & 0x01) == 0) //timer enabled
-    {timer6846 -= (port[0x05] & 0x04) ? opcycles : opcycles << 3;} //countdown
-    //counter time out
-    if(timer6846 <= 5)
+    if (currentFlavor != MO5)
     {
-      timer_irqcount = 100;
-      timer6846 = latch6846 << 3; //reset counter
-      port[0x00] |= 0x81; //flag interruption timer et interruption composite
-      dc6809_irq = 1; //positionner le signal IRQ pour le processeur
+      //decompte du temps de presence du signal irq timer
+      if(timer_irqcount > 0) timer_irqcount -= opcycles;
+      if(timer_irqcount <= 0) port[0x00] &= 0xfe;
+      //decompte du temps de presence du signal irq clavier
+      if(keyb_irqcount > 0) keyb_irqcount -= opcycles;
+      if(keyb_irqcount <= 0) port[0x00] &= 0xfd;
+      //clear signal irq si aucune irq active
+      if((port[0x00] & 0x07) == 0) {port[0x00] &= 0x7f; dc6809_irq = 0;}
+      //countdown du timer 6846
+      if((port[0x05] & 0x01) == 0) //timer enabled
+      {timer6846 -= (port[0x05] & 0x04) ? opcycles : opcycles << 3;} //countdown
+      //counter time out
+      if(timer6846 <= 5)
+      {
+        timer_irqcount = 100;
+        timer6846 = latch6846 << 3; //reset counter
+        port[0x00] |= 0x81; //flag interruption timer et interruption composite
+        dc6809_irq = 1; //positionner le signal IRQ pour le processeur
+      }
     }
   }
   return(ncycles - ncyclesmax); //retour du nombre de cycles en trop (extracycles)
@@ -839,6 +846,7 @@ void MputMo(unsigned short a, char c)
     case 0xa:
       switch(a)
       {
+        // A7C0->A7C3 : PIA 6821 Systeme
         case 0xa7c0: port[0] = c & 0x5f; selectVideoRam(); break;
         case 0xa7c1: port[1] = c & 0x7f; sound = (c & 1) << 5; break;
         case 0xa7c2: port[2] = c & 0x3f; break;
@@ -870,6 +878,7 @@ char MgetMo(unsigned short a)
     case 0xa:
       switch(a)
       {
+        // A7C0->A7C3 : PIA 6821 Systeme
         case 0xa7c0: return port[0] | 0x80 | (penbutton << 5);
         case 0xa7c1: return port[1] | touche[(port[1] & 0xfe)>> 1];
         case 0xa7c2: return port[2];
@@ -880,6 +889,7 @@ char MgetMo(unsigned short a)
         case 0xa7ce: return 4;
         case 0xa7d8: return ~Initn(); //octet etat disquette
         case 0xa7e1: return 0xff;     //zero provoque erreur 53 sur imprimante
+        // A7E4->A7E7 : Gate Array
         case 0xa7e6: return Iniln() << 1;
         case 0xa7e7: return Initn();
         default: if(a < 0xa7c0) return(cd90_640_rom[a & 0x7ff]);
