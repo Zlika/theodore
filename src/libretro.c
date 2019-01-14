@@ -398,6 +398,14 @@ static void check_variables(void)
   var.key = PACKAGE_NAME"_rom";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
+    if (strncmp(var.value, "TO", 2) == 0)
+    {
+      libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
+    }
+    else
+    {
+      libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMoScanCode;
+    }
     if (strcmp(var.value, "TO8") == 0)
     {
       SetThomsonFlavor(TO8);
