@@ -196,6 +196,14 @@ void SetThomsonFlavor(ThomsonFlavor flavor)
 {
   if (flavor != currentFlavor)
   {
+    if (flavor == MO5)
+    {
+      SetModeTO(false);
+    }
+    else
+    {
+      SetModeTO(true);
+    }
     switch (flavor)
     {
       case TO8:
