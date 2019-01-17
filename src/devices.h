@@ -24,6 +24,9 @@
 
 #include "boolean.h"
 
+// Set the MO/TO mode: true = TO, false = MO
+void SetModeTO(bool isTO);
+
 // Set or unset the floppy's write protection
 void SetFloppyWriteProtect(bool enabled);
 // Set or unset the tape's write protection

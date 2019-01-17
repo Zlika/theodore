@@ -1,7 +1,7 @@
 /*
  * This file is part of theodore (https://github.com/Zlika/theodore),
- * a Thomson emulator based on Daniel Coulom's DCTO8D emulator
- * (http://dcto8.free.fr/).
+ * a Thomson emulator based on Daniel Coulom's DCTO8D/DCTO9P/DCMO5
+ * emulators (http://dcmoto.free.fr/).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "toemulator.h"
+#include "motoemulator.h"
 #include "video.h"
 
-#define NB_VIDEO_MODES 5
+#define NB_VIDEO_MODES 6
 #define SEGMENT_SIZE  16
 
 typedef uint32_t PixARGB; // ARGB pixel
@@ -47,18 +47,40 @@ static void Decode320x4(void);
 static void Decode320x4special(void);
 static void Decode160x16(void);
 static void Decode640x2(void);
+static void Decode320x16MO5(void);
 // Current video memory decoding function
 static void (*Decodevideo)(void) = Decode320x16;
 // Array of the different video memory decoding functions (indexed by the video mode)
 static void (*DecodevideoModes[NB_VIDEO_MODES])(void) =
   { Decode320x16, Decode320x4, Decode320x4special,
-    Decode160x16, Decode640x2 };
+    Decode160x16, Decode640x2, Decode320x16MO5 };
 
 //definition des intensites pour correction gamma (circuit palette EF9369 + circuit d'adaptation TEA5114)
 static const int intens[16] = {0,100,127,147,163,179,191,203,215,223,231,239,243,247,251,255};
 
 // Returns the uint32_t value of a ARGB pixel
 #define ARGB(a,r,g,b) (((a) << 24) + ((r) << 16) + ((g) << 8) + (b))
+
+// Initialisation palette ////////////////////////////////////////////////////
+void InitPalette()
+{
+  int i, j;
+  // A la mise sous tension, le circuit palette est programmé pour restituer
+  // les couleurs fondamentales du TO7/70 :
+  // 0 noir, 1 rouge, 2 vert, 3 jaune, 4 bleu, 5 magenta, 6 cyan, 7 blanc
+  // 8 gris, 9 rose, 10 vert clair, 11 sable, 12 bleu clair, 13 parme, 14 bleu ciel, 15 orange
+  int r[19]={0,15,0,15,0,15,0,15,7,10,3,10,3,10,7,11,11,14,2};
+  int g[19]={0,0,15,15,0,0,15,15,7,3,10,10,3,3,14,3,11,14,2};
+  int b[19]={0,0,0,0,15,15,15,15,7,3,3,3,10,10,14,0,11,14,2};
+  // Calcul de la palette
+  for(i = 0; i < 19; i++)
+  {
+    for(j = 0; j < 8; j++)
+    {
+      pcolor[i][j] = ARGB(0xff, intens[r[i]], intens[g[i]], intens[b[i]]);
+    }
+  }
+}
 
 // Modification de la palette ////////////////////////////////////////////////
 void Palette(int n, int r, int v, int b)
@@ -73,6 +95,22 @@ void Palette(int n, int r, int v, int b)
 void SetVideoMode(enum VideoMode mode)
 {
   Decodevideo = DecodevideoModes[mode];
+}
+
+// Decodage octet video mode 320x16 MO5 //////////////////////////////////////
+static void Decode320x16MO5(void)
+{
+  int i, c0, c1, shape;
+  uint32_t c;
+  c0 = pagevideo[currentvideomemory] & 0x0f;        //background color index
+  c1 = (pagevideo[currentvideomemory] >> 4) & 0x0f; //foreground color index
+  shape = pagevideo[currentvideomemory++ | 0x2000];
+  for(i = 7; i >= 0; i--)
+  {
+    c = *((uint32_t *)(pcolor + (((shape >> i) & 1) ? c1 : c0)));
+    *pcurrentpixel++ = c;
+    *pcurrentpixel++ = c;
+  }
 }
 
 // Decodage octet video mode 320x16 standard /////////////////////////////////

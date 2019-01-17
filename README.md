@@ -1,7 +1,7 @@
 [:gb:](https://github.com/Zlika/theodore/blob/master/README.md)
 [:fr:](https://github.com/Zlika/theodore/blob/master/README-FR.md)
 
-Theodore - Thomson TO8/TO9 emulator
+Theodore - Thomson MO/TO emulator
 ====================================
 
 [![Build status](https://travis-ci.org/Zlika/theodore.svg?branch=master)](https://travis-ci.org/Zlika/theodore)
@@ -9,13 +9,13 @@ Theodore - Thomson TO8/TO9 emulator
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/) emulator, and currently supports the following models: TO8, TO8D, TO9, TO9+.
+This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) and [DCMO5](http://dcmo5.free.fr/) emulators, and currently supports the following models: TO8, TO8D, TO9, TO9+, MO5.
 
 ### How to install
 
 This emulator is available on the following platforms:
 * RetroArch: [Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
-* [Recalbox](https://www.recalbox.com/): Starting from version 2018.06.27, this emulator is built in your favorite retrogaming operating system.
+* [Recalbox](https://www.recalbox.com/): Starting from version 2018.06.27, this emulator is built into your favorite retrogaming operating system.
 
 It should be compatible with all the platforms supported by RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
 
@@ -64,11 +64,11 @@ RetroArch already uses lots of keyboard shortcuts for its own need that interfer
 
 ### :floppy_disk: File formats
 
-The emulator can read the following file formats: *.fd and *.sap (floppy disks), *.k7 (tapes), *.m7 and *.rom (cartridges).
+The emulator can read the following file formats: *.fd and *.sap (floppy disks), *.k7 (tapes), *.m7/*.m5 and *.rom (cartridges).
 
 ### Thomson flavors
 
-By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to other models (currently: TO8, TO8D, TO9, TO9+).
+By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to other models (currently: TO8, TO8D, TO9, TO9+, MO5).
 
 ### Save states
 

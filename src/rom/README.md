@@ -9,7 +9,7 @@ The following table gives a summary of the functions of the "Monitor" program th
 
 | Feature | Monitor's function | Start Address | Comments |
 |---------|--------------------|---------------|----------|
-| Tape read/write | K7CO | $E815 | Operation depends on value of K7.OPC($6029): $01(read open), $02(read byte), $04(write open), $08(write byte), $10(close) |
+| Tape read/write | K7CO | $E815 | Operation depends on value of K7.OPC($6029): $01(open in read mode), $02(read byte), $04(open in write mode), $08(write byte), $10(close) |
 | Floppy disk read/write | DKCO | $E004 | Operation depends on value of DK.OPC($6048): $01(reset controller), $02(read sector), $08(write sector) |
 | Floppy disk formatting | DKFORM | $E00A | DK.OPC($6048)=$00 |
 | Mouse coordinates | GEPE | $EC06 | |

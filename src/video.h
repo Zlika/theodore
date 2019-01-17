@@ -1,7 +1,7 @@
 /*
  * This file is part of theodore (https://github.com/Zlika/theodore),
- * a Thomson emulator based on Daniel Coulom's DCTO8D emulator
- * (http://dcto8.free.fr/).
+ * a Thomson emulator based on Daniel Coulom's DCTO8D/DCTO9P/DCMO5
+ * emulators (http://dcmoto.free.fr/).
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ void SetLibRetroVideoBuffer(uint32_t *video_buffer);
 
 // List of available video modes
 enum VideoMode { VIDEO_320X16, VIDEO_320X4, VIDEO_320X4_SPECIAL,
-                 VIDEO_160X16, VIDEO_640X2 };
+                 VIDEO_160X16, VIDEO_640X2, VIDEO_320_16_MO5 };
 
 // Sets the video mode
 void SetVideoMode(enum VideoMode mode);
@@ -43,6 +43,8 @@ void Displaysegment(void);
 void Nextline(void);
 // Modification de la palette
 void Palette(int n, int r, int v, int b);
+// Initialisation palette
+void InitPalette();
 
 // The following functions are used for libretro's save states feature.
 // Returns the amount of data required to serialize the internal state of the video module.

@@ -1,7 +1,7 @@
 LIBRETRO_COMM_DIR := $(CORE_DIR)/src/libretro-common
 INCFLAGS := -I$(CORE_DIR)/src -I$(LIBRETRO_COMM_DIR)/include
 
-ifneq (,$(findstring msvc2003,$(platform)))
+ifneq (,$(findstring msvc200,$(platform)))
     INCFLAGS += -I$(LIBRETRO_COMM_DIR)/include/compat/msvc
 endif
 
@@ -13,5 +13,5 @@ SOURCES_C += $(CORE_DIR)/src/debugger.c
 SOURCES_C += $(CORE_DIR)/src/devices.c
 SOURCES_C += $(CORE_DIR)/src/libretro.c
 SOURCES_C += $(CORE_DIR)/src/sap.c
-SOURCES_C += $(CORE_DIR)/src/toemulator.c
+SOURCES_C += $(CORE_DIR)/src/motoemulator.c
 SOURCES_C += $(CORE_DIR)/src/video.c

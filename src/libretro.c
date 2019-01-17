@@ -29,7 +29,7 @@
 #include "devices.h"
 #include "keymap.h"
 #include "sap.h"
-#include "toemulator.h"
+#include "motoemulator.h"
 #include "video.h"
 
 #define PACKAGE_NAME "theodore"
@@ -77,7 +77,7 @@ static bool virtualkb_pressed = false;
 static int virtualkb_lastscancode = 0;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+" },
+    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+|MO5" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
@@ -204,7 +204,7 @@ void retro_get_system_info(struct retro_system_info *info)
   memset(info, 0, sizeof(*info));
   info->library_name = PACKAGE_NAME;
   info->library_version = PACKAGE_VERSION;
-  info->valid_extensions = "fd|sap|k7|m7|rom";
+  info->valid_extensions = "fd|sap|k7|m7|m5|rom";
   info->need_fullpath = true;
   info->block_extract = false;
 }
@@ -293,7 +293,7 @@ static void pointerToScreenCoordinates(int *x, int *y)
 static void print_current_virtualkb_key()
 {
   struct retro_message msg;
-  msg.msg = virutalkb_chars[virtualkb_index];
+  msg.msg = virtualkb_chars[virtualkb_index];
   msg.frames = VIDEO_FPS;
   environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
 }
@@ -398,6 +398,24 @@ static void check_variables(void)
   var.key = PACKAGE_NAME"_rom";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
+    if (strncmp(var.value, "TO", 2) == 0)
+    {
+      libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
+      thomson_acc = THOMSON_TO_ACC;
+      thomson_capslock = THOMSON_TO_CAPSLOCK;
+      thomson_left_shift = THOMSON_TO_LEFT_SHIFT;
+      thomson_right_shift = THOMSON_TO_RIGHT_SHIFT;
+      thomson_cnt = THOMSON_TO_CNT;
+    }
+    else
+    {
+      libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMoScanCode;
+      thomson_acc = THOMSON_MO_ACC;
+      thomson_capslock = -1;
+      thomson_left_shift = THOMSON_MO_LEFT_SHIFT;
+      thomson_right_shift = -1;
+      thomson_cnt = THOMSON_TO_CNT;
+    }
     if (strcmp(var.value, "TO8") == 0)
     {
       SetThomsonFlavor(TO8);
@@ -413,6 +431,10 @@ static void check_variables(void)
     else if (strcmp(var.value, "TO9+") == 0)
     {
       SetThomsonFlavor(TO9P);
+    }
+    else if (strcmp(var.value, "MO5") == 0)
+    {
+      SetThomsonFlavor(MO5);
     }
   }
 #ifdef THEODORE_DASM
@@ -511,7 +533,8 @@ static bool load_file(const char *filename)
     LoadFd(filename);
   }
   else if (strlen(filename) > 4 && (streq_nocase(filename + strlen(filename) - 4, ".rom")
-      || streq_nocase(filename + strlen(filename) - 3, ".m7")))
+      || streq_nocase(filename + strlen(filename) - 3, ".m7")
+      || streq_nocase(filename + strlen(filename) - 3, ".m5")))
   {
     LoadMemo(filename);
   }
@@ -547,19 +570,19 @@ static void keyboard_cb(bool down, unsigned keycode,
   // F6-F10 <-> SHIFT+F1-F5
   if (key_modifiers & RETROKMOD_SHIFT)
   {
-    keyboard(THOMSON_LEFT_SHIFT, down);
+    keyboard(thomson_left_shift, down);
   }
   if (key_modifiers & RETROKMOD_CTRL)
   {
-    keyboard(THOMSON_CNT, down);
+    keyboard(thomson_cnt, down);
   }
   if (key_modifiers & RETROKMOD_ALT)
   {
-    keyboard(THOMSON_ACC, down);
+    keyboard(thomson_acc, down);
   }
   if (keycode == RETROK_CAPSLOCK && (key_modifiers & RETROKMOD_CAPSLOCK))
   {
-    keyboard(THOMSON_CAPSLOCK, down);
+    keyboard(thomson_capslock, down);
   }
 
   if (keycode < 320)
