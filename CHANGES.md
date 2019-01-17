@@ -1,3 +1,7 @@
+Next Release
+===========
+* Add MO5 emulation.
+
 Release 1.5 (2018/12/29)
 ===========
 * Add TO9 emulation.
