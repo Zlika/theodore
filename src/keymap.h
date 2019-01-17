@@ -19,12 +19,25 @@
 #ifndef __KEYMAP_H
 #define __KEYMAP_H
 
-#define THOMSON_ACC 0x14
-#define THOMSON_CAPSLOCK 0x50
-#define THOMSON_LEFT_SHIFT 0x51
-#define THOMSON_RIGHT_SHIFT 0x52
-#define THOMSON_CNT 0x53
+/* Thomson scancodes of special keys (TO computers) */
+#define THOMSON_TO_ACC         0x14
+#define THOMSON_TO_CAPSLOCK    0x50
+#define THOMSON_TO_LEFT_SHIFT  0x51
+#define THOMSON_TO_RIGHT_SHIFT 0x52
+#define THOMSON_TO_CNT         0x53
+/* Thomson scancodes of special keys (MO computers) */
+#define THOMSON_MO_ACC         0x36
+#define THOMSON_MO_LEFT_SHIFT  0x38
+#define THOMSON_MO_CNT         0x35
 
+/* Thomson scancodes of special keys for the current MO/TO version */
+int thomson_acc = THOMSON_TO_ACC;
+int thomson_capslock = THOMSON_TO_CAPSLOCK;
+int thomson_left_shift = THOMSON_TO_LEFT_SHIFT;
+int thomson_right_shift = THOMSON_TO_RIGHT_SHIFT;
+int thomson_cnt = THOMSON_TO_CNT;
+
+/* Mapping libretro -> Thomson TO scancodes */
 const char libretroKeyCodeToThomsonToScanCode[512] =
 {
     -1,    /* 0 */  -1,    /* 1 */  -1,    /* 2 */  -1,    /* 3 */  -1,    /* 4 */  -1,    /* 5 */  -1,    /* 6 */  -1,    /* 7 */
@@ -144,11 +157,11 @@ const char libretroKeyCodeToThomsonToScanCode[512] =
   0x1e,    /* SDLK_KP0 = 256 */
   0x15,    /* SDLK_KP1 = 257 */
   0x25,    /* SDLK_KP2 = 258 */
-  0x4E,    /* SDLK_KP3 = 259 */
-  0x1D,    /* SDLK_KP4 = 260 */
-  0x2D,    /* SDLK_KP5 = 261 */
-  0x2E,    /* SDLK_KP6 = 262 */
-  0x1C,    /* SDLK_KP7 = 263 */
+  0x4e,    /* SDLK_KP3 = 259 */
+  0x1d,    /* SDLK_KP4 = 260 */
+  0x2d,    /* SDLK_KP5 = 261 */
+  0x2e,    /* SDLK_KP6 = 262 */
+  0x1c,    /* SDLK_KP7 = 263 */
   0x24,    /* SDLK_KP8 = 264 */
   0x35,    /* SDLK_KP9 = 265 */
   0x26,    /* SDLK_KP_PERIOD = 266 */
@@ -212,6 +225,7 @@ const char libretroKeyCodeToThomsonToScanCode[512] =
     -1     /* SDLK_UNDO = 322 */
 };
 
+/* Mapping libretro -> Thomson MO scancodes */
 const char libretroKeyCodeToThomsonMoScanCode[512] =
 {
     -1,    /* 0 */  -1,    /* 1 */  -1,    /* 2 */  -1,    /* 3 */  -1,    /* 4 */  -1,    /* 5 */  -1,    /* 6 */  -1,    /* 7 */
@@ -227,14 +241,14 @@ const char libretroKeyCodeToThomsonMoScanCode[512] =
     -1,    /* 28 */ -1,    /* 29 */ -1,    /* 30 */ -1,    /* 31 */
   0x39,    /* SDLK_SPACE = 32 */
   0x2f,    /* SDLK_EXCLAIM = 33 */
-    -1,    /* SDLK_QUOTEDBL = 34 */
+  0x1f,    /* SDLK_QUOTEDBL = 34 */
   0x1f,    /* SDLK_HASH = 35 */
   0x17,    /* SDLK_DOLLAR = 36 */
     -1,    /* 37 */
-  0x07,    /* SDLK_AMPERSAND = 38 */
-  0x27,    /* SDLK_QUOTE = 39 */
-  0x08,    /* SDLK_LEFTPAREN = 40 */
-  0x16,    /* SDLK_RIGHTPAREN = 41 */
+  0x2f,    /* SDLK_AMPERSAND = 38 */
+  0x17,    /* SDLK_QUOTE = 39 */
+  0x0f,    /* SDLK_LEFTPAREN = 40 */
+  0x26,    /* SDLK_RIGHTPAREN = 41 */
   0x2c,    /* SDLK_ASTERISK = 42 */
   0x2e,    /* SDLK_PLUS = 43 */
   0x08,    /* SDLK_COMMA = 44 */
@@ -252,9 +266,9 @@ const char libretroKeyCodeToThomsonMoScanCode[512] =
   0x0e,    /* SDLK_8 = 56 */
   0x16,    /* SDLK_9 = 57 */
   0x47,    /* SDLK_COLON = 58 */
-  0x2e,    /* SDLK_SEMICOLON = 59 */
+  0x10,    /* SDLK_SEMICOLON = 59 */
   0x08,    /* SDLK_LESS = 60 */
-  0x26,    /* SDLK_EQUALS = 61 */
+  0x2e,    /* SDLK_EQUALS = 61 */
   0x10,    /* SDLK_GREATER  = 62 */
   0x24,    /* SDLK_QUESTION = 63 */
   0x18,    /* SDLK_AT = 64 */
@@ -287,8 +301,8 @@ const char libretroKeyCodeToThomsonMoScanCode[512] =
     -1,    /* SDLK_LEFTBRACKET = 91 */
   0x44,    /* SDLK_BACKSLASH = 92 */     /* Might be 0x60 for UK keyboards */
     -1,    /* SDLK_RIGHTBRACKET = 93 */
-  0x44,    /* SDLK_CARET = 94 */
-  0x01,    /* SDLK_UNDERSCORE = 95 */
+  0x07,    /* SDLK_CARET = 94 */
+  0x0e,    /* SDLK_UNDERSCORE = 95 */
   0x1e,    /* SDLK_BACKQUOTE = 96 */
   0x2d,    /* A = 97 */
   0x22,    /* B = 98 */
@@ -374,14 +388,14 @@ const char libretroKeyCodeToThomsonMoScanCode[512] =
     -1,    /* 297 */  -1,      /* 298 */  -1,      /* 299 */
     /* Key state modifier keys */
     -1,    /* SDLK_NUMLOCK = 300 */
-  0x50,    /* SDLK_CAPSLOCK = 301 */
+    -1,    /* SDLK_CAPSLOCK = 301 */
     -1,    /* SDLK_SCROLLOCK = 302 */
-  0x52,    /* SDLK_RSHIFT = 303 */
-  0x51,    /* SDLK_LSHIFT = 304 */
-  0x35,    /* SDLK_RCTRL = 305 */
-  0x35,    /* SDLK_LCTRL = 306 */
-  0x36,    /* SDLK_RALT = 307 */
-  0x36,    /* SDLK_LALT = 308 */
+    -1,    /* SDLK_RSHIFT = 303 */
+  0x38,    /* SDLK_LSHIFT = 304 */
+    -1,    /* SDLK_RCTRL = 305 */
+    -1,    /* SDLK_LCTRL = 306 */
+    -1,    /* SDLK_RALT = 307 */
+    -1,    /* SDLK_LALT = 308 */
     -1,    /* SDLK_RMETA = 309 */
     -1,    /* SDLK_LMETA = 310 */
     -1,    /* SDLK_LSUPER = 311 */
@@ -399,6 +413,7 @@ const char libretroKeyCodeToThomsonMoScanCode[512] =
     -1     /* SDLK_UNDO = 322 */
 };
 
+/* Mapping libretro -> Thomson scancodes for the current MO/TO version */
 const char *libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
 
 #define VIRTUALKB_NB_KEYS 38
@@ -414,7 +429,7 @@ const int virtualkb_keysyms[VIRTUALKB_NB_KEYS] =
     RETROK_y, RETROK_z, RETROK_SPACE, RETROK_RETURN
 };
 
-const char* virutalkb_chars[VIRTUALKB_NB_KEYS] =
+const char* virtualkb_chars[VIRTUALKB_NB_KEYS] =
 {
     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
     "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",

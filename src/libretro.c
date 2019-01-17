@@ -293,7 +293,7 @@ static void pointerToScreenCoordinates(int *x, int *y)
 static void print_current_virtualkb_key()
 {
   struct retro_message msg;
-  msg.msg = virutalkb_chars[virtualkb_index];
+  msg.msg = virtualkb_chars[virtualkb_index];
   msg.frames = VIDEO_FPS;
   environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
 }
@@ -401,10 +401,20 @@ static void check_variables(void)
     if (strncmp(var.value, "TO", 2) == 0)
     {
       libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
+      thomson_acc = THOMSON_TO_ACC;
+      thomson_capslock = THOMSON_TO_CAPSLOCK;
+      thomson_left_shift = THOMSON_TO_LEFT_SHIFT;
+      thomson_right_shift = THOMSON_TO_RIGHT_SHIFT;
+      thomson_cnt = THOMSON_TO_CNT;
     }
     else
     {
       libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMoScanCode;
+      thomson_acc = THOMSON_MO_ACC;
+      thomson_capslock = -1;
+      thomson_left_shift = THOMSON_MO_LEFT_SHIFT;
+      thomson_right_shift = -1;
+      thomson_cnt = THOMSON_TO_CNT;
     }
     if (strcmp(var.value, "TO8") == 0)
     {
@@ -560,19 +570,19 @@ static void keyboard_cb(bool down, unsigned keycode,
   // F6-F10 <-> SHIFT+F1-F5
   if (key_modifiers & RETROKMOD_SHIFT)
   {
-    keyboard(THOMSON_LEFT_SHIFT, down);
+    keyboard(thomson_left_shift, down);
   }
   if (key_modifiers & RETROKMOD_CTRL)
   {
-    keyboard(THOMSON_CNT, down);
+    keyboard(thomson_cnt, down);
   }
   if (key_modifiers & RETROKMOD_ALT)
   {
-    keyboard(THOMSON_ACC, down);
+    keyboard(thomson_acc, down);
   }
   if (keycode == RETROK_CAPSLOCK && (key_modifiers & RETROKMOD_CAPSLOCK))
   {
-    keyboard(THOMSON_CAPSLOCK, down);
+    keyboard(thomson_capslock, down);
   }
 
   if (keycode < 320)

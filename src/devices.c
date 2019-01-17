@@ -241,7 +241,6 @@ void RewindTape(void)
 // Tape drive: read a byte
 static int ReadByteTape(void)
 {
-  static int nb = 0;
   int byte = 0;
   if(fk7 == NULL) {Initprog(); return 0;}
   byte = fgetc(fk7);
