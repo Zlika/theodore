@@ -187,7 +187,7 @@ E7C6= registre temporisateur d'octet de poids fort (TMSB)
 E7C7= registre temporisateur d'octet de poids faible (TLSB)
 */
 
-int16_t GetAudioSample()
+int16_t GetAudioSample(void)
 {
   return (sound * 65535 / MAX_SOUND_LEVEL) - (65536 / 2);
 }
@@ -229,7 +229,7 @@ void SetThomsonFlavor(ThomsonFlavor flavor)
   }
 }
 
-ThomsonFlavor GetThomsonFlavor()
+ThomsonFlavor GetThomsonFlavor(void)
 {
   return currentFlavor;
 }
@@ -545,7 +545,7 @@ static void patch_rom(char rom_data[], int patch[])
 }
 
 // Write the current date in the ROM //////////////////////////////////////////
-static void set_current_date()
+static void set_current_date(void)
 {
   time_t curtime;
   struct tm *loctime;

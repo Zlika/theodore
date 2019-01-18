@@ -278,7 +278,7 @@ static void WriteByteTape(void)
   }
 }
 
-static void ReadBitTape()
+static void ReadBitTape(void)
 {
   static int k7octet = 0;
   static int k7bit = 0;
