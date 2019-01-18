@@ -325,9 +325,9 @@ static void Readpenxy(int device)
   int k;
   if((xpen < 0) || (xpen >= 640)) {CC |= 1; return;} // x out of bounds
   if((ypen < 0) || (ypen >= 200)) {CC |= 1; return;} // y out of bounds
-  k = (port[0x1c] == 0x2a) ? 0 : 1; // 40 columns mode: x divided by 2
   if (is_to)
   {
+    k = (port[0x1c] == 0x2a) ? 0 : 1; // 40 columns mode: x divided by 2
     if(device > 0) //mouse
     {
       Mputw(0x60d8, xpen >> k);
@@ -338,7 +338,7 @@ static void Readpenxy(int device)
   }
   else
   {
-    Mputw(S+6, xpen);
+    Mputw(S+6, xpen >> 1); // MO5 has an horizontal resolution of 320 pixels
     Mputw(S+8, ypen);
   }
   CC &= 0xfe;
