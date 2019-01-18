@@ -94,6 +94,9 @@ typedef struct
 } Cheat;
 static Cheat cheats[MAX_CHEATS] = { {0, 0} };
 
+typedef enum { NO_MEDIA, MEDIA_FLOPPY, MEDIA_TAPE, MEDIA_CARTRIDGE } Media;
+static Media currentMedia = NO_MEDIA;
+
 void retro_set_environment(retro_environment_t env)
 {
   // Emulator can be started without loading a game
@@ -139,7 +142,7 @@ void retro_init(void)
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "Fire" },
-        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "B Key" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "Autostart Program" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Virtual Keyboard: Change Letter (Up)" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Virtual Keyboard: Press Letter" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "Virtual Keyboard: Change Letter (Up)" },
@@ -298,6 +301,50 @@ static void print_current_virtualkb_key()
   environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
 }
 
+// Try to start the currently loaded game by simulating keystrokes on the keyboard.
+static void autostart_program(void)
+{
+  switch (currentMedia)
+  {
+    case MEDIA_FLOPPY:
+      // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
+      // and the 'D' key (Basic 128) on TO9
+      if (GetThomsonFlavor() == TO9)
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_d];
+      }
+      else
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
+      }
+      break;
+    case MEDIA_TAPE:
+      // Tapes are most often started with the BASIC 1.0
+      // ('C' key on TO8/TO8D/TO9+, 'E' key on TO9)
+      if (GetThomsonFlavor() == TO9)
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_e];
+      }
+      else
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_c];
+      }
+      break;
+    case MEDIA_CARTRIDGE:
+      // Cartridges are started by the '0' key
+      virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_0];
+      break;
+    default:
+      virtualkb_lastscancode = -1;
+  }
+
+  if (virtualkb_lastscancode != -1)
+  {
+    keyboard(virtualkb_lastscancode, true);
+    virtualkb_pressed = true;
+  }
+}
+
 static void update_input(void)
 {
   int i;
@@ -332,20 +379,10 @@ static void update_input(void)
   y = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
   if (!virtualkb_pressed)
   {
+    // Try to start the currently loaded program
     if (b)
     {
-      // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
-      // and the 'D' key (Basic 128) on TO9
-      if (GetThomsonFlavor() == TO9)
-      {
-        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_d];
-      }
-      else
-      {
-        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
-      }
-      keyboard(virtualkb_lastscancode, true);
-      virtualkb_pressed = true;
+      autostart_program();
     }
     else if (select || x)
     {
@@ -526,24 +563,29 @@ static bool load_file(const char *filename)
 {
   if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".k7"))
   {
+    currentMedia = MEDIA_TAPE;
     LoadTape(filename);
   }
   else if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".fd"))
   {
+    currentMedia = MEDIA_FLOPPY;
     LoadFd(filename);
   }
   else if (strlen(filename) > 4 && (streq_nocase(filename + strlen(filename) - 4, ".rom")
       || streq_nocase(filename + strlen(filename) - 3, ".m7")
       || streq_nocase(filename + strlen(filename) - 3, ".m5")))
   {
+    currentMedia = MEDIA_CARTRIDGE;
     LoadMemo(filename);
   }
   else if (strlen(filename) > 4 && streq_nocase(filename + strlen(filename) - 4, ".sap"))
   {
+    currentMedia = MEDIA_FLOPPY;
     LoadSap(filename);
   }
   else
   {
+    currentMedia = NO_MEDIA;
     if (log_cb) log_cb(RETRO_LOG_ERROR, "Unknown file type for file %s.\n", filename);
     return false;
   }
@@ -636,6 +678,7 @@ void retro_unload_game(void)
   UnloadTape();
   UnloadFloppy();
   UnloadMemo();
+  currentMedia = NO_MEDIA;
 }
 
 unsigned retro_get_region(void)

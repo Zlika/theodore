@@ -1,6 +1,7 @@
 Next Release
 ===========
 * Add MO5 emulation.
+* A more complex heuristic is used to start the game when the 'B' button of the gamepad is pressed, depending on the media type and of the emulated computer (cf. README file for more info).
 
 Release 1.5 (2018/12/29)
 ===========

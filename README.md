@@ -40,7 +40,17 @@ ndk-build
 
 A => "Fire" button
 
-B => Simulates a keystroke on the keyboard to start a game. TO8/TO8D/TO9+: 'B' key (BASIC 512), TO9: 'D' key (BASIC 128). If the game does not start, then maybe another BASIC must be used. This feature allows to start most games without the need for a keyboard.
+B => "Autostart Program". Simulates a keystroke on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated.
+
+| Media loaded | Thomson computer | Key                 |
+| ------------ | ---------------- | ------------------- |
+| Floppy disk  | TO8/TO8D/TO9+    | 'B' key (BASIC 512) |
+|              | TO9              | 'D' key (BASIC 128) |
+| Tape         | TO8/TO8D/TO9+    | 'C' key (BASIC 1.0) |
+|              | TO9              | 'E' key (BASIC 1.0) |
+| Cartridge    | All              | '0' key             |
+
+If the game does not start, then maybe another BASIC must be used.
 
 **Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the start button simulates a keystroke on the selected key. On controllers without Y/X keys, select can also be used to roll the virtual keyboard up.
 The order of the keys in the virtual keyboard is: digits (0->9) then letters (A->Z) then "Space" then "Enter".
