@@ -1,7 +1,0 @@
-# Cheats for file arkanoid_to8.fd with SHA1=b06bb5706591c6d2c1d6296fd22d6265fc1f25b8
-cheats = 1
-
-cheat0_desc = "Infinite Lifes"
-cheat0_code = "07CF96-05"
-cheat0_enable = false
-
