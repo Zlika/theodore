@@ -18,7 +18,6 @@
 #
 # This script downloads the list of games for Thomson computers
 # from the ScreenScraper site and generates a DAT file for RetroArch.
-# Requirements: lxml
 
 from collections import namedtuple, OrderedDict
 import datetime
@@ -32,8 +31,6 @@ SCREENSCRAPER_ROMINFOS_URL = SCREENSCRAPER_URL + "rominfos.php"
 THOMSON_PLATFORMID = 141
 
 Rom = namedtuple('Rom', ['filename', 'gamename', 'year', 'crc', 'md5', 'sha1'])
-
-total_roms = 0
 
 
 # Returns the list of ROM indexes for the given platform.
@@ -107,14 +104,11 @@ def get_screenscraper_rom_by_id(platformId, romid):
 
 # Print a ROM data in the dat format
 def print_dat_rom(rom):
-	global total_roms
-	total_roms += 1
 	print('')
 	print('game (')
 	print('\tname "' + rom.gamename + '"')
-	print('\tdescription "' + rom.gamename + '"')
 	if rom.year:
-		print('\tyear "' + rom.year + '"')
+		print('\treleaseyear ' + rom.year)
 	romline = '\trom ( name "' + rom.filename + '"'
 	if rom.crc:
 		romline += ' crc ' + rom.crc.strip().lower()
@@ -156,4 +150,3 @@ if __name__ == "__main__":
 	indexes = get_screenscraper_rom_letters(THOMSON_PLATFORMID)
 	for index in indexes:
 		print_screenscraper_roms_for_index(THOMSON_PLATFORMID, index)
-	print(total_roms + ' roms')

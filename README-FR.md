@@ -86,9 +86,9 @@ L'émulateur supporte la fonctionnalité de "save state" (sauvegarde instantané
 
 ### :innocent: Codes de triche
 
-L'émulateur permet d'utiliser des codes de triche ("cheat codes") au format suivant : 0AAAAA:DD, avec AAAAA l'adresse en RAM (en hexadécimal) et DD la valeur (en hexadécimal) qui sera écrite à l'adresse en question après chaque invocation de la fonction retro_run().
+L'émulateur est compatible avec la fonctionnalité "cheat code" de RetroArch (cf. l'article en anglais [Cheat code searching creation interface](https://www.libretro.com/index.php/upcoming-retroarch-1-7-4-cheat-code-searchingcreation-interface-with-rumble-features/) pour savoir comment utiliser cette fonctionnalité).
 
-Cf. le répertoire "cheat" qui contient des exemples de cheat codes ainsi qu'un script Python permettant de trouver des cheat codes à partir de plusieurs fichiers de sauvegarde instantanée (save states).
+Le répertoire [libretro-database/cht](https://github.com/Zlika/theodore/libretro-database/cht) contient des cheat codes pour certains jeux Thomson.
 
 ### Désassembleur / Debugger
 

@@ -86,9 +86,9 @@ The emulator supports libretro's "save state" feature. Under RetroArch, use the 
 
 ### :innocent: Cheat codes
 
-The emulator supports cheat codes with the following format: 0AAAAA:DD with AAAAA the RAM address (in hexadecimal) and DD the value (in hexadecimal) that will be written at the RAM address after each invocation of retro_run().
+The emulator is compatible with RetroArch's cheat codes feature (cf. [Cheat code searching creation interface](https://www.libretro.com/index.php/upcoming-retroarch-1-7-4-cheat-code-searchingcreation-interface-with-rumble-features/)).
 
-Cf. the "cheat" directory for some actual cheat codes, as well as a Python script that helps find cheat codes from a set of save state files.
+The [libretro-database/cht](https://github.com/Zlika/theodore/libretro-database/cht) directory includes cheat codes for some Thomson games.
 
 ### Disassembler / Debugger
 
