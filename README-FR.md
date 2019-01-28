@@ -88,7 +88,7 @@ L'émulateur supporte la fonctionnalité de "save state" (sauvegarde instantané
 
 L'émulateur est compatible avec la fonctionnalité "cheat code" de RetroArch (cf. l'article en anglais [Cheat code searching creation interface](https://www.libretro.com/index.php/upcoming-retroarch-1-7-4-cheat-code-searchingcreation-interface-with-rumble-features/) pour savoir comment utiliser cette fonctionnalité).
 
-Le répertoire [libretro-database/cht](https://github.com/Zlika/theodore/libretro-database/cht) contient des cheat codes pour certains jeux Thomson.
+Le dépôt [libretro-database-thomson](https://github.com/Zlika/libretro-database-thomson) contient des cheat codes pour certains jeux Thomson.
 
 ### Désassembleur / Debugger
 

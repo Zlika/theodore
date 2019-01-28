@@ -88,7 +88,7 @@ The emulator supports libretro's "save state" feature. Under RetroArch, use the 
 
 The emulator is compatible with RetroArch's cheat codes feature (cf. [Cheat code searching creation interface](https://www.libretro.com/index.php/upcoming-retroarch-1-7-4-cheat-code-searchingcreation-interface-with-rumble-features/)).
 
-The [libretro-database/cht](https://github.com/Zlika/theodore/libretro-database/cht) directory includes cheat codes for some Thomson games.
+The [libretro-database-thomson](https://github.com/Zlika/libretro-database-thomson) repository includes cheat codes for some Thomson games.
 
 ### Disassembler / Debugger
 
