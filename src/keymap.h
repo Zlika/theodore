@@ -239,7 +239,7 @@ const char libretroKeyCodeToThomsonMoScanCode[512] =
     -1,    /* 20 */ -1,    /* 21 */ -1,    /* 22 */ -1,    /* 23 */ -1,    /* 24 */ -1,    /* 25 */ -1,    /* 26 */
     -1,    /* SDLK_ESCAPE = 27 */
     -1,    /* 28 */ -1,    /* 29 */ -1,    /* 30 */ -1,    /* 31 */
-  0x39,    /* SDLK_SPACE = 32 */
+  0x20,    /* SDLK_SPACE = 32 */
   0x2f,    /* SDLK_EXCLAIM = 33 */
   0x1f,    /* SDLK_QUOTEDBL = 34 */
   0x1f,    /* SDLK_HASH = 35 */
