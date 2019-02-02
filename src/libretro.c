@@ -54,6 +54,9 @@ void linearFree(void* mem);
 #define CHEAT_SEP_POS     6
 // Pitch = length in bytes between two lines in video buffer
 #define PITCH             sizeof(uint32_t) * XBITMAP
+// Autorun: Number of frames to wait before simulating
+// the key stroke to start the program
+#define AUTORUN_DELAY     70
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -75,9 +78,12 @@ static int virtualkb_index = 0;
 static bool virtualkb_pressed = false;
 // scancode of the last key simulated by the virtual keyboard
 static int virtualkb_lastscancode = 0;
+// Autorun counter
+static int autorun_counter = -1;
 
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+|MO5" },
+    { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
@@ -515,6 +521,15 @@ void retro_run(void)
   update_input();
   apply_cheats();
 
+  if (autorun_counter > 0)
+  {
+    autorun_counter--;
+    if (autorun_counter == 0)
+    {
+      autostart_program();
+    }
+  }
+
   updated = false;
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
   {
@@ -557,8 +572,18 @@ static bool streq_nocase(const char *s1, const char *s2)
   return true;
 }
 
-// Load file with auto-detection of type based on the file extension:
-// k7 (*.k7), fd (*.fd) or memo7 (*.rom)
+static void check_autorun(void)
+{
+  struct retro_variable var = {0, 0};
+
+  var.key = PACKAGE_NAME"_autorun";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    autorun_counter = AUTORUN_DELAY;
+  }
+}
+
+// Load file with auto-detection of type based on the file extension.
 static bool load_file(const char *filename)
 {
   if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".k7"))
@@ -589,6 +614,7 @@ static bool load_file(const char *filename)
     if (log_cb) log_cb(RETRO_LOG_ERROR, "Unknown file type for file %s.\n", filename);
     return false;
   }
+  check_autorun();
   return true;
 }
 
