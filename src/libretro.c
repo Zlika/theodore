@@ -579,7 +579,10 @@ static void check_autorun(void)
   var.key = PACKAGE_NAME"_autorun";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
-    autorun_counter = AUTORUN_DELAY;
+    if (strcmp(var.value, "enabled") == 0)
+    {
+      autorun_counter = AUTORUN_DELAY;
+    }
   }
 }
 
