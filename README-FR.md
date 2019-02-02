@@ -40,15 +40,18 @@ ndk-build
 
 A => Bouton "Action"
 
-B => "Démarrer le programme". Simule la frappe d'une touche sur le clavier pour démarrer un jeu. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier. La touche simulée dépend du type de media chargé et de l'ordinateur émulé.
+B => "Démarrer le programme". Simule la frappe d'une touche (ou plusieurs sur le MO5) sur le clavier pour démarrer un jeu. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier. La touche simulée dépend du type de media chargé et de l'ordinateur émulé.
 
 | Media chargé | Modèle Thomson   | Touche                 |
 | ------------ | ---------------- | ---------------------- |
 | Disquette    | TO8/TO8D/TO9+    | Touche 'B' (BASIC 512) |
 |              | TO9              | Touche 'D' (BASIC 128) |
+|              | MO5              | RUN" + Entrée          |
 | Cassette     | TO8/TO8D/TO9+    | Touche 'C' (BASIC 1.0) |
 |              | TO9              | Touche 'E' (BASIC 1.0) |
-| Cartouche    | Tous             | Touche '0'             |
+|              | MO5              | RUN" + Entrée          |
+| Cartouche    | Tous sauf MO5    | Touche '0'             |
+|              | MO5              | Rien (cartouches déjà démarrées automatiquement sur le MO5) |
 
 Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilisé. 
 

@@ -81,6 +81,12 @@ static int virtualkb_lastscancode = 0;
 // Autorun counter
 static int autorun_counter = -1;
 
+#define MO5_AUTOSTART_KEYS_LENGTH 5
+// Key strokes to start a game on MO5
+static const int MO5_AUTOSTART_KEYS[MO5_AUTOSTART_KEYS_LENGTH] =
+                                        { RETROK_r, RETROK_u, RETROK_n, RETROK_2, RETROK_RETURN };
+static int current_mo5_key_pos = -1;
+
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+|MO5" },
     { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
@@ -307,6 +313,29 @@ static void print_current_virtualkb_key()
   environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
 }
 
+static void autostart_mo5_begin(void)
+{
+  current_mo5_key_pos = 0;
+  virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[MO5_AUTOSTART_KEYS[0]];
+  keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], true);
+}
+
+static void autostart_mo5_continue(void)
+{
+  if (current_mo5_key_pos >= 0)
+  {
+    virtualkb_pressed = true;
+    virtualkb_lastscancode = libretroKeyCodeToThomsonMoScanCode[
+                                                     MO5_AUTOSTART_KEYS[++current_mo5_key_pos]];
+    keyboard(virtualkb_lastscancode, true);
+    if (current_mo5_key_pos == MO5_AUTOSTART_KEYS_LENGTH - 1)
+    {
+      keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], false);
+      current_mo5_key_pos = -1;
+    }
+  }
+}
+
 // Try to start the currently loaded game by simulating keystrokes on the keyboard.
 static void autostart_program(void)
 {
@@ -318,6 +347,10 @@ static void autostart_program(void)
       if (GetThomsonFlavor() == TO9)
       {
         virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_d];
+      }
+      else if (GetThomsonFlavor() == MO5)
+      {
+        autostart_mo5_begin();
       }
       else
       {
@@ -331,6 +364,10 @@ static void autostart_program(void)
       {
         virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_e];
       }
+      else if (GetThomsonFlavor() == MO5)
+      {
+        autostart_mo5_begin();
+      }
       else
       {
         virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_c];
@@ -338,7 +375,11 @@ static void autostart_program(void)
       break;
     case MEDIA_CARTRIDGE:
       // Cartridges are started by the '0' key
-      virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_0];
+      // (on MO5, cartridge programs are already autostarted)
+      if (GetThomsonFlavor() != MO5)
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_0];
+      }
       break;
     default:
       virtualkb_lastscancode = -1;
@@ -415,6 +456,7 @@ static void update_input(void)
     {
       virtualkb_pressed = false;
       keyboard(virtualkb_lastscancode, false);
+      autostart_mo5_continue();
     }
   }
 }

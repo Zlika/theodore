@@ -40,15 +40,18 @@ ndk-build
 
 A => "Fire" button
 
-B => "Autostart Program". Simulates a keystroke on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated.
+B => "Autostart Program". Simulates a keystroke (or several keystrokes for the MO5) on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated.
 
 | Media loaded | Thomson computer | Key                 |
 | ------------ | ---------------- | ------------------- |
 | Floppy disk  | TO8/TO8D/TO9+    | 'B' key (BASIC 512) |
 |              | TO9              | 'D' key (BASIC 128) |
+|              | MO5              | RUN" + Enter        |
 | Tape         | TO8/TO8D/TO9+    | 'C' key (BASIC 1.0) |
 |              | TO9              | 'E' key (BASIC 1.0) |
-| Cartridge    | All              | '0' key             |
+|              | MO5              | RUN" + Enter        |
+| Cartridge    | All but MO5      | '0' key             |
+|              | MO5              | Nothing (cartridges are already autostarted on MO5) |
 
 If the game does not start, then maybe another BASIC must be used.
 
