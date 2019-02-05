@@ -94,7 +94,7 @@ static const int *mo5_autostart_keys = MO5_AUTOSTART_BASIC_KEYS;
 static int current_mo5_autostart_key_pos = -1;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5" },
+    { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6" },
     { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
@@ -463,6 +463,10 @@ static void change_model(const char *model)
   else if (strcmp(model, "MO5") == 0)
   {
     SetThomsonModel(MO5);
+  }
+  else if (strcmp(model, "MO6") == 0)
+  {
+    SetThomsonModel(MO6);
   }
   // Default: TO8
   else

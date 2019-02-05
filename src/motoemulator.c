@@ -36,6 +36,7 @@
 #include "rom/rom_to9.inc"
 #include "rom/rom_to9p.inc"
 #include "rom/rom_mo5.inc"
+#include "rom/rom_mo6.inc"
 
 #define VBL_NUMBER_MAX  2
 // Number of keys of the TO8D keyboard
@@ -59,6 +60,7 @@ static SystemRom ROM_TO8D = { to8_basic_rom, to8_basic_patch, to8d_monitor_rom, 
 static SystemRom ROM_TO9 = { to9_basic_rom, to9_basic_patch, to9_monitor_rom, to9_monitor_patch, NULL, NULL };
 static SystemRom ROM_TO9P = { to9p_basic_rom, to9p_basic_patch, to9p_monitor_rom, to9p_monitor_patch, NULL, NULL };
 static SystemRom ROM_MO5 = { mo5_v2_basic_rom, mo5_v2_basic_patch, mo5_v2_monitor_rom, mo5_v2_monitor_patch, cd90_640_rom, cd90_640_patch };
+static SystemRom ROM_MO6 = { mo6_v3_basic128_rom, mo6_v3_basic128_patch, mo6_v3_basic1_rom, mo6_v3_basic1_patch, NULL, NULL };
 
 static ThomsonModel currentModel = TO8;
 static SystemRom *rom = &ROM_TO8;
@@ -219,6 +221,9 @@ void SetThomsonModel(ThomsonModel model)
       case MO5:
         rom = &ROM_MO5;
         break;
+      case MO6:
+        rom = &ROM_MO6;
+        break;
       default:
         return;
     }
@@ -239,7 +244,7 @@ void keyboard(int scancode, bool down)
   // Filter false key down events when the key was already down
   if (down && !touche[scancode]) return;
   touche[scancode] = down ? 0x00 : 0x80;
-  if (currentModel == MO5)
+  if ((currentModel == MO5) || (currentModel == MO6))
   {
     return;
   }
@@ -505,7 +510,7 @@ void Initprog(void)
 
   SetVideoMode(VIDEO_320X16);
 
-  if (currentModel != MO5)
+  if (currentModel != MO5 && currentModel != MO6)
   {
     ramuser = ram - 0x2000;
     Mputc = MputTo;
