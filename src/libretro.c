@@ -49,9 +49,6 @@ void linearFree(void* mem);
 #define AUDIO_SAMPLE_RATE 22050
 #define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
 #define CPU_FREQUENCY     1000000
-#define MAX_CHEATS        10
-#define CHEAT_LENGTH      9
-#define CHEAT_SEP_POS     6
 // Pitch = length in bytes between two lines in video buffer
 #define PITCH             sizeof(uint32_t) * XBITMAP
 // Autorun: Number of frames to wait before simulating
@@ -98,13 +95,6 @@ static const struct retro_variable prefs[] = {
 #endif
     { NULL, NULL }
 };
-
-typedef struct
-{
-  int address;
-  char value;
-} Cheat;
-static Cheat cheats[MAX_CHEATS] = { {0, 0} };
 
 typedef enum { NO_MEDIA, MEDIA_FLOPPY, MEDIA_TAPE, MEDIA_CARTRIDGE } Media;
 static Media currentMedia = NO_MEDIA;
@@ -246,52 +236,14 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_cheat_reset(void)
 {
-  if (log_cb) log_cb(RETRO_LOG_INFO, "Reset cheats.\n");
-  memset(cheats, 0, sizeof(cheats));
-}
-
-static bool parse_cheat(const char *code, Cheat *cheat)
-{
-  if ((strlen(code) != CHEAT_LENGTH) || (code[CHEAT_SEP_POS] != '-'))
-  {
-    return false;
-  }
-  cheat->address = strtol(code, NULL, 16);
-  cheat->value = (char) strtol(code + CHEAT_SEP_POS + 1, NULL, 16);
-  if (cheat->address <= 0 || cheat->address >= RAM_SIZE)
-  {
-    return false;
-  }
-  return true;
 }
 
 void retro_cheat_set(unsigned index, bool enabled, const char *code)
 {
-  Cheat cheat;
-  if (log_cb) log_cb(RETRO_LOG_INFO, "Setting cheat %s at index %d, enabled=%s.\n",
-                    code, index, enabled ? "yes" : "no");
-  if ((index < MAX_CHEATS) && enabled)
-  {
-    if (!parse_cheat(code, &cheat))
-    {
-      if (log_cb) log_cb(RETRO_LOG_ERROR, "Wrong cheat format");
-      return;
-    }
-    cheats[index] = cheat;
-  }
-}
-
-static void apply_cheats()
-{
-  int i;
-  for (i = 0; i < MAX_CHEATS; i++)
-  {
-    if (cheats[i].address == 0)
-    {
-      return;
-    }
-    ram[cheats[i].address] = cheats[i].value;
-  }
+  // Unused parameters
+  (void) index;
+  (void) enabled;
+  (void) code;
 }
 
 void retro_reset(void)
@@ -561,7 +513,6 @@ void retro_run(void)
   }
 
   update_input();
-  apply_cheats();
 
   if (autorun_counter > 0)
   {

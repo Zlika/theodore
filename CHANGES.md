@@ -1,8 +1,9 @@
-Next Release
+Release 1.6 (2019/02/05)
 ===========
 * Add MO5 emulation.
 * A more complex heuristic is used to start the game when the 'B' button of the gamepad is pressed, depending on the media type and of the emulated computer (cf. README file for more info).
 * Add core option to autorun the game.
+* Remove custom cheat code management (useless since RetroArch 1.7.4 and its built-in cheat code feature).
 
 Release 1.5 (2018/12/29)
 ===========
