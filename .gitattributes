@@ -5,3 +5,5 @@
 *.c text
 *.h text
 
+# Overrides for Github language detection feature (cf. https://github.com/github/linguist#overrides)
+src/rom/*.inc linguist-vendored
