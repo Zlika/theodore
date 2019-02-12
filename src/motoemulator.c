@@ -92,8 +92,8 @@ static int vblnumber;       //compteur du nombre de vbl avant affichage
 static int displayflag;     //indicateur pour l'affichage
 int bordercolor;            //couleur de la bordure de l'écran
 //divers
-int sound;                  //niveau du haut-parleur
-int mute;                   //mute flag
+static int sound;                  //niveau du haut-parleur
+static int mute;                   //mute flag
 static int timer6846;       //compteur du timer 6846
 static int latch6846;       //registre latch du timer 6846
 static int keyb_irqcount;   //nombre de cycles avant la fin de l'irq clavier
@@ -189,7 +189,7 @@ E7C7= registre temporisateur d'octet de poids faible (TLSB)
 
 int16_t GetAudioSample(void)
 {
-  return (sound * 65535 / MAX_SOUND_LEVEL) - (65536 / 2);
+  return mute ? 0 : (sound * 65535 / MAX_SOUND_LEVEL) - (65536 / 2);
 }
 
 void SetThomsonFlavor(ThomsonFlavor flavor)

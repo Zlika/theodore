@@ -1,3 +1,7 @@
+Next Release
+===========
+* Fix sound in some games (#8).
+
 Release 1.6 (2019/02/05)
 ===========
 * Add MO5 emulation.
