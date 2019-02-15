@@ -358,6 +358,9 @@ void RunIoOpcode(int opcode)
     case 0x4e: Readpenxy(1); break;      // read mouse position
     case 0x51: Print(); break;           // print a character
     case 0x52: Readmousebutton(); break; // test mouse click
+    // illegal opcode used by some Loriciel games.
+    // dcmoto emulates it by reading the next byte of the tape.
+    case 0x11f1: ReadByteTape(); break;
     default: break;                      // invalid opcode
   }
 }
