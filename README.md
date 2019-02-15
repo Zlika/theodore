@@ -117,3 +117,5 @@ From the command-line, the following commands are then available:
 * `bp write xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator writes memory at the given address.
 * `read xxxx` (with xxxx an hexadecimal number): read the value at the given memory address.
 * `write xxxx yy` (with xxxx and yy hexadecimal numbers): write the value yy at memory address xxxx.
+
+Another core's option "Break on illegal opcode", allows to break and enter step-by-step debugging when an illegal opcode is met.

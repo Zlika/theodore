@@ -117,3 +117,5 @@ Depuis la ligne de commande, les commandes suivantes sont ensuite disponibles :
 * `bp write xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de l'écriture à l'adresse donnée.
 * `read xxxx` (avec xxxx un nombre hexadécimal): lit la valeur en mémoire à l'adresse données.
 * `write xxxx yy` (avec xxxx et yy des nombres hexadécimaux): écrit la valeur yy en mémoire à l'adresse xxxx.
+
+Une autre option de l'émulateur, "Break on illegal opcode", permet de passer automatiquement en mode pas-à-pas quand un opcode illégal est rencontré.

@@ -92,6 +92,7 @@ static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
 #ifdef THEODORE_DASM
     { PACKAGE_NAME"_disassembler", "Interactive disassembler; disabled|enabled" },
+    { PACKAGE_NAME"_break_illegal_opcode", "Break on illegal opcode; disabled|enabled" },
 #endif
     { NULL, NULL }
 };
@@ -485,6 +486,18 @@ static void check_variables(void)
     else
     {
       debugger_setMode(DEBUG_DISABLED);
+    }
+  }
+  var.key = PACKAGE_NAME"_break_illegal_opcode";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    if (strcmp(var.value, "enabled") == 0)
+    {
+      debugger_set_break_on_illegal_opcode(true);
+    }
+    else
+    {
+      debugger_set_break_on_illegal_opcode(false);
     }
   }
 #endif

@@ -25,6 +25,9 @@
 #include "6809cpu.h"
 #include "sap.h"
 #include "motoemulator.h"
+#ifdef THEODORE_DASM
+#include "debugger.h"
+#endif
 
 #define SECTOR_SIZE      256  // Size in bytes of a double density sector
 #define NB_TRACKS         80  // Number of tracks in a floppy
@@ -361,6 +364,10 @@ void RunIoOpcode(int opcode)
     // illegal opcode used by some Loriciel games.
     // dcmoto emulates it by reading the next byte of the tape.
     case 0x11f1: ReadByteTape(); break;
-    default: break;                      // invalid opcode
+    default:
+#ifdef THEODORE_DASM
+      debugger_illegal_opcode();
+#endif
+      break;                             // invalid opcode
   }
 }

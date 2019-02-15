@@ -21,6 +21,8 @@
 #ifndef __DEBUGGER_H
 #define __DEBUGGER_H
 
+#include "boolean.h"
+
 typedef enum
 {
   /* Debugger disabled: no disassembly. */
@@ -42,5 +44,11 @@ void debug(unsigned short address);
 void debug_mem_read(unsigned short address);
 /* Check if a breakpoint is set for a memory write at the given address. */
 void debug_mem_write(unsigned short address);
+/* Sets the debugger mode to STEP and break on the current instruction. */
+void debugger_break(void);
+/* Enable/disable break on illegal opcode. */
+void debugger_set_break_on_illegal_opcode(bool enabled);
+/* Function to be called when an illegal opcode is executed. */
+void debugger_illegal_opcode(void);
 
 #endif
