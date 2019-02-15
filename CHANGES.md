@@ -1,7 +1,7 @@
 Next Release
 ===========
 * Fix sound in some games (#8).
-* Add emulation of illegal opcode 0x11F1, fixing some Loriciel games on MO5 (#10).
+* Add emulation of illegal opcode 0x11F1. Fixes some MO5 games (#10).
 * Add core option to break on illegal opcodes in the debugger.
 
 Release 1.6 (2019/02/05)
