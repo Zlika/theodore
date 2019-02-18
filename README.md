@@ -65,13 +65,16 @@ The order of the keys in the virtual keyboard is: digits (0->9) then letters (A-
 | STOP  | TAB  |
 | CNT  | CTRL  |
 | CAPSLOCK  | CAPSLOCK  |
-| ACC  | ALT  |
+| ACC  | BACKSPACE  |
 | HOME  | HOME  |
 | Arrows  | Arrows  |
 | INS  | INSERT  |
 | EFF  | DEL  |
+| RAZ  | ALT  |
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
+| Yellow key (MO5) | Left SHIFT |
+| BASIC (MO5) | Right SHIFT |
 
 RetroArch already uses lots of keyboard shortcuts for its own need that interfere with the core's keyboard emulation. To avoid this problem, configure RetroArch with a "Hotkey", as indicated in [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
 

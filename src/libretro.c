@@ -439,20 +439,10 @@ static void check_variables(void)
     if (strncmp(var.value, "TO", 2) == 0)
     {
       libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
-      thomson_acc = THOMSON_TO_ACC;
-      thomson_capslock = THOMSON_TO_CAPSLOCK;
-      thomson_left_shift = THOMSON_TO_LEFT_SHIFT;
-      thomson_right_shift = THOMSON_TO_RIGHT_SHIFT;
-      thomson_cnt = THOMSON_TO_CNT;
     }
     else
     {
       libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMoScanCode;
-      thomson_acc = THOMSON_MO_ACC;
-      thomson_capslock = -1;
-      thomson_left_shift = THOMSON_MO_LEFT_SHIFT;
-      thomson_right_shift = -1;
-      thomson_cnt = THOMSON_TO_CNT;
     }
     if (strcmp(var.value, "TO8") == 0)
     {
@@ -630,39 +620,11 @@ static bool load_file(const char *filename)
 static void keyboard_cb(bool down, unsigned keycode,
     uint32_t character, uint16_t key_modifiers)
 {
-  (void) character; // Unused parameter
+  (void) character, (void) key_modifiers; // Unused parameters
   //printf( "Down: %s, Code: %d, Char: %u, Mod: %u.\n",
   //        down ? "yes" : "no", keycode, character, key_modifiers);
 
-  // Thomson <-> PC keyboard mapping for special keys
-  // STOP <-> TAB
-  // CNT <-> CTRL
-  // CAPSLOCK <-> CAPSLOCK
-  // ACC <-> ALT
-  // HOME <-> HOME
-  // Arrows <-> arrows
-  // INS <-> INSERT
-  // EFF <-> DEL
-  // F1-F5 <-> F1-F5
-  // F6-F10 <-> SHIFT+F1-F5
-  if (key_modifiers & RETROKMOD_SHIFT)
-  {
-    keyboard(thomson_left_shift, down);
-  }
-  if (key_modifiers & RETROKMOD_CTRL)
-  {
-    keyboard(thomson_cnt, down);
-  }
-  if (key_modifiers & RETROKMOD_ALT)
-  {
-    keyboard(thomson_acc, down);
-  }
-  if (keycode == RETROK_CAPSLOCK && (key_modifiers & RETROKMOD_CAPSLOCK))
-  {
-    keyboard(thomson_capslock, down);
-  }
-
-  if (keycode < 320)
+  if (keycode <= RETROK_LAST)
   {
     unsigned char scancode = libretroKeyCodeToThomsonScanCode[keycode];
     if (scancode != 0xFF)

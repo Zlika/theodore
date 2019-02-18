@@ -65,13 +65,16 @@ L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A 
 | STOP  | TAB  |
 | CNT  | CTRL  |
 | CAPSLOCK  | CAPSLOCK  |
-| ACC  | ALT  |
+| ACC  | BACKSPACE  |
 | HOME  | HOME  |
 | Flèches  | Flèches  |
 | INS  | INSERT  |
 | EFF  | DEL  |
+| RAZ  | ALT  |
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
+| Touche jaune (MO5) | SHIFT Gauche |
+| BASIC (MO5) | SHIFT Droit |
 
 RetroArch utilise beaucoup de raccourcis clavier, ce qui interfère avec l'émulation du clavier de ce core. Pour éviter ce problème, il suffit de configurer une "Hotkey" pour RetroArch, comme indiqué dans [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
 

@@ -3,7 +3,7 @@ Next Release
 * Fix sound in some games (#8).
 * Add emulation of illegal opcode 0x11F1. Fixes some MO5 games (#10).
 * Add core option to break on illegal opcodes in the debugger.
-* Fix number keys emulation on TO computers (#11).
+* Fix keyboard emulation (#11).
 
 Release 1.6 (2019/02/05)
 ===========
