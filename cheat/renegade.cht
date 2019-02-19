@@ -1,7 +1,0 @@
-# Cheats for file renegade_to8.fd with SHA1=8f357f43756ddf535e9e35c5bd904b7df81f3dca
-cheats = 1
-
-cheat0_desc = "Infinite Lifes"
-cheat0_code = "003E12-03"
-cheat0_enable = false
-

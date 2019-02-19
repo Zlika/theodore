@@ -35,6 +35,7 @@ static DebuggerMode dbg_mode = DEBUG_DISABLED;
 static char dbg_instruction[DBG_ARRAY_LENGTH] = { 0 };
 static char dbg_registers[DBG_ARRAY_LENGTH] = { 0 };
 static char dbg_command[DBG_ARRAY_LENGTH] = { 0 };
+static bool break_on_illegal_opcode = false;
 
 // Breakpoints on the values of the program counter
 static unsigned short bp_pc[BP_LENGTH] = { 0 };
@@ -261,4 +262,25 @@ void debug_mem_read(unsigned short address)
 void debug_mem_write(unsigned short address)
 {
   debug_mem(address, false);
+}
+
+void debugger_break(void)
+{
+  debugger_setMode(DEBUG_STEP);
+  printf("%s %s\n", dbg_instruction, dbg_registers);
+  read_debugger_command();
+}
+
+void debugger_set_break_on_illegal_opcode(bool enabled)
+{
+  break_on_illegal_opcode = enabled;
+}
+
+void debugger_illegal_opcode(void)
+{
+  if (break_on_illegal_opcode)
+  {
+    printf("Break on illegal opcode\n");
+    debugger_break();
+  }
 }

@@ -40,7 +40,20 @@ ndk-build
 
 A => "Fire" button
 
-B => Simulates a keystroke on the keyboard to start a game. TO8/TO8D/TO9+: 'B' key (BASIC 512), TO9: 'D' key (BASIC 128). If the game does not start, then maybe another BASIC must be used. This feature allows to start most games without the need for a keyboard.
+B => "Autostart Program". Simulates a keystroke (or several keystrokes for the MO5) on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated. On MO5, the command used depends on the format detected for the first file of the tape (BAS => RUN", BIN => LOADM"",,R).
+
+| Media loaded | Thomson computer | Key                 |
+| ------------ | ---------------- | ------------------- |
+| Floppy disk  | TO8/TO8D/TO9+    | 'B' key (BASIC 512) |
+|              | TO9              | 'D' key (BASIC 128) |
+|              | MO5              | RUN" + Enter        |
+| Tape         | TO8/TO8D/TO9+    | 'C' key (BASIC 1.0) |
+|              | TO9              | 'E' key (BASIC 1.0) |
+|              | MO5              | RUN" or LOADM"",,R + Enter |
+| Cartridge    | All but MO5      | '0' key             |
+|              | MO5              | Nothing (cartridges are already autostarted on MO5) |
+
+If the game does not start, then maybe another BASIC must be used.
 
 **Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the start button simulates a keystroke on the selected key. On controllers without Y/X keys, select can also be used to roll the virtual keyboard up.
 The order of the keys in the virtual keyboard is: digits (0->9) then letters (A->Z) then "Space" then "Enter".
@@ -52,13 +65,16 @@ The order of the keys in the virtual keyboard is: digits (0->9) then letters (A-
 | STOP  | TAB  |
 | CNT  | CTRL  |
 | CAPSLOCK  | CAPSLOCK  |
-| ACC  | ALT  |
+| ACC  | BACKSPACE  |
 | HOME  | HOME  |
 | Arrows  | Arrows  |
 | INS  | INSERT  |
 | EFF  | DEL  |
+| RAZ  | ALT  |
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
+| Yellow key (MO5) | Left SHIFT |
+| BASIC (MO5) | Right SHIFT |
 
 RetroArch already uses lots of keyboard shortcuts for its own need that interfere with the core's keyboard emulation. To avoid this problem, configure RetroArch with a "Hotkey", as indicated in [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
 
@@ -68,7 +84,7 @@ The emulator can read the following file formats: *.fd and *.sap (floppy disks),
 
 ### Thomson flavors
 
-By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to other models (currently: TO8, TO8D, TO9, TO9+, MO5).
+By default, the core tries to guess the required Thomson model based on the name of the file loaded (e.g. saphir_to8.fd will switch to TO8, pulsar_mo5.k7 will switch to MO5 and so on). The fallback is to emulate a TO8 computer. Using the "Thomson flavor" option you can force the emulation of a particular model (currently: TO8, TO8D, TO9, TO9+, MO5), or use "Auto" for the default "best guess" behavior.
 
 ### Save states
 
@@ -76,9 +92,9 @@ The emulator supports libretro's "save state" feature. Under RetroArch, use the 
 
 ### :innocent: Cheat codes
 
-The emulator supports cheat codes with the following format: 0AAAAA:DD with AAAAA the RAM address (in hexadecimal) and DD the value (in hexadecimal) that will be written at the RAM address after each invocation of retro_run().
+The emulator is compatible with RetroArch's cheat codes feature (cf. [Cheat code searching creation interface](https://www.libretro.com/index.php/upcoming-retroarch-1-7-4-cheat-code-searchingcreation-interface-with-rumble-features/)).
 
-Cf. the "cheat" directory for some actual cheat codes, as well as a Python script that helps find cheat codes from a set of save state files.
+The [libretro-database-thomson](https://github.com/Zlika/libretro-database-thomson) repository includes cheat codes for some Thomson games.
 
 ### Disassembler / Debugger
 
@@ -104,3 +120,5 @@ From the command-line, the following commands are then available:
 * `bp write xxxx` (with xxxx an hexadecimal number): add a breakpoint when the emulator writes memory at the given address.
 * `read xxxx` (with xxxx an hexadecimal number): read the value at the given memory address.
 * `write xxxx yy` (with xxxx and yy hexadecimal numbers): write the value yy at memory address xxxx.
+
+Another core's option, "Break on illegal opcode", allows to break and enter step-by-step debugging when an illegal opcode is met.

@@ -9,5 +9,6 @@ obj
 .cproject
 .project
 .settings/
+.pydevproject
 
 *~

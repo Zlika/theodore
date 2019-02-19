@@ -25,6 +25,9 @@
 #include "6809cpu.h"
 #include "sap.h"
 #include "motoemulator.h"
+#ifdef THEODORE_DASM
+#include "debugger.h"
+#endif
 
 #define SECTOR_SIZE      256  // Size in bytes of a double density sector
 #define NB_TRACKS         80  // Number of tracks in a floppy
@@ -278,7 +281,7 @@ static void WriteByteTape(void)
   }
 }
 
-static void ReadBitTape()
+static void ReadBitTape(void)
 {
   static int k7octet = 0;
   static int k7bit = 0;
@@ -325,9 +328,9 @@ static void Readpenxy(int device)
   int k;
   if((xpen < 0) || (xpen >= 640)) {CC |= 1; return;} // x out of bounds
   if((ypen < 0) || (ypen >= 200)) {CC |= 1; return;} // y out of bounds
-  k = (port[0x1c] == 0x2a) ? 0 : 1; // 40 columns mode: x divided by 2
   if (is_to)
   {
+    k = (port[0x1c] == 0x2a) ? 0 : 1; // 40 columns mode: x divided by 2
     if(device > 0) //mouse
     {
       Mputw(0x60d8, xpen >> k);
@@ -338,7 +341,7 @@ static void Readpenxy(int device)
   }
   else
   {
-    Mputw(S+6, xpen);
+    Mputw(S+6, xpen >> 1); // MO5 has an horizontal resolution of 320 pixels
     Mputw(S+8, ypen);
   }
   CC &= 0xfe;
@@ -358,6 +361,13 @@ void RunIoOpcode(int opcode)
     case 0x4e: Readpenxy(1); break;      // read mouse position
     case 0x51: Print(); break;           // print a character
     case 0x52: Readmousebutton(); break; // test mouse click
-    default: break;                      // invalid opcode
+    // illegal opcode used by some Loriciel games.
+    // dcmoto emulates it by reading the next byte of the tape.
+    case 0x11f1: ReadByteTape(); break;
+    default:
+#ifdef THEODORE_DASM
+      debugger_illegal_opcode();
+#endif
+      break;                             // invalid opcode
   }
 }

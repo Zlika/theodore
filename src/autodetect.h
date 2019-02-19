@@ -16,25 +16,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Mapping Thomson <-> PC keyboard and definition of the virtual keyboard */
+/* Auto-detection functions */
 
-#ifndef __KEYMAP_H
-#define __KEYMAP_H
+#ifndef __AUTODETECT_H
+#define __AUTODETECT_H
 
-#include "libretro-common/include/libretro.h"
+#include "boolean.h"
 
-/* Mapping libretro -> Thomson TO scancodes */
-extern const char libretroKeyCodeToThomsonToScanCode[RETROK_LAST];
+/* Returns true if the first file of the tape has a BAS extension, false otherwise. */
+bool autodetect_tape_first_file_is_basic(const char *filename);
+/* Returns the name of the Thomson model found in the name of the file,
+   or an empty string if not found. */
+char *autodetect_model(const char *filename);
 
-/* Mapping libretro -> Thomson MO scancodes */
-extern const char libretroKeyCodeToThomsonMoScanCode[RETROK_LAST];
-
-/* Mapping libretro -> Thomson scancodes for the current MO/TO version */
-extern const char *libretroKeyCodeToThomsonScanCode;
-
-#define VIRTUALKB_NB_KEYS 38
-extern const int virtualkb_keysyms[VIRTUALKB_NB_KEYS];
-extern const char* virtualkb_chars[VIRTUALKB_NB_KEYS];
-
-#endif /* __KEYMAP_H */
-
+#endif /* __AUTODETECT_H */

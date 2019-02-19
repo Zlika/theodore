@@ -62,7 +62,7 @@ static const int intens[16] = {0,100,127,147,163,179,191,203,215,223,231,239,243
 #define ARGB(a,r,g,b) (((a) << 24) + ((r) << 16) + ((g) << 8) + (b))
 
 // Initialisation palette ////////////////////////////////////////////////////
-void InitPalette()
+void InitPalette(void)
 {
   int i, j;
   // A la mise sous tension, le circuit palette est programmé pour restituer

@@ -40,7 +40,20 @@ ndk-build
 
 A => Bouton "Action"
 
-B => Simule la frappe d'une touche sur le clavier pour démarrer un jeu. TO8/TO8D/TO9+ : touche 'B' (BASIC 512), TO9 : touche 'D' (BASIC 128). Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilisé. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier.
+B => "Démarrer le programme". Simule la frappe d'une touche (ou plusieurs sur le MO5) sur le clavier pour démarrer un jeu. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier. La touche simulée dépend du type de media chargé et de l'ordinateur émulé. Sur MO5, la commande utilisée dépend du format détecté pour le premier fichier de la cassette (BAS => RUN", BIN => LOADM"",,R).
+
+| Media chargé | Modèle Thomson   | Touche                 |
+| ------------ | ---------------- | ---------------------- |
+| Disquette    | TO8/TO8D/TO9+    | Touche 'B' (BASIC 512) |
+|              | TO9              | Touche 'D' (BASIC 128) |
+|              | MO5              | RUN" + Entrée          |
+| Cassette     | TO8/TO8D/TO9+    | Touche 'C' (BASIC 1.0) |
+|              | TO9              | Touche 'E' (BASIC 1.0) |
+|              | MO5              | RUN" ou LOADM"",,R + Entrée |
+| Cartouche    | Tous sauf MO5    | Touche '0'             |
+|              | MO5              | Rien (cartouches déjà démarrées automatiquement sur le MO5) |
+
+Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilisé. 
 
 **Fonctionnalité de clavier virtuel :** les boutons Y/X de la manette permettent de faire défiler des chiffres/lettres (Y=défilement vers le bas, X=défilement vers le haut). La bouton "start" simule un appui sur la touche choisie. Pour les manettes sans boutons Y/X, le bouton "select" peut être aussi utilisé pour faire défiler les touches du clavier virtuel.
 L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A à Z) puis "Espace" puis "Entrée".
@@ -52,13 +65,16 @@ L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A 
 | STOP  | TAB  |
 | CNT  | CTRL  |
 | CAPSLOCK  | CAPSLOCK  |
-| ACC  | ALT  |
+| ACC  | BACKSPACE  |
 | HOME  | HOME  |
 | Flèches  | Flèches  |
 | INS  | INSERT  |
 | EFF  | DEL  |
+| RAZ  | ALT  |
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
+| Touche jaune (MO5) | SHIFT Gauche |
+| BASIC (MO5) | SHIFT Droit |
 
 RetroArch utilise beaucoup de raccourcis clavier, ce qui interfère avec l'émulation du clavier de ce core. Pour éviter ce problème, il suffit de configurer une "Hotkey" pour RetroArch, comme indiqué dans [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
 
@@ -68,7 +84,7 @@ L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquet
 
 ### Variantes Thomson émulées
 
-Par défaut, un ordinateur T08 est émulé. En utilisant l'option "Thomson flavor", il est possible d'émuler d'autres versions (actuellement : TO8, TO8D, TO9, TO9+, MO5).
+Par défaut, l'émulateur essaye de déduire le modèle d'ordinateur à émuler en se basant sur le nom du fichier chargé (par exemple : saphir_to8.fd utilisera un TO8, pulsar_mo5.k7 utilisera un MO5, etc...). En dernier recours, un TO8 est émulé. En utilisant l'option "Thomson flavor", il est possible de forcer l'émulation d'un modèle particulier (actuellement : TO8, TO8D, TO9, TO9+, MO5), ou d'utiliser l'option "Auto" décrite précédemment.
 
 ### Sauvegardes instantanées
 
@@ -76,9 +92,9 @@ L'émulateur supporte la fonctionnalité de "save state" (sauvegarde instantané
 
 ### :innocent: Codes de triche
 
-L'émulateur permet d'utiliser des codes de triche ("cheat codes") au format suivant : 0AAAAA:DD, avec AAAAA l'adresse en RAM (en hexadécimal) et DD la valeur (en hexadécimal) qui sera écrite à l'adresse en question après chaque invocation de la fonction retro_run().
+L'émulateur est compatible avec la fonctionnalité "cheat code" de RetroArch (cf. l'article en anglais [Cheat code searching creation interface](https://www.libretro.com/index.php/upcoming-retroarch-1-7-4-cheat-code-searchingcreation-interface-with-rumble-features/) pour savoir comment utiliser cette fonctionnalité).
 
-Cf. le répertoire "cheat" qui contient des exemples de cheat codes ainsi qu'un script Python permettant de trouver des cheat codes à partir de plusieurs fichiers de sauvegarde instantanée (save states).
+Le dépôt [libretro-database-thomson](https://github.com/Zlika/libretro-database-thomson) contient des cheat codes pour certains jeux Thomson.
 
 ### Désassembleur / Debugger
 
@@ -104,3 +120,5 @@ Depuis la ligne de commande, les commandes suivantes sont ensuite disponibles :
 * `bp write xxxx` (avec xxxx un nombre hexadécimal) : ajout d'un point d'arrêt lors de l'écriture à l'adresse donnée.
 * `read xxxx` (avec xxxx un nombre hexadécimal): lit la valeur en mémoire à l'adresse données.
 * `write xxxx yy` (avec xxxx et yy des nombres hexadécimaux): écrit la valeur yy en mémoire à l'adresse xxxx.
+
+Une autre option de l'émulateur, "Break on illegal opcode", permet de passer automatiquement en mode pas-à-pas quand un opcode illégal est rencontré.

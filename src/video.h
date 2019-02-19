@@ -44,7 +44,7 @@ void Nextline(void);
 // Modification de la palette
 void Palette(int n, int r, int v, int b);
 // Initialisation palette
-void InitPalette();
+void InitPalette(void);
 
 // The following functions are used for libretro's save states feature.
 // Returns the amount of data required to serialize the internal state of the video module.

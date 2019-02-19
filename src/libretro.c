@@ -26,6 +26,7 @@
 #ifdef THEODORE_DASM
 #include "debugger.h"
 #endif
+#include "autodetect.h"
 #include "devices.h"
 #include "keymap.h"
 #include "sap.h"
@@ -49,11 +50,11 @@ void linearFree(void* mem);
 #define AUDIO_SAMPLE_RATE 22050
 #define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
 #define CPU_FREQUENCY     1000000
-#define MAX_CHEATS        10
-#define CHEAT_LENGTH      9
-#define CHEAT_SEP_POS     6
 // Pitch = length in bytes between two lines in video buffer
 #define PITCH             sizeof(uint32_t) * XBITMAP
+// Autorun: Number of frames to wait before simulating
+// the key stroke to start the program
+#define AUTORUN_DELAY     70
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -69,30 +70,44 @@ static int16_t audio_stereo_buffer[2*AUDIO_SAMPLE_PER_FRAME];
 
 // nb of thousandth of cycles in excess to run the next time
 static int excess = 0;
+
 // current index in virtualkb_* arrays
 static int virtualkb_index = 0;
 // true if a key of the virtual keyboard was being pressed during the last call of update_input()
 static bool virtualkb_pressed = false;
 // scancode of the last key simulated by the virtual keyboard
 static int virtualkb_lastscancode = 0;
+// Autorun counter
+static int autorun_counter = -1;
+
+#define MO5_AUTOSTART_BASIC_KEYS_LENGTH 5
+// Key strokes to start a BASIC game on MO5: RUN"
+static const int MO5_AUTOSTART_BASIC_KEYS[MO5_AUTOSTART_BASIC_KEYS_LENGTH] =
+                                        { RETROK_r, RETROK_u, RETROK_n, RETROK_2, RETROK_RETURN };
+#define MO5_AUTOSTART_BIN_KEYS_LENGTH 12
+// Key strokes to start a BINARY game on MO5: LOADM"",,R
+static const int MO5_AUTOSTART_BIN_KEYS[MO5_AUTOSTART_BIN_KEYS_LENGTH] =
+                                        { RETROK_l, RETROK_o, RETROK_q, RETROK_d, RETROK_SEMICOLON,
+                                          RETROK_2, RETROK_2, -1, RETROK_m, RETROK_m, RETROK_r, RETROK_RETURN };
+static int mo5_autostart_keys_length = MO5_AUTOSTART_BASIC_KEYS_LENGTH;
+static const int *mo5_autostart_keys = MO5_AUTOSTART_BASIC_KEYS;
+static int current_mo5_autostart_key_pos = -1;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+|MO5" },
+    { PACKAGE_NAME"_rom", "Thomson flavor; Auto|TO8|TO8D|TO9|TO9+|MO5" },
+    { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
 #ifdef THEODORE_DASM
     { PACKAGE_NAME"_disassembler", "Interactive disassembler; disabled|enabled" },
+    { PACKAGE_NAME"_break_illegal_opcode", "Break on illegal opcode; disabled|enabled" },
 #endif
     { NULL, NULL }
 };
 
-typedef struct
-{
-  int address;
-  char value;
-} Cheat;
-static Cheat cheats[MAX_CHEATS] = { {0, 0} };
+typedef enum { NO_MEDIA, MEDIA_FLOPPY, MEDIA_TAPE, MEDIA_CARTRIDGE } Media;
+static Media currentMedia = NO_MEDIA;
 
 void retro_set_environment(retro_environment_t env)
 {
@@ -139,7 +154,7 @@ void retro_init(void)
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "Fire" },
-        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "B Key" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "Autostart Program" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Virtual Keyboard: Change Letter (Up)" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Virtual Keyboard: Press Letter" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "Virtual Keyboard: Change Letter (Up)" },
@@ -231,52 +246,14 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
 void retro_cheat_reset(void)
 {
-  if (log_cb) log_cb(RETRO_LOG_INFO, "Reset cheats.\n");
-  memset(cheats, 0, sizeof(cheats));
-}
-
-static bool parse_cheat(const char *code, Cheat *cheat)
-{
-  if ((strlen(code) != CHEAT_LENGTH) || (code[CHEAT_SEP_POS] != '-'))
-  {
-    return false;
-  }
-  cheat->address = strtol(code, NULL, 16);
-  cheat->value = (char) strtol(code + CHEAT_SEP_POS + 1, NULL, 16);
-  if (cheat->address <= 0 || cheat->address >= RAM_SIZE)
-  {
-    return false;
-  }
-  return true;
 }
 
 void retro_cheat_set(unsigned index, bool enabled, const char *code)
 {
-  Cheat cheat;
-  if (log_cb) log_cb(RETRO_LOG_INFO, "Setting cheat %s at index %d, enabled=%s.\n",
-                    code, index, enabled ? "yes" : "no");
-  if ((index < MAX_CHEATS) && enabled)
-  {
-    if (!parse_cheat(code, &cheat))
-    {
-      if (log_cb) log_cb(RETRO_LOG_ERROR, "Wrong cheat format");
-      return;
-    }
-    cheats[index] = cheat;
-  }
-}
-
-static void apply_cheats()
-{
-  int i;
-  for (i = 0; i < MAX_CHEATS; i++)
-  {
-    if (cheats[i].address == 0)
-    {
-      return;
-    }
-    ram[cheats[i].address] = cheats[i].value;
-  }
+  // Unused parameters
+  (void) index;
+  (void) enabled;
+  (void) code;
 }
 
 void retro_reset(void)
@@ -296,6 +273,91 @@ static void print_current_virtualkb_key()
   msg.msg = virtualkb_chars[virtualkb_index];
   msg.frames = VIDEO_FPS;
   environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
+}
+
+static void autostart_mo5_begin(void)
+{
+  current_mo5_autostart_key_pos = 0;
+  virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[mo5_autostart_keys[0]];
+  keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], true);
+}
+
+static void autostart_mo5_continue(void)
+{
+  if (current_mo5_autostart_key_pos >= 0)
+  {
+    if (mo5_autostart_keys[++current_mo5_autostart_key_pos] == -1)
+    {
+      // Special case: release the shift key
+      keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], false);
+      return;
+    }
+    virtualkb_pressed = true;
+    virtualkb_lastscancode = libretroKeyCodeToThomsonMoScanCode[
+                                                     mo5_autostart_keys[current_mo5_autostart_key_pos]];
+    keyboard(virtualkb_lastscancode, true);
+    if (current_mo5_autostart_key_pos == mo5_autostart_keys_length - 1)
+    {
+      keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], false);
+      current_mo5_autostart_key_pos = -1;
+    }
+  }
+}
+
+// Try to start the currently loaded game by simulating keystrokes on the keyboard.
+static void autostart_program(void)
+{
+  switch (currentMedia)
+  {
+    case MEDIA_FLOPPY:
+      // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
+      // and the 'D' key (Basic 128) on TO9
+      if (GetThomsonFlavor() == TO9)
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_d];
+      }
+      else if (GetThomsonFlavor() == MO5)
+      {
+        autostart_mo5_begin();
+      }
+      else
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
+      }
+      break;
+    case MEDIA_TAPE:
+      // Tapes are most often started with the BASIC 1.0
+      // ('C' key on TO8/TO8D/TO9+, 'E' key on TO9)
+      if (GetThomsonFlavor() == TO9)
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_e];
+      }
+      else if (GetThomsonFlavor() == MO5)
+      {
+        autostart_mo5_begin();
+      }
+      else
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_c];
+      }
+      break;
+    case MEDIA_CARTRIDGE:
+      // Cartridges are started by the '0' key
+      // (on MO5, cartridge programs are already autostarted)
+      if (GetThomsonFlavor() != MO5)
+      {
+        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_0];
+      }
+      break;
+    default:
+      virtualkb_lastscancode = -1;
+  }
+
+  if (virtualkb_lastscancode != -1)
+  {
+    keyboard(virtualkb_lastscancode, true);
+    virtualkb_pressed = true;
+  }
 }
 
 static void update_input(void)
@@ -332,20 +394,10 @@ static void update_input(void)
   y = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
   if (!virtualkb_pressed)
   {
+    // Try to start the currently loaded program
     if (b)
     {
-      // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
-      // and the 'D' key (Basic 128) on TO9
-      if (GetThomsonFlavor() == TO9)
-      {
-        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_d];
-      }
-      else
-      {
-        virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_b];
-      }
-      keyboard(virtualkb_lastscancode, true);
-      virtualkb_pressed = true;
+      autostart_program();
     }
     else if (select || x)
     {
@@ -365,6 +417,10 @@ static void update_input(void)
       keyboard(virtualkb_lastscancode, true);
       virtualkb_pressed = true;
     }
+    else
+    {
+      autostart_mo5_continue();
+    }
   }
   else
   {
@@ -373,6 +429,47 @@ static void update_input(void)
       virtualkb_pressed = false;
       keyboard(virtualkb_lastscancode, false);
     }
+  }
+}
+
+static void change_model(const char *model)
+{
+  if (strcmp(model, "Auto") == 0)
+  {
+    return;
+  }
+  if (strncmp(model, "MO", 2) == 0)
+  {
+    libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMoScanCode;
+  }
+  else
+  {
+    libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
+  }
+  if (strcmp(model, "TO8") == 0)
+  {
+    SetThomsonFlavor(TO8);
+  }
+  else if (strcmp(model, "TO8D") == 0)
+  {
+    SetThomsonFlavor(TO8D);
+  }
+  else if (strcmp(model, "TO9") == 0)
+  {
+    SetThomsonFlavor(TO9);
+  }
+  else if (strcmp(model, "TO9+") == 0)
+  {
+    SetThomsonFlavor(TO9P);
+  }
+  else if (strcmp(model, "MO5") == 0)
+  {
+    SetThomsonFlavor(MO5);
+  }
+  // Default: TO8
+  else
+  {
+    SetThomsonFlavor(TO8);
   }
 }
 
@@ -398,44 +495,7 @@ static void check_variables(void)
   var.key = PACKAGE_NAME"_rom";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
-    if (strncmp(var.value, "TO", 2) == 0)
-    {
-      libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
-      thomson_acc = THOMSON_TO_ACC;
-      thomson_capslock = THOMSON_TO_CAPSLOCK;
-      thomson_left_shift = THOMSON_TO_LEFT_SHIFT;
-      thomson_right_shift = THOMSON_TO_RIGHT_SHIFT;
-      thomson_cnt = THOMSON_TO_CNT;
-    }
-    else
-    {
-      libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMoScanCode;
-      thomson_acc = THOMSON_MO_ACC;
-      thomson_capslock = -1;
-      thomson_left_shift = THOMSON_MO_LEFT_SHIFT;
-      thomson_right_shift = -1;
-      thomson_cnt = THOMSON_TO_CNT;
-    }
-    if (strcmp(var.value, "TO8") == 0)
-    {
-      SetThomsonFlavor(TO8);
-    }
-    else if (strcmp(var.value, "TO8D") == 0)
-    {
-      SetThomsonFlavor(TO8D);
-    }
-    else if (strcmp(var.value, "TO9") == 0)
-    {
-      SetThomsonFlavor(TO9);
-    }
-    else if (strcmp(var.value, "TO9+") == 0)
-    {
-      SetThomsonFlavor(TO9P);
-    }
-    else if (strcmp(var.value, "MO5") == 0)
-    {
-      SetThomsonFlavor(MO5);
-    }
+    change_model(var.value);
   }
 #ifdef THEODORE_DASM
   var.key = PACKAGE_NAME"_disassembler";
@@ -448,6 +508,18 @@ static void check_variables(void)
     else
     {
       debugger_setMode(DEBUG_DISABLED);
+    }
+  }
+  var.key = PACKAGE_NAME"_break_illegal_opcode";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    if (strcmp(var.value, "enabled") == 0)
+    {
+      debugger_set_break_on_illegal_opcode(true);
+    }
+    else
+    {
+      debugger_set_break_on_illegal_opcode(false);
     }
   }
 #endif
@@ -476,7 +548,15 @@ void retro_run(void)
   }
 
   update_input();
-  apply_cheats();
+
+  if (autorun_counter > 0)
+  {
+    autorun_counter--;
+    if (autorun_counter == 0)
+    {
+      autostart_program();
+    }
+  }
 
   updated = false;
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
@@ -520,72 +600,86 @@ static bool streq_nocase(const char *s1, const char *s2)
   return true;
 }
 
-// Load file with auto-detection of type based on the file extension:
-// k7 (*.k7), fd (*.fd) or memo7 (*.rom)
+static void check_automodel(const char *filename)
+{
+  struct retro_variable var = {0, 0};
+
+  var.key = PACKAGE_NAME"_rom";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    change_model(autodetect_model(filename));
+  }
+}
+
+static void check_autorun(void)
+{
+  struct retro_variable var = {0, 0};
+
+  var.key = PACKAGE_NAME"_autorun";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    if (strcmp(var.value, "enabled") == 0)
+    {
+      autorun_counter = AUTORUN_DELAY;
+    }
+  }
+}
+
+// Load file with auto-detection of type based on the file extension.
 static bool load_file(const char *filename)
 {
   if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".k7"))
   {
+    currentMedia = MEDIA_TAPE;
     LoadTape(filename);
+    // Check if the first file is a BASIC or BIN file to know how to run it
+    if (autodetect_tape_first_file_is_basic(filename))
+    {
+      mo5_autostart_keys = MO5_AUTOSTART_BASIC_KEYS;
+      mo5_autostart_keys_length = MO5_AUTOSTART_BASIC_KEYS_LENGTH;
+    }
+    else
+    {
+      mo5_autostart_keys = MO5_AUTOSTART_BIN_KEYS;
+      mo5_autostart_keys_length = MO5_AUTOSTART_BIN_KEYS_LENGTH;
+    }
   }
   else if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".fd"))
   {
+    currentMedia = MEDIA_FLOPPY;
     LoadFd(filename);
   }
   else if (strlen(filename) > 4 && (streq_nocase(filename + strlen(filename) - 4, ".rom")
       || streq_nocase(filename + strlen(filename) - 3, ".m7")
       || streq_nocase(filename + strlen(filename) - 3, ".m5")))
   {
+    currentMedia = MEDIA_CARTRIDGE;
     LoadMemo(filename);
   }
   else if (strlen(filename) > 4 && streq_nocase(filename + strlen(filename) - 4, ".sap"))
   {
+    currentMedia = MEDIA_FLOPPY;
     LoadSap(filename);
   }
   else
   {
+    currentMedia = NO_MEDIA;
     if (log_cb) log_cb(RETRO_LOG_ERROR, "Unknown file type for file %s.\n", filename);
     return false;
   }
+  check_automodel(filename);
+  check_autorun();
   return true;
 }
 
 static void keyboard_cb(bool down, unsigned keycode,
     uint32_t character, uint16_t key_modifiers)
 {
-  (void) character; // Unused parameter
+  (void) character, (void) key_modifiers; // Unused parameters
   //printf( "Down: %s, Code: %d, Char: %u, Mod: %u.\n",
   //        down ? "yes" : "no", keycode, character, key_modifiers);
 
-  // Thomson <-> PC keyboard mapping for special keys
-  // STOP <-> TAB
-  // CNT <-> CTRL
-  // CAPSLOCK <-> CAPSLOCK
-  // ACC <-> ALT
-  // HOME <-> HOME
-  // Arrows <-> arrows
-  // INS <-> INSERT
-  // EFF <-> DEL
-  // F1-F5 <-> F1-F5
-  // F6-F10 <-> SHIFT+F1-F5
-  if (key_modifiers & RETROKMOD_SHIFT)
-  {
-    keyboard(thomson_left_shift, down);
-  }
-  if (key_modifiers & RETROKMOD_CTRL)
-  {
-    keyboard(thomson_cnt, down);
-  }
-  if (key_modifiers & RETROKMOD_ALT)
-  {
-    keyboard(thomson_acc, down);
-  }
-  if (keycode == RETROK_CAPSLOCK && (key_modifiers & RETROKMOD_CAPSLOCK))
-  {
-    keyboard(thomson_capslock, down);
-  }
-
-  if (keycode < 320)
+  if (keycode <= RETROK_LAST)
   {
     unsigned char scancode = libretroKeyCodeToThomsonScanCode[keycode];
     if (scancode != 0xFF)
@@ -636,6 +730,7 @@ void retro_unload_game(void)
   UnloadTape();
   UnloadFloppy();
   UnloadMemo();
+  currentMedia = NO_MEDIA;
 }
 
 unsigned retro_get_region(void)

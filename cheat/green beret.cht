@@ -1,7 +1,0 @@
-# Cheats for file green-beret_to8.fd with SHA1=7830f261e02a5076ee498332f987458b355b43d9
-cheats = 1
-
-cheat0_desc = "Infinite Lifes"
-cheat0_code = "0073EC-06"
-cheat0_enable = false
-

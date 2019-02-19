@@ -75,13 +75,6 @@ static char *ramuser;       //pointeur ram utilisateur fixe
 static char *rambank;       //pointeur banque ram utilisateur
 static char *romsys;        //pointeur rom systeme
 static char *rombank;       //pointeur banque rom ou cartouche
-//banques
-static int nvideopage;      //numero page video (00-01)
-static int nvideobank;      //numero banque video (00-03)
-static int nrambank;        //numero banque ram (00-1f)
-static int nrombank;        //numero banque rom (00-07)
-static int nsystbank;       //numero banque systeme (00-01)
-static int nctrlbank;       //numero banque controleur (00-03)
 //flags cartouche
 int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
 int carflags = 0;    //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
@@ -99,12 +92,19 @@ static int vblnumber;       //compteur du nombre de vbl avant affichage
 static int displayflag;     //indicateur pour l'affichage
 int bordercolor;            //couleur de la bordure de l'écran
 //divers
-int sound;                  //niveau du haut-parleur
-int mute;                   //mute flag
+static int sound;                  //niveau du haut-parleur
+static int mute;                   //mute flag
 static int timer6846;       //compteur du timer 6846
 static int latch6846;       //registre latch du timer 6846
 static int keyb_irqcount;   //nombre de cycles avant la fin de l'irq clavier
 static int timer_irqcount;  //nombre de cycles avant la fin de l'irq timer
+//reserved data in serialization for future use
+static int reserved1 = 0;
+static int reserved2 = 0;
+static int reserved3 = 0;
+static int reserved4 = 0;
+static int reserved5 = 0;
+static int reserved6 = 0;
 
 //Forward declarations
 static char MgetTo(unsigned short a);
@@ -187,9 +187,9 @@ E7C6= registre temporisateur d'octet de poids fort (TMSB)
 E7C7= registre temporisateur d'octet de poids faible (TLSB)
 */
 
-int16_t GetAudioSample()
+int16_t GetAudioSample(void)
 {
-  return (sound * 65535 / MAX_SOUND_LEVEL) - (65536 / 2);
+  return mute ? 0 : (sound * 65535 / MAX_SOUND_LEVEL) - (65536 / 2);
 }
 
 void SetThomsonFlavor(ThomsonFlavor flavor)
@@ -229,7 +229,7 @@ void SetThomsonFlavor(ThomsonFlavor flavor)
   }
 }
 
-ThomsonFlavor GetThomsonFlavor()
+ThomsonFlavor GetThomsonFlavor(void)
 {
   return currentFlavor;
 }
@@ -295,6 +295,8 @@ void keyboard(int scancode, bool down)
 // Selection de banques memoire //////////////////////////////////////////////
 static void selectVideoRamTo(void)
 {
+  int nsystbank;  //numero banque systeme (00-01)
+  int nvideopage; //numero page video (00-01)
   nvideopage = port[0x03] & 1;
   // The "video" data (either from RAMA or RAMB) is mapped in memory at 0x4000-0x5FFF
   ramvideo = ram - 0x4000 + (nvideopage << 13);
@@ -305,7 +307,7 @@ static void selectVideoRamTo(void)
 
 static void selectVideoRamMo(void)
 {
-  nvideopage = port[0] & 1;
+  int nvideopage = port[0] & 1; //numero page video (00-01)
   // The "video" data (either from RAMA or RAMB) is mapped in memory at 0x0000-0x1FFF
   ramvideo = ram + (nvideopage << 13);
   // The "monitor" software is mapped in memory starting at address 0xf000
@@ -315,6 +317,8 @@ static void selectVideoRamMo(void)
 
 static void selectRamBankTo(void)
 {
+  int nrambank;        //numero banque ram (00-1f)
+
   // TO8 mode (5 lower bits of e7e5 = RAM page number)
   // (bit D4 of gate array mode page's "system 1" register at e7e7 = 0
   // if RAM bank switching is done via PIA bits for TO7-70/TO9 emulation)
@@ -340,6 +344,7 @@ static void selectRamBankTo(void)
 
 static void selectRomBankTo(void)
 {
+  int nrombank;        //numero banque rom (00-07)
   if (currentFlavor != TO9)
   {
     //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
@@ -358,7 +363,6 @@ static void selectRomBankTo(void)
     }
     else
     {
-      nrombank = -1;
       rombank = car + ((carflags & 3) << 14);
     }
   }
@@ -383,7 +387,6 @@ static void selectRomBankTo(void)
         rombank = rom->basic + (nrombank << 14);
         break;
       case 3: // cartridge
-        nrombank = -1;
         rombank = car + ((carflags & 3) << 14);
         break;
       default: break;
@@ -545,7 +548,7 @@ static void patch_rom(char rom_data[], int patch[])
 }
 
 // Write the current date in the ROM //////////////////////////////////////////
-static void set_current_date()
+static void set_current_date(void)
 {
   time_t curtime;
   struct tm *loctime;
@@ -591,10 +594,6 @@ void Hardreset(void)
   // Set the current date
   set_current_date();
 
-  nvideobank = 0;
-  nrambank = 0;
-  nsystbank = 0;
-  nctrlbank = 0;
   keyb_irqcount = 0;
   timer_irqcount = 0;
   videolinecycle = 0;
@@ -915,8 +914,8 @@ char MgetMo(unsigned short a)
 unsigned int toemulator_serialize_size(void)
 {
   return sizeof(currentFlavor) + cpu_serialize_size() + video_serialize_size()
-      + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(nvideopage) + sizeof(nvideobank)
-      + sizeof(nrambank) + sizeof(nrombank) + sizeof(nsystbank) + sizeof(nctrlbank)
+      + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(reserved1) + sizeof(reserved2)
+      + sizeof(reserved3) + sizeof(reserved4) + sizeof(reserved5) + sizeof(reserved6)
       + sizeof(carflags) + sizeof(touche) + sizeof(capslock) + sizeof(joysposition)
       + sizeof(joysaction) + sizeof(xpen) + sizeof(ypen) + sizeof(penbutton)
       + sizeof(videolinecycle) + sizeof(videolinenumber) + sizeof(vblnumber)
@@ -943,18 +942,18 @@ void toemulator_serialize(void *data)
   offset += sizeof(port);
   memcpy(buffer+offset, x7da, sizeof(x7da));
   offset += sizeof(x7da);
-  memcpy(buffer+offset, &nvideopage, sizeof(nvideopage));
-  offset += sizeof(nvideopage);
-  memcpy(buffer+offset, &nvideobank, sizeof(nvideobank));
-  offset += sizeof(nvideobank);
-  memcpy(buffer+offset, &nrambank, sizeof(nrambank));
-  offset += sizeof(nrambank);
-  memcpy(buffer+offset, &nrombank, sizeof(nrombank));
-  offset += sizeof(nrombank);
-  memcpy(buffer+offset, &nsystbank, sizeof(nsystbank));
-  offset += sizeof(nsystbank);
-  memcpy(buffer+offset, &nctrlbank, sizeof(nctrlbank));
-  offset += sizeof(nctrlbank);
+  memcpy(buffer+offset, &reserved1, sizeof(reserved1));
+  offset += sizeof(reserved1);
+  memcpy(buffer+offset, &reserved2, sizeof(reserved2));
+  offset += sizeof(reserved2);
+  memcpy(buffer+offset, &reserved3, sizeof(reserved3));
+  offset += sizeof(reserved3);
+  memcpy(buffer+offset, &reserved4, sizeof(reserved4));
+  offset += sizeof(reserved4);
+  memcpy(buffer+offset, &reserved5, sizeof(reserved5));
+  offset += sizeof(reserved5);
+  memcpy(buffer+offset, &reserved6, sizeof(reserved6));
+  offset += sizeof(reserved6);
   memcpy(buffer+offset, &carflags, sizeof(carflags));
   offset += sizeof(carflags);
   memcpy(buffer+offset, touche, sizeof(touche));
@@ -1014,18 +1013,18 @@ void toemulator_unserialize(const void *data)
   offset += sizeof(port);
   memcpy(x7da, buffer+offset, sizeof(x7da));
   offset += sizeof(x7da);
-  memcpy(&nvideopage, buffer+offset, sizeof(nvideopage));
-  offset += sizeof(nvideopage);
-  memcpy(&nvideobank, buffer+offset, sizeof(nvideobank));
-  offset += sizeof(nvideobank);
-  memcpy(&nrambank, buffer+offset, sizeof(nrambank));
-  offset += sizeof(nrambank);
-  memcpy(&nrombank, buffer+offset, sizeof(nrombank));
-  offset += sizeof(nrombank);
-  memcpy(&nsystbank, buffer+offset, sizeof(nsystbank));
-  offset += sizeof(nsystbank);
-  memcpy(&nctrlbank, buffer+offset, sizeof(nctrlbank));
-  offset += sizeof(nctrlbank);
+  memcpy(&reserved1, buffer+offset, sizeof(reserved1));
+  offset += sizeof(reserved1);
+  memcpy(&reserved2, buffer+offset, sizeof(reserved2));
+  offset += sizeof(reserved2);
+  memcpy(&reserved3, buffer+offset, sizeof(reserved3));
+  offset += sizeof(reserved3);
+  memcpy(&reserved4, buffer+offset, sizeof(reserved4));
+  offset += sizeof(reserved4);
+  memcpy(&reserved5, buffer+offset, sizeof(reserved5));
+  offset += sizeof(reserved5);
+  memcpy(&reserved6, buffer+offset, sizeof(reserved6));
+  offset += sizeof(reserved6);
   memcpy(&carflags, buffer+offset, sizeof(carflags));
   offset += sizeof(carflags);
   memcpy(touche, buffer+offset, sizeof(touche));
