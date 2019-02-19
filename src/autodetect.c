@@ -18,8 +18,10 @@
 
 /* Auto-detection functions */
 
-#include "autodetect.h"
 #include <stdio.h>
+#include <string.h>
+
+#include "autodetect.h"
 
 #define SIZE_BUFFER_TAPE 32
 #define TAPE_BASIC_PATTERN1 "BAS\0"
@@ -67,4 +69,21 @@ bool autodetect_tape_first_file_is_basic(const char *filename)
   return find_tape_pattern(tape_buffer, SIZE_BUFFER_TAPE, TAPE_BASIC_PATTERN1, TAPE_BASIC_PATTERN1_SIZE)
       || find_tape_pattern(tape_buffer, SIZE_BUFFER_TAPE, TAPE_BASIC_PATTERN2, TAPE_BASIC_PATTERN2_SIZE)
       || find_tape_pattern(tape_buffer, SIZE_BUFFER_TAPE, TAPE_BASIC_PATTERN3, TAPE_BASIC_PATTERN3_SIZE);
+}
+
+char *autodetect_model(const char *filename)
+{
+  if ((strstr(filename, "to8") != NULL) || (strstr(filename, "TO8") != NULL))
+  {
+    return "TO8";
+  }
+  if ((strstr(filename, "to9") != NULL) || (strstr(filename, "TO9") != NULL))
+  {
+    return "TO9";
+  }
+  if ((strstr(filename, "mo5") != NULL) || (strstr(filename, "MO5") != NULL))
+  {
+    return "MO5";
+  }
+  return "";
 }

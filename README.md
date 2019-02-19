@@ -84,7 +84,7 @@ The emulator can read the following file formats: *.fd and *.sap (floppy disks),
 
 ### Thomson flavors
 
-By default, the core emulates a TO8 computer. Using the "Thomson flavor" option you can switch to other models (currently: TO8, TO8D, TO9, TO9+, MO5).
+By default, the core tries to guess the required Thomson model based on the name of the file loaded (e.g. saphir_to8.fd will switch to TO8, pulsar_mo5.k7 will switch to MO5 and so on). The fallback is to emulate a TO8 computer. Using the "Thomson flavor" option you can force the emulation of a particular model (currently: TO8, TO8D, TO9, TO9+, MO5), or use "Auto" for the default "best guess" behavior.
 
 ### Save states
 

@@ -5,6 +5,7 @@ Next Release
 * Add core option to break on illegal opcodes in the debugger.
 * Fix keyboard emulation (#11).
 * MO5: add heuristic to choose between RUN" and LOADM"",,R for autorun (#9).
+* Add auto-detection of the Thomson model based on the content filename.
 
 Release 1.6 (2019/02/05)
 ===========

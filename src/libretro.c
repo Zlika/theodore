@@ -94,7 +94,7 @@ static const int *mo5_autostart_keys = MO5_AUTOSTART_BASIC_KEYS;
 static int current_mo5_autostart_key_pos = -1;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+|MO5" },
+    { PACKAGE_NAME"_rom", "Thomson flavor; Auto|TO8|TO8D|TO9|TO9+|MO5" },
     { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
@@ -432,6 +432,47 @@ static void update_input(void)
   }
 }
 
+static void change_model(const char *model)
+{
+  if (strcmp(model, "Auto") == 0)
+  {
+    return;
+  }
+  if (strncmp(model, "MO", 2) == 0)
+  {
+    libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMoScanCode;
+  }
+  else
+  {
+    libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
+  }
+  if (strcmp(model, "TO8") == 0)
+  {
+    SetThomsonFlavor(TO8);
+  }
+  else if (strcmp(model, "TO8D") == 0)
+  {
+    SetThomsonFlavor(TO8D);
+  }
+  else if (strcmp(model, "TO9") == 0)
+  {
+    SetThomsonFlavor(TO9);
+  }
+  else if (strcmp(model, "TO9+") == 0)
+  {
+    SetThomsonFlavor(TO9P);
+  }
+  else if (strcmp(model, "MO5") == 0)
+  {
+    SetThomsonFlavor(MO5);
+  }
+  // Default: TO8
+  else
+  {
+    SetThomsonFlavor(TO8);
+  }
+}
+
 static void check_variables(void)
 {
   struct retro_variable var = {0, 0};
@@ -454,34 +495,7 @@ static void check_variables(void)
   var.key = PACKAGE_NAME"_rom";
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
-    if (strncmp(var.value, "TO", 2) == 0)
-    {
-      libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
-    }
-    else
-    {
-      libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMoScanCode;
-    }
-    if (strcmp(var.value, "TO8") == 0)
-    {
-      SetThomsonFlavor(TO8);
-    }
-    else if (strcmp(var.value, "TO8D") == 0)
-    {
-      SetThomsonFlavor(TO8D);
-    }
-    else if (strcmp(var.value, "TO9") == 0)
-    {
-      SetThomsonFlavor(TO9);
-    }
-    else if (strcmp(var.value, "TO9+") == 0)
-    {
-      SetThomsonFlavor(TO9P);
-    }
-    else if (strcmp(var.value, "MO5") == 0)
-    {
-      SetThomsonFlavor(MO5);
-    }
+    change_model(var.value);
   }
 #ifdef THEODORE_DASM
   var.key = PACKAGE_NAME"_disassembler";
@@ -586,6 +600,17 @@ static bool streq_nocase(const char *s1, const char *s2)
   return true;
 }
 
+static void check_automodel(const char *filename)
+{
+  struct retro_variable var = {0, 0};
+
+  var.key = PACKAGE_NAME"_rom";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    change_model(autodetect_model(filename));
+  }
+}
+
 static void check_autorun(void)
 {
   struct retro_variable var = {0, 0};
@@ -642,6 +667,7 @@ static bool load_file(const char *filename)
     if (log_cb) log_cb(RETRO_LOG_ERROR, "Unknown file type for file %s.\n", filename);
     return false;
   }
+  check_automodel(filename);
   check_autorun();
   return true;
 }

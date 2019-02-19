@@ -25,5 +25,8 @@
 
 /* Returns true if the first file of the tape has a BAS extension, false otherwise. */
 bool autodetect_tape_first_file_is_basic(const char *filename);
+/* Returns the name of the Thomson model found in the name of the file,
+   or an empty string if not found. */
+char *autodetect_model(const char *filename);
 
 #endif /* __AUTODETECT_H */
