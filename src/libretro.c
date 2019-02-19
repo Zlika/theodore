@@ -26,6 +26,7 @@
 #ifdef THEODORE_DASM
 #include "debugger.h"
 #endif
+#include "autodetect.h"
 #include "devices.h"
 #include "keymap.h"
 #include "sap.h"
@@ -69,6 +70,7 @@ static int16_t audio_stereo_buffer[2*AUDIO_SAMPLE_PER_FRAME];
 
 // nb of thousandth of cycles in excess to run the next time
 static int excess = 0;
+
 // current index in virtualkb_* arrays
 static int virtualkb_index = 0;
 // true if a key of the virtual keyboard was being pressed during the last call of update_input()
@@ -78,11 +80,18 @@ static int virtualkb_lastscancode = 0;
 // Autorun counter
 static int autorun_counter = -1;
 
-#define MO5_AUTOSTART_KEYS_LENGTH 5
-// Key strokes to start a game on MO5
-static const int MO5_AUTOSTART_KEYS[MO5_AUTOSTART_KEYS_LENGTH] =
+#define MO5_AUTOSTART_BASIC_KEYS_LENGTH 5
+// Key strokes to start a BASIC game on MO5: RUN"
+static const int MO5_AUTOSTART_BASIC_KEYS[MO5_AUTOSTART_BASIC_KEYS_LENGTH] =
                                         { RETROK_r, RETROK_u, RETROK_n, RETROK_2, RETROK_RETURN };
-static int current_mo5_key_pos = -1;
+#define MO5_AUTOSTART_BIN_KEYS_LENGTH 12
+// Key strokes to start a BINARY game on MO5: LOADM"",,R
+static const int MO5_AUTOSTART_BIN_KEYS[MO5_AUTOSTART_BIN_KEYS_LENGTH] =
+                                        { RETROK_l, RETROK_o, RETROK_q, RETROK_d, RETROK_SEMICOLON,
+                                          RETROK_2, RETROK_2, -1, RETROK_m, RETROK_m, RETROK_r, RETROK_RETURN };
+static int mo5_autostart_keys_length = MO5_AUTOSTART_BASIC_KEYS_LENGTH;
+static const int *mo5_autostart_keys = MO5_AUTOSTART_BASIC_KEYS;
+static int current_mo5_autostart_key_pos = -1;
 
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson flavor; TO8|TO8D|TO9|TO9+|MO5" },
@@ -268,23 +277,29 @@ static void print_current_virtualkb_key()
 
 static void autostart_mo5_begin(void)
 {
-  current_mo5_key_pos = 0;
-  virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[MO5_AUTOSTART_KEYS[0]];
+  current_mo5_autostart_key_pos = 0;
+  virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[mo5_autostart_keys[0]];
   keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], true);
 }
 
 static void autostart_mo5_continue(void)
 {
-  if (current_mo5_key_pos >= 0)
+  if (current_mo5_autostart_key_pos >= 0)
   {
+    if (mo5_autostart_keys[++current_mo5_autostart_key_pos] == -1)
+    {
+      // Special case: release the shift key
+      keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], false);
+      return;
+    }
     virtualkb_pressed = true;
     virtualkb_lastscancode = libretroKeyCodeToThomsonMoScanCode[
-                                                     MO5_AUTOSTART_KEYS[++current_mo5_key_pos]];
+                                                     mo5_autostart_keys[current_mo5_autostart_key_pos]];
     keyboard(virtualkb_lastscancode, true);
-    if (current_mo5_key_pos == MO5_AUTOSTART_KEYS_LENGTH - 1)
+    if (current_mo5_autostart_key_pos == mo5_autostart_keys_length - 1)
     {
       keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], false);
-      current_mo5_key_pos = -1;
+      current_mo5_autostart_key_pos = -1;
     }
   }
 }
@@ -402,6 +417,10 @@ static void update_input(void)
       keyboard(virtualkb_lastscancode, true);
       virtualkb_pressed = true;
     }
+    else
+    {
+      autostart_mo5_continue();
+    }
   }
   else
   {
@@ -409,7 +428,6 @@ static void update_input(void)
     {
       virtualkb_pressed = false;
       keyboard(virtualkb_lastscancode, false);
-      autostart_mo5_continue();
     }
   }
 }
@@ -589,6 +607,17 @@ static bool load_file(const char *filename)
   {
     currentMedia = MEDIA_TAPE;
     LoadTape(filename);
+    // Check if the first file is a BASIC or BIN file to know how to run it
+    if (autodetect_tape_first_file_is_basic(filename))
+    {
+      mo5_autostart_keys = MO5_AUTOSTART_BASIC_KEYS;
+      mo5_autostart_keys_length = MO5_AUTOSTART_BASIC_KEYS_LENGTH;
+    }
+    else
+    {
+      mo5_autostart_keys = MO5_AUTOSTART_BIN_KEYS;
+      mo5_autostart_keys_length = MO5_AUTOSTART_BIN_KEYS_LENGTH;
+    }
   }
   else if (strlen(filename) > 3 && streq_nocase(filename + strlen(filename) - 3, ".fd"))
   {

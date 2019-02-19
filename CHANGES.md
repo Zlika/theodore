@@ -4,6 +4,7 @@ Next Release
 * Add emulation of illegal opcode 0x11F1. Fixes some MO5 games (#10).
 * Add core option to break on illegal opcodes in the debugger.
 * Fix keyboard emulation (#11).
+* MO5: add heuristic to choose between RUN" and LOADM"",,R for autorun (#9).
 
 Release 1.6 (2019/02/05)
 ===========

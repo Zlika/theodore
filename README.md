@@ -40,7 +40,7 @@ ndk-build
 
 A => "Fire" button
 
-B => "Autostart Program". Simulates a keystroke (or several keystrokes for the MO5) on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated.
+B => "Autostart Program". Simulates a keystroke (or several keystrokes for the MO5) on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated. On MO5, the command used depends on the format detected for the first file of the tape (BAS => RUN", BIN => LOADM"",,R).
 
 | Media loaded | Thomson computer | Key                 |
 | ------------ | ---------------- | ------------------- |
@@ -49,7 +49,7 @@ B => "Autostart Program". Simulates a keystroke (or several keystrokes for the M
 |              | MO5              | RUN" + Enter        |
 | Tape         | TO8/TO8D/TO9+    | 'C' key (BASIC 1.0) |
 |              | TO9              | 'E' key (BASIC 1.0) |
-|              | MO5              | RUN" + Enter        |
+|              | MO5              | RUN" or LOADM"",,R + Enter |
 | Cartridge    | All but MO5      | '0' key             |
 |              | MO5              | Nothing (cartridges are already autostarted on MO5) |
 
@@ -121,4 +121,4 @@ From the command-line, the following commands are then available:
 * `read xxxx` (with xxxx an hexadecimal number): read the value at the given memory address.
 * `write xxxx yy` (with xxxx and yy hexadecimal numbers): write the value yy at memory address xxxx.
 
-Another core's option "Break on illegal opcode", allows to break and enter step-by-step debugging when an illegal opcode is met.
+Another core's option, "Break on illegal opcode", allows to break and enter step-by-step debugging when an illegal opcode is met.
