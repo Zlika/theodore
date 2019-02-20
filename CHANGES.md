@@ -6,6 +6,7 @@ Next Release
 * Fix keyboard emulation (#11).
 * MO5: add heuristic to choose between RUN" and LOADM"",,R for autorun (#9).
 * Add auto-detection of the Thomson model based on the content filename.
+* Change mapping of virtual keyboard: now Start button starts the program and Select button simulates a keystroke.
 
 Release 1.6 (2019/02/05)
 ===========

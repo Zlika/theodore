@@ -40,7 +40,7 @@ ndk-build
 
 A => Bouton "Action"
 
-B => "Démarrer le programme". Simule la frappe d'une touche (ou plusieurs sur le MO5) sur le clavier pour démarrer un jeu. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier. La touche simulée dépend du type de media chargé et de l'ordinateur émulé. Sur MO5, la commande utilisée dépend du format détecté pour le premier fichier de la cassette (BAS => RUN", BIN => LOADM"",,R).
+Start => "Démarrer le programme". Simule la frappe d'une touche (ou plusieurs sur le MO5) sur le clavier pour démarrer un jeu. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier. La touche simulée dépend du type de media chargé et de l'ordinateur émulé. Sur MO5, la commande utilisée dépend du format détecté pour le premier fichier de la cassette (BAS => RUN", BIN => LOADM"",,R).
 
 | Media chargé | Modèle Thomson   | Touche                 |
 | ------------ | ---------------- | ---------------------- |
@@ -55,7 +55,7 @@ B => "Démarrer le programme". Simule la frappe d'une touche (ou plusieurs sur l
 
 Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilisé. 
 
-**Fonctionnalité de clavier virtuel :** les boutons Y/X de la manette permettent de faire défiler des chiffres/lettres (Y=défilement vers le bas, X=défilement vers le haut). La bouton "start" simule un appui sur la touche choisie. Pour les manettes sans boutons Y/X, le bouton "select" peut être aussi utilisé pour faire défiler les touches du clavier virtuel.
+**Fonctionnalité de clavier virtuel :** les boutons Y/X de la manette permettent de faire défiler des chiffres/lettres (Y=défilement vers le bas, X=défilement vers le haut). Le bouton "Select" simule un appui sur la touche choisie.
 L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A à Z) puis "Espace" puis "Entrée".
 
 ### Correspondance des touches spéciales du clavier
