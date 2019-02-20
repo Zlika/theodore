@@ -82,9 +82,9 @@ RetroArch already uses lots of keyboard shortcuts for its own need that interfer
 
 The emulator can read the following file formats: *.fd and *.sap (floppy disks), *.k7 (tapes), *.m7/*.m5 and *.rom (cartridges).
 
-### Thomson flavors
+### Thomson models
 
-By default, the core tries to guess the required Thomson model based on the name of the file loaded (e.g. saphir_to8.fd will switch to TO8, pulsar_mo5.k7 will switch to MO5 and so on). The fallback is to emulate a TO8 computer. Using the "Thomson flavor" option you can force the emulation of a particular model (currently: TO8, TO8D, TO9, TO9+, MO5), or use "Auto" for the default "best guess" behavior.
+By default, the core tries to guess the required Thomson model based on the name of the file loaded (e.g. saphir_to8.fd will switch to TO8, pulsar_mo5.k7 will switch to MO5 and so on). The fallback is to emulate a TO8 computer. Using the "Thomson model" option you can force the emulation of a particular model (currently: TO8, TO8D, TO9, TO9+, MO5), or use "Auto" for the default "best guess" behavior.
 
 ### Save states
 

@@ -60,7 +60,7 @@ static SystemRom ROM_TO9 = { to9_basic_rom, to9_basic_patch, to9_monitor_rom, to
 static SystemRom ROM_TO9P = { to9p_basic_rom, to9p_basic_patch, to9p_monitor_rom, to9p_monitor_patch, NULL, NULL };
 static SystemRom ROM_MO5 = { mo5_v2_basic_rom, mo5_v2_basic_patch, mo5_v2_monitor_rom, mo5_v2_monitor_patch, cd90_640_rom, cd90_640_patch };
 
-static ThomsonFlavor currentFlavor = TO8;
+static ThomsonModel currentModel = TO8;
 static SystemRom *rom = &ROM_TO8;
 
 // memory
@@ -192,11 +192,11 @@ int16_t GetAudioSample(void)
   return mute ? 0 : (sound * 65535 / MAX_SOUND_LEVEL) - (65536 / 2);
 }
 
-void SetThomsonFlavor(ThomsonFlavor flavor)
+void SetThomsonModel(ThomsonModel model)
 {
-  if (flavor != currentFlavor)
+  if (model != currentModel)
   {
-    if (flavor == MO5)
+    if (model == MO5)
     {
       SetModeTO(false);
     }
@@ -204,7 +204,7 @@ void SetThomsonFlavor(ThomsonFlavor flavor)
     {
       SetModeTO(true);
     }
-    switch (flavor)
+    switch (model)
     {
       case TO8:
         rom = &ROM_TO8;
@@ -224,14 +224,14 @@ void SetThomsonFlavor(ThomsonFlavor flavor)
       default:
         return;
     }
-    currentFlavor = flavor;
+    currentModel = model;
     Hardreset();
   }
 }
 
-ThomsonFlavor GetThomsonFlavor(void)
+ThomsonModel GetThomsonModel(void)
 {
-  return currentFlavor;
+  return currentModel;
 }
 
 // Emulation du clavier TO8/TO9 ///////////////////////////////////////////////
@@ -241,7 +241,7 @@ void keyboard(int scancode, bool down)
   // Filter false key down events when the key was already down
   if (down && !touche[scancode]) return;
   touche[scancode] = down ? 0x00 : 0x80;
-  if (currentFlavor == MO5)
+  if (currentModel == MO5)
   {
     return;
   }
@@ -267,7 +267,7 @@ void keyboard(int scancode, bool down)
     case 0x27: case 0x2a: case 0x2b: case 0x2f: case 0x32: case 0x33: case 0x3a:
     case 0x3b: case 0x42: case 0x43: case 0x4a: case 0x4b: i = 0x80; break;
   }
-  if (currentFlavor == TO8 || currentFlavor == TO8D)
+  if (currentModel == TO8 || currentModel == TO8D)
   {
     rom->monitor[0x30f8] = scancode | i;         //scancode + indicateur de touche SHIFT
     rom->monitor[0x3125] = touche[0x53] ? 0 : 1; //indicateur de touche CTRL
@@ -300,7 +300,7 @@ static void selectVideoRamTo(void)
   nvideopage = port[0x03] & 1;
   // The "video" data (either from RAMA or RAMB) is mapped in memory at 0x4000-0x5FFF
   ramvideo = ram - 0x4000 + (nvideopage << 13);
-  nsystbank = (currentFlavor != TO9) ? (port[0x03] & 0x10) >> 4 : 0;
+  nsystbank = (currentModel != TO9) ? (port[0x03] & 0x10) >> 4 : 0;
   // The "monitor" software is mapped in memory starting at address 0xe000
   romsys = rom->monitor - 0xe000 + (nsystbank << 13);
 }
@@ -322,7 +322,7 @@ static void selectRamBankTo(void)
   // TO8 mode (5 lower bits of e7e5 = RAM page number)
   // (bit D4 of gate array mode page's "system 1" register at e7e7 = 0
   // if RAM bank switching is done via PIA bits for TO7-70/TO9 emulation)
-  if ((port[0x27] & 0x10) && (currentFlavor != TO9))
+  if ((port[0x27] & 0x10) && (currentModel != TO9))
   {
     nrambank = port[0x25] & 0x1f;
     rambank = ram - 0xa000 + (nrambank << 14);
@@ -334,8 +334,8 @@ static void selectRamBankTo(void)
     case 0x08: nrambank = 0; break;
     case 0x10: nrambank = 1; break;
     case 0xe0: nrambank = 2; break;
-    case 0xa0: nrambank = currentFlavor == TO9 ? 4 : 3; break;  // banks 3 and 4
-    case 0x60: nrambank = currentFlavor == TO9 ? 3 : 4; break;  // inverted/TO7-70&TO9
+    case 0xa0: nrambank = currentModel == TO9 ? 4 : 3; break;  // banks 3 and 4
+    case 0x60: nrambank = currentModel == TO9 ? 3 : 4; break;  // inverted/TO7-70&TO9
     case 0x20: nrambank = 5; break;
     default: return;
   }
@@ -345,7 +345,7 @@ static void selectRamBankTo(void)
 static void selectRomBankTo(void)
 {
   int nrombank;        //numero banque rom (00-07)
-  if (currentFlavor != TO9)
+  if (currentModel != TO9)
   {
     //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
     //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
@@ -507,7 +507,7 @@ void Initprog(void)
 
   SetVideoMode(VIDEO_320X16);
 
-  if (currentFlavor != MO5)
+  if (currentModel != MO5)
   {
     ramuser = ram - 0x2000;
     Mputc = MputTo;
@@ -552,7 +552,7 @@ static void set_current_date(void)
 {
   time_t curtime;
   struct tm *loctime;
-  if (currentFlavor == TO8 || currentFlavor == TO8D || currentFlavor == TO9P)
+  if (currentModel == TO8 || currentModel == TO8D || currentModel == TO9P)
     {
       //en rom : remplacer jj-mm-aa par la date courante
       curtime = time(NULL);
@@ -645,11 +645,11 @@ int Run(int ncyclesmax)
       {
         videolinenumber -= 312;
         if(++vblnumber >= VBL_NUMBER_MAX) vblnumber = 0;
-        if (currentFlavor == MO5) Irq();
+        if (currentModel == MO5) Irq();
       }
       displayflag = ((vblnumber == 0) && (videolinenumber > 47) && (videolinenumber < 264));
     }
-    if (currentFlavor != MO5)
+    if (currentModel != MO5)
     {
       //decompte du temps de presence du signal irq timer
       if(timer_irqcount > 0) timer_irqcount -= opcycles;
@@ -684,7 +684,7 @@ static void MputTo(unsigned short a, char c)
   switch(a >> 12)
   {
     case 0x0: case 0x1:
-      if (currentFlavor != TO9)
+      if (currentModel != TO9)
       {
         //subtilite :
         //quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inverses
@@ -913,7 +913,7 @@ char MgetMo(unsigned short a)
 
 unsigned int toemulator_serialize_size(void)
 {
-  return sizeof(currentFlavor) + cpu_serialize_size() + video_serialize_size()
+  return sizeof(currentModel) + cpu_serialize_size() + video_serialize_size()
       + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(reserved1) + sizeof(reserved2)
       + sizeof(reserved3) + sizeof(reserved4) + sizeof(reserved5) + sizeof(reserved6)
       + sizeof(carflags) + sizeof(touche) + sizeof(capslock) + sizeof(joysposition)
@@ -928,8 +928,8 @@ void toemulator_serialize(void *data)
   int offset = 0;
   char *buffer = (char *) data;
 
-  memcpy(buffer+offset, &currentFlavor, sizeof(currentFlavor));
-  offset += sizeof(currentFlavor);
+  memcpy(buffer+offset, &currentModel, sizeof(currentModel));
+  offset += sizeof(currentModel);
 
   cpu_serialize(buffer+offset);
   offset += cpu_serialize_size();
@@ -997,11 +997,11 @@ void toemulator_unserialize(const void *data)
 {
   int offset = 0;
   const char *buffer = (const char *) data;
-  ThomsonFlavor flavor;
+  ThomsonModel model;
 
-  memcpy(&flavor, buffer+offset, sizeof(flavor));
-  offset += sizeof(flavor);
-  SetThomsonFlavor(flavor);
+  memcpy(&model, buffer+offset, sizeof(model));
+  offset += sizeof(model);
+  SetThomsonModel(model);
 
   cpu_unserialize(buffer+offset);
   offset += cpu_serialize_size();
@@ -1063,7 +1063,7 @@ void toemulator_unserialize(const void *data)
   offset += sizeof(keyb_irqcount);
   memcpy(&timer_irqcount, buffer+offset, sizeof(timer_irqcount));
 
-  if (currentFlavor != MO5)
+  if (currentModel != MO5)
   {
     videopage_bordercolor(port[0x1d]);
     selectRamBankTo();
