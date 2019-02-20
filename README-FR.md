@@ -82,9 +82,9 @@ RetroArch utilise beaucoup de raccourcis clavier, ce qui interfère avec l'émul
 
 L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquettes), *.k7 (cassettes), *.m7/*.m5 et *.rom (cartouches).
 
-### Variantes Thomson émulées
+### Modèles Thomson émulés
 
-Par défaut, l'émulateur essaye de déduire le modèle d'ordinateur à émuler en se basant sur le nom du fichier chargé (par exemple : saphir_to8.fd utilisera un TO8, pulsar_mo5.k7 utilisera un MO5, etc...). En dernier recours, un TO8 est émulé. En utilisant l'option "Thomson flavor", il est possible de forcer l'émulation d'un modèle particulier (actuellement : TO8, TO8D, TO9, TO9+, MO5), ou d'utiliser l'option "Auto" décrite précédemment.
+Par défaut, l'émulateur essaye de déduire le modèle d'ordinateur à émuler en se basant sur le nom du fichier chargé (par exemple : saphir_to8.fd utilisera un TO8, pulsar_mo5.k7 utilisera un MO5, etc...). En dernier recours, un TO8 est émulé. En utilisant l'option "Thomson model", il est possible de forcer l'émulation d'un modèle particulier (actuellement : TO8, TO8D, TO9, TO9+, MO5), ou d'utiliser l'option "Auto" décrite précédemment.
 
 ### Sauvegardes instantanées
 

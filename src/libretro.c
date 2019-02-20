@@ -94,7 +94,7 @@ static const int *mo5_autostart_keys = MO5_AUTOSTART_BASIC_KEYS;
 static int current_mo5_autostart_key_pos = -1;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson flavor; Auto|TO8|TO8D|TO9|TO9+|MO5" },
+    { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5" },
     { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
@@ -312,11 +312,11 @@ static void autostart_program(void)
     case MEDIA_FLOPPY:
       // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
       // and the 'D' key (Basic 128) on TO9
-      if (GetThomsonFlavor() == TO9)
+      if (GetThomsonModel() == TO9)
       {
         virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_d];
       }
-      else if (GetThomsonFlavor() == MO5)
+      else if (GetThomsonModel() == MO5)
       {
         autostart_mo5_begin();
       }
@@ -328,11 +328,11 @@ static void autostart_program(void)
     case MEDIA_TAPE:
       // Tapes are most often started with the BASIC 1.0
       // ('C' key on TO8/TO8D/TO9+, 'E' key on TO9)
-      if (GetThomsonFlavor() == TO9)
+      if (GetThomsonModel() == TO9)
       {
         virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_e];
       }
-      else if (GetThomsonFlavor() == MO5)
+      else if (GetThomsonModel() == MO5)
       {
         autostart_mo5_begin();
       }
@@ -344,7 +344,7 @@ static void autostart_program(void)
     case MEDIA_CARTRIDGE:
       // Cartridges are started by the '0' key
       // (on MO5, cartridge programs are already autostarted)
-      if (GetThomsonFlavor() != MO5)
+      if (GetThomsonModel() != MO5)
       {
         virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[RETROK_0];
       }
@@ -448,28 +448,28 @@ static void change_model(const char *model)
   }
   if (strcmp(model, "TO8") == 0)
   {
-    SetThomsonFlavor(TO8);
+    SetThomsonModel(TO8);
   }
   else if (strcmp(model, "TO8D") == 0)
   {
-    SetThomsonFlavor(TO8D);
+    SetThomsonModel(TO8D);
   }
   else if (strcmp(model, "TO9") == 0)
   {
-    SetThomsonFlavor(TO9);
+    SetThomsonModel(TO9);
   }
   else if (strcmp(model, "TO9+") == 0)
   {
-    SetThomsonFlavor(TO9P);
+    SetThomsonModel(TO9P);
   }
   else if (strcmp(model, "MO5") == 0)
   {
-    SetThomsonFlavor(MO5);
+    SetThomsonModel(MO5);
   }
   // Default: TO8
   else
   {
-    SetThomsonFlavor(TO8);
+    SetThomsonModel(TO8);
   }
 }
 
