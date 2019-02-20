@@ -154,9 +154,8 @@ void retro_init(void)
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "Fire" },
-        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "Autostart Program" },
-        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Virtual Keyboard: Change Letter (Up)" },
-        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Virtual Keyboard: Press Letter" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Virtual Keyboard: Press Letter" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start Program" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "Virtual Keyboard: Change Letter (Up)" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Virtual Keyboard: Change Letter (Down)" },
 
@@ -364,7 +363,7 @@ static void update_input(void)
 {
   int i;
   int xpointer, ypointer;
-  bool select, start, x, y, b;
+  bool select, start, x, y;
 
   input_poll_cb();
   // Joysticks
@@ -385,21 +384,20 @@ static void update_input(void)
   penbutton = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED);
   
   // Virtual keyboard:
-  // - Emulation of the B key with the B button of the joypad
-  // - Change letter with Select/X/Y and press it with Start
-  b = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
-  select = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
+  // - Start program with Start
+  // - Change letter with X/Y and press it with Select
   start = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START);
+  select = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
   x = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X);
   y = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
   if (!virtualkb_pressed)
   {
     // Try to start the currently loaded program
-    if (b)
+    if (start)
     {
       autostart_program();
     }
-    else if (select || x)
+    else if (x)
     {
       virtualkb_index = (virtualkb_index + 1) % VIRTUALKB_NB_KEYS;
       print_current_virtualkb_key();
@@ -411,7 +409,7 @@ static void update_input(void)
       print_current_virtualkb_key();
       virtualkb_pressed = true;
     }
-    else if (start)
+    else if (select)
     {
       virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[virtualkb_keysyms[virtualkb_index]];
       keyboard(virtualkb_lastscancode, true);
@@ -424,7 +422,7 @@ static void update_input(void)
   }
   else
   {
-    if (!select && !start && !x && !y && !b)
+    if (!select && !x && !y && !start)
     {
       virtualkb_pressed = false;
       keyboard(virtualkb_lastscancode, false);

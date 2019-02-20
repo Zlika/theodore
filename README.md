@@ -40,7 +40,7 @@ ndk-build
 
 A => "Fire" button
 
-B => "Autostart Program". Simulates a keystroke (or several keystrokes for the MO5) on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated. On MO5, the command used depends on the format detected for the first file of the tape (BAS => RUN", BIN => LOADM"",,R).
+Start => "Start Program". Simulates a keystroke (or several keystrokes for the MO5) on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated. On MO5, the command used depends on the format detected for the first file of the tape (BAS => RUN", BIN => LOADM"",,R).
 
 | Media loaded | Thomson computer | Key                 |
 | ------------ | ---------------- | ------------------- |
@@ -55,7 +55,7 @@ B => "Autostart Program". Simulates a keystroke (or several keystrokes for the M
 
 If the game does not start, then maybe another BASIC must be used.
 
-**Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the start button simulates a keystroke on the selected key. On controllers without Y/X keys, select can also be used to roll the virtual keyboard up.
+**Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the Select button simulates a keystroke on the selected key.
 The order of the keys in the virtual keyboard is: digits (0->9) then letters (A->Z) then "Space" then "Enter".
 
 ### Keyboard: mapping of special keys
