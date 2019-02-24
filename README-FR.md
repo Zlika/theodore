@@ -76,7 +76,7 @@ L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A 
 | Touche jaune (MO5) | SHIFT Gauche |
 | BASIC (MO5) | SHIFT Droit |
 
-RetroArch utilise beaucoup de raccourcis clavier, ce qui interfère avec l'émulation du clavier de ce core. Pour éviter ce problème, il suffit de configurer une "Hotkey" pour RetroArch, comme indiqué dans [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
+RetroArch utilise beaucoup de raccourcis clavier, ce qui interfère avec l'émulation du clavier de ce core. Pour éviter ce problème, il suffit de configurer une "Hotkey" pour RetroArch, comme indiqué dans [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys), et/ou basculer en mode "Game Focus" (touche "Arrêt Défil./Scroll Lock").
 
 ### :floppy_disk: Formats de fichiers supportés
 
