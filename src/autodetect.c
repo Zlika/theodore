@@ -73,9 +73,17 @@ bool autodetect_tape_first_file_is_basic(const char *filename)
 
 char *autodetect_model(const char *filename)
 {
+  if ((strstr(filename, "to8d") != NULL) || (strstr(filename, "TO8D") != NULL))
+  {
+    return "TO8D";
+  }
   if ((strstr(filename, "to8") != NULL) || (strstr(filename, "TO8") != NULL))
   {
     return "TO8";
+  }
+  if ((strstr(filename, "to9p") != NULL) || (strstr(filename, "TO9P") != NULL))
+  {
+    return "TO9+";
   }
   if ((strstr(filename, "to9") != NULL) || (strstr(filename, "TO9") != NULL))
   {
