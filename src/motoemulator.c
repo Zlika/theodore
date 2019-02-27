@@ -103,8 +103,6 @@ static int reserved1 = 0;
 static int reserved2 = 0;
 static int reserved3 = 0;
 static int reserved4 = 0;
-static int reserved5 = 0;
-static int reserved6 = 0;
 
 //Forward declarations
 static char MgetTo(unsigned short a);
@@ -914,8 +912,8 @@ char MgetMo(unsigned short a)
 unsigned int toemulator_serialize_size(void)
 {
   return sizeof(currentModel) + cpu_serialize_size() + video_serialize_size()
-      + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(reserved1) + sizeof(reserved2)
-      + sizeof(reserved3) + sizeof(reserved4) + sizeof(reserved5) + sizeof(reserved6)
+      + sizeof(ram) + sizeof(port) + sizeof(x7da) + device_serialize_size()
+      + sizeof(reserved1) + sizeof(reserved2) + sizeof(reserved3) + sizeof(reserved4)
       + sizeof(carflags) + sizeof(touche) + sizeof(capslock) + sizeof(joysposition)
       + sizeof(joysaction) + sizeof(xpen) + sizeof(ypen) + sizeof(penbutton)
       + sizeof(videolinecycle) + sizeof(videolinenumber) + sizeof(vblnumber)
@@ -942,6 +940,10 @@ void toemulator_serialize(void *data)
   offset += sizeof(port);
   memcpy(buffer+offset, x7da, sizeof(x7da));
   offset += sizeof(x7da);
+
+  device_serialize(buffer+offset);
+  offset += device_serialize_size();
+
   memcpy(buffer+offset, &reserved1, sizeof(reserved1));
   offset += sizeof(reserved1);
   memcpy(buffer+offset, &reserved2, sizeof(reserved2));
@@ -950,10 +952,6 @@ void toemulator_serialize(void *data)
   offset += sizeof(reserved3);
   memcpy(buffer+offset, &reserved4, sizeof(reserved4));
   offset += sizeof(reserved4);
-  memcpy(buffer+offset, &reserved5, sizeof(reserved5));
-  offset += sizeof(reserved5);
-  memcpy(buffer+offset, &reserved6, sizeof(reserved6));
-  offset += sizeof(reserved6);
   memcpy(buffer+offset, &carflags, sizeof(carflags));
   offset += sizeof(carflags);
   memcpy(buffer+offset, touche, sizeof(touche));
@@ -1013,6 +1011,10 @@ void toemulator_unserialize(const void *data)
   offset += sizeof(port);
   memcpy(x7da, buffer+offset, sizeof(x7da));
   offset += sizeof(x7da);
+
+  device_unserialize(buffer+offset);
+  offset += device_serialize_size();
+
   memcpy(&reserved1, buffer+offset, sizeof(reserved1));
   offset += sizeof(reserved1);
   memcpy(&reserved2, buffer+offset, sizeof(reserved2));
@@ -1021,10 +1023,6 @@ void toemulator_unserialize(const void *data)
   offset += sizeof(reserved3);
   memcpy(&reserved4, buffer+offset, sizeof(reserved4));
   offset += sizeof(reserved4);
-  memcpy(&reserved5, buffer+offset, sizeof(reserved5));
-  offset += sizeof(reserved5);
-  memcpy(&reserved6, buffer+offset, sizeof(reserved6));
-  offset += sizeof(reserved6);
   memcpy(&carflags, buffer+offset, sizeof(carflags));
   offset += sizeof(carflags);
   memcpy(touche, buffer+offset, sizeof(touche));

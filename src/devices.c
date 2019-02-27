@@ -49,6 +49,9 @@ static SapFile sap = { 0, NULL }; // floppy file (sap format)
 static int p0 = MONITOR_PAGE_0_TO;
 static bool is_to = true;
 
+static int k7octet = 0;
+static int k7bit = 0;
+
 // 6809 registers
 #define CC dc6809_cc
 #define A *dc6809_a
@@ -283,8 +286,6 @@ static void WriteByteTape(void)
 
 static void ReadBitTape(void)
 {
-  static int k7octet = 0;
-  static int k7bit = 0;
   int octet = Mgetc(0x2045) << 1;
   if(k7bit == 0) {k7octet = ReadByteTape(); k7bit = 0x80;}
   if((k7octet & k7bit)) {octet |= 0x01; A = 0xff;} else A = 0;
@@ -369,5 +370,41 @@ void RunIoOpcode(int opcode)
       debugger_illegal_opcode();
 #endif
       break;                             // invalid opcode
+  }
+}
+
+unsigned int device_serialize_size(void)
+{
+  return sizeof(int) + sizeof(int);
+}
+
+void device_serialize(void *data)
+{
+  int offset = 0;
+  char *buffer = (char *) data;
+  int k7data;
+  if (fk7 != NULL)
+  {
+    k7data = (k7octet << 8) + k7bit;
+    memcpy(buffer+offset, &k7data, sizeof(int));
+    offset += sizeof(int);
+    k7data = (int) ftell(fk7);
+    memcpy(buffer+offset, &k7data, sizeof(int));
+  }
+}
+
+void device_unserialize(const void *data)
+{
+  int offset = 0;
+  char *buffer = (char *) data;
+  int k7data;
+  if (fk7 != NULL)
+  {
+    memcpy(&k7data, buffer+offset, sizeof(int));
+    offset += sizeof(int);
+    k7octet = (k7data >> 8) & 0xFF;
+    k7bit = k7data & 0xFF;
+    memcpy(&k7data, buffer+offset, sizeof(int));
+    fseek(fk7, k7data, SEEK_SET);
   }
 }

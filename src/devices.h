@@ -56,4 +56,12 @@ void RewindTape(void);
 // and are used to emulate I/O functions of the monitor.
 void RunIoOpcode(int opcode);
 
+// The following functions are used for libretro's save states feature.
+// Returns the amount of data required to serialize the internal state of the device module.
+unsigned int device_serialize_size(void);
+// Serializes the internal state of the device module.
+void device_serialize(void *data);
+// Unserializes the internal state of the device module.
+void device_unserialize(const void *data);
+
 #endif /* __DEVICES_H */
