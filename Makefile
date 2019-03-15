@@ -2,6 +2,8 @@
 DEBUG = 0
 # DASM=1 to enable theodore's disassembler/debugger
 DASM = 0
+# UNDOC_OPCODES=1 to enable theodore's emulation of undocumented 6809 opcodes
+UNDOC_OPCODES = 0
 GIT_VERSION := "$(shell git describe --dirty --always --tags)"
 HAS_GCC = 1
 
@@ -680,6 +682,11 @@ endif
 ifeq ($(DASM), 1)
 	CFLAGS += -DTHEODORE_DASM
 	CXXFLAGS += -DTHEODORE_DASM
+endif
+# Enable emulation of undocumented opcodes
+ifeq ($(UNDOC_OPCODES), 1)
+	CFLAGS += -DTHEODORE_UNDOC_OPCODES
+	CXXFLAGS += -DTHEODORE_UNDOC_OPCODES
 endif
 
 CORE_DIR = .

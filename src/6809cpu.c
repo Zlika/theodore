@@ -707,18 +707,25 @@ int Run6809(void)
   switch(code)
   {
     case 0x00: DIRECT; PUTC(DA, Neg(GETC(DA))); return 6;       /* NEG  /$ */
-    case 0x01: DIRECT; return 3;                                /*undoc BRN     */
-    //case 0x02:
-    // if(CC&C1){PUTC(wd, Com(GETC(DA))); return 6;}            /*undoc COM  /$ */
-    //      else{PUTC(DA, Neg(GETC(DA))); return 6;}            /*undoc NEG  /$ */
+#ifdef THEODORE_UNDOC_OPCODES
+    case 0x01: DIRECT; return 3;                                /* undoc BRN */
+    case 0x02: DIRECT;
+     if (CC&CC_C) {PUTC(DA, Neg(GETC(DA))); return 6;}          /* undoc COM  /$ */
+     else {PUTC(DA, Com(GETC(DA))); return 6;}                  /* undoc NEG  /$ */
+#endif
     case 0x03: DIRECT; PUTC(DA, Com(GETC(DA))); return 6;       /* COM  /$ */
     case 0x04: DIRECT; PUTC(DA, Lsr(GETC(DA))); return 6;       /* LSR  /$ */
-    //case 0x05: PUTC(DA, Lsr(GETC(DA))); return 6;             /*undoc LSR  /$ */
+#ifdef THEODORE_UNDOC_OPCODES
+    case 0x05: DIRECT; PUTC(DA, Lsr(GETC(DA))); return 6;       /* undoc LSR  /$ */
+#endif
     case 0x06: DIRECT; PUTC(DA, Ror(GETC(DA))); return 6;       /* ROR  /$ */
     case 0x07: DIRECT; PUTC(DA, Asr(GETC(DA))); return 6;       /* ASR  /$ */
     case 0x08: DIRECT; PUTC(DA, Asl(GETC(DA))); return 6;       /* ASL  /$ */
     case 0x09: DIRECT; PUTC(DA, Rol(GETC(DA))); return 6;       /* ROL  /$ */
     case 0x0a: DIRECT; PUTC(DA, Dec(GETC(DA))); return 6;       /* DEC  /$ */
+#ifdef THEODORE_UNDOC_OPCODES
+    case 0x0b: DIRECT; PUTC(DA, Dec(GETC(DA))); return 6;       /* undoc DEC  /$ */
+#endif
     case 0x0c: DIRECT; PUTC(DA, Inc(GETC(DA))); return 6;       /* INC  /$ */
     case 0x0d: DIRECT; Tstc(GETC(DA)); return 6;                /* TST  /$ */
     case 0x0e: DIRECT; PC = DA; return 3;                       /* JMP  /$ */
@@ -784,6 +791,9 @@ int Run6809(void)
     case 0x50: B = Neg(B); return 2;                            /* NEGB    */
     case 0x53: B = Com(B); return 2;                            /* COMB    */
     case 0x54: B = Lsr(B); return 2;                            /* LSRB    */
+#ifdef THEODORE_UNDOC_OPCODES
+    case 0x55: B = Lsr(B); return 2;                            /* undoc LSRB */
+#endif
     case 0x56: B = Ror(B); return 2;                            /* RORB    */
     case 0x57: B = Asr(B); return 2;                            /* ASRB    */
     case 0x58: B = Asl(B); return 2;                            /* ASLB    */
