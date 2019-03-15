@@ -1,3 +1,8 @@
+Next Release
+===========
+* Add MO6 emulation.
+* Add compile-time flag (UNDOC_OPCODES=1) to enable emulation of 6809 undocumented opcodes.
+
 Release 1.7 (2019/03/15)
 ===========
 * Fix sound in some games (#8).
