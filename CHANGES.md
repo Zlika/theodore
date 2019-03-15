@@ -1,4 +1,4 @@
-Next Release
+Release 1.7 (2019/03/15)
 ===========
 * Fix sound in some games (#8).
 * Add emulation of illegal opcode 0x11F1. Fixes some MO5 games (#10).
