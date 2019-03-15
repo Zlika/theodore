@@ -956,6 +956,7 @@ static char MgetMo(unsigned short a)
         case 0xa7d8: return ~Initn(); //octet etat disquette
         case 0xa7e1: return 0xff;     //zero provoque erreur 53 sur imprimante
         // A7E4->A7E7 : Gate Array
+        case 0xa7e4: return (currentModel == MO6) ? port[0x1d] & 0xf0 : 0;
         case 0xa7e6: return Iniln() << 1;
         case 0xa7e7: return (currentModel == MO5) ? Initn() : Initn() + Iniln();
         default: if(a < 0xa7c0) return(cd90_640_rom[a & 0x7ff]);
