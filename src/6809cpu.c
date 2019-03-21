@@ -707,8 +707,8 @@ int Run6809(void)
   switch(code)
   {
     case 0x00: DIRECT; PUTC(DA, Neg(GETC(DA))); return 6;       /* NEG  /$ */
-#ifdef THEODORE_UNDOC_OPCODES
     case 0x01: DIRECT; return 3;                                /* undoc BRN */
+#ifdef THEODORE_UNDOC_OPCODES
     case 0x02: DIRECT;
      if (CC&CC_C) {PUTC(DA, Neg(GETC(DA))); return 6;}          /* undoc COM  /$ */
      else {PUTC(DA, Com(GETC(DA))); return 6;}                  /* undoc NEG  /$ */

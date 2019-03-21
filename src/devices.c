@@ -350,21 +350,29 @@ static void Readpenxy(int device)
 
 void RunIoOpcode(int opcode)
 {
+  // dcmoto uses "new" illegal opcode values (0x11xx) compared to DCTO8D/DCTO9P/DCMO5.
+  // In particular, the "illegal" 0x11f1 opcode has been found in some tape files (*.k7).
+  // It was certainly a patch made by Daniel Coulom to workaround some tape protections.
+  // Here we support both the "old" (DCTO8D/DCTO9P/DCMO5) and "new" (dcmoto) "illegal" opcodes.
   switch(opcode)
   {
     case 0x14: Readsector(); break;      // read floppy sector
     case 0x15: Writesector(); break;     // write floppy sector
     case 0x18: Formatdisk(); break;      // format floppy
+    case 0x11f0:
     case 0x41: ReadBitTape(); break;     // read tape bit
+    case 0x11f1:
     case 0x42: ReadByteTape(); break;    // read tape byte
+    case 0x11f2:
     case 0x45: WriteByteTape(); break;   // write tape byte
+    case 0x11f7:
     case 0x4b: Readpenxy(0); break;      // read light pen position
+    case 0x11f8:
     case 0x4e: Readpenxy(1); break;      // read mouse position
+    case 0x11fa:
     case 0x51: Print(); break;           // print a character
+    case 0x11f9:
     case 0x52: Readmousebutton(); break; // test mouse click
-    // illegal opcode used by some Loriciel games.
-    // dcmoto emulates it by reading the next byte of the tape.
-    case 0x11f1: ReadByteTape(); break;
     default:
 #ifdef THEODORE_DASM
       debugger_illegal_opcode();

@@ -192,7 +192,7 @@ void SetThomsonModel(ThomsonModel model)
 {
   if (model != currentModel)
   {
-    if (model == MO5)
+    if ((model == MO5) || (model == MO6))
     {
       SetModeTO(false);
     }
@@ -901,7 +901,8 @@ static void MputMo(unsigned short a, char c)
   switch(a >> 12)
   {
     case 0x0: case 0x1: ramvideo[a] = c; break;
-    case 0x6: case 0x7: case 0x8: case 0x9:  if (currentModel == MO6) { rambank[a] = c; } return;
+    case 0x6: case 0x7: case 0x8: case 0x9:
+      if (currentModel == MO6) rambank[a] = c; else ramuser[a] = c; return;
     case 0xa:
       switch(a)
       {
@@ -920,6 +921,7 @@ static void MputMo(unsigned short a, char c)
         case 0xa7db: if (currentModel == MO6) { port[0x1b] = c; } return;
         case 0xa7dc: if (currentModel == MO6) { selectVideomode(c); } return;
         case 0xa7dd: if (currentModel == MO6) { videopage_bordercolor(c); carflags = (~c & 0x20) << 1; selectRomBankMo6(); } return;
+        case 0xa7e4: if (currentModel == MO6) { port[0x24] = c & 0x01; } return;
         case 0xa7e5: if (currentModel == MO6) { port[0x25] = c; selectRamBankMo6(); } return;
       }
       break;
@@ -940,11 +942,13 @@ static char MgetMo(unsigned short a)
   switch(a >> 12)
   {
     case 0x0: case 0x1: return ramvideo[a];
+    case 0x6: case 0x7: case 0x8: case 0x9:
+          if (currentModel == MO6) return rambank[a]; else return ramuser[a];
     case 0xa:
       switch(a)
       {
         // A7C0->A7C3 : PIA 6821 Systeme
-        case 0xa7c0: return (currentModel == MO5) ? port[0] | 0x80 | (penbutton << 5) : port[0] | 0x80;
+        case 0xa7c0: return (currentModel == MO5) ? port[0] | 0x80 | (penbutton << 5) : port[0] | 0x80 | (penbutton << 1);
         case 0xa7c1: return port[1] | touche[(port[1] & 0xfe)>> 1];
         case 0xa7c2: return port[2];
         case 0xa7c3: return port[3] | ~Initn();
@@ -952,13 +956,13 @@ static char MgetMo(unsigned short a)
         case 0xa7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
         case 0xa7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
         case 0xa7ce: return 4;
-        case 0xa7da: return (currentModel == MO6) ? x7da[port[0x1b]++ & 0x1f] : 0;
+        case 0xa7da: return (currentModel == MO6) ? x7da[port[0x1b]++ & 0x1f] : port[a & 0x3f];
         case 0xa7d8: return ~Initn(); //octet etat disquette
         case 0xa7e1: return 0xff;     //zero provoque erreur 53 sur imprimante
         // A7E4->A7E7 : Gate Array
-        case 0xa7e4: return (currentModel == MO6) ? port[0x1d] & 0xf0 : 0;
+        case 0xa7e4: return (currentModel == MO6) ? port[0x1d] & 0xf0 : port[a & 0x3f];
         case 0xa7e6: return Iniln() << 1;
-        case 0xa7e7: return (currentModel == MO5) ? Initn() : Initn() + Iniln();
+        case 0xa7e7: return (currentModel == MO5) ? Initn() : (port[0x24] & 0x01) | Initn() | Iniln();
         default: if(a < 0xa7c0) return(cd90_640_rom[a & 0x7ff]);
              if(a < 0xa800) return(port[a & 0x3f]);
              return(0);
