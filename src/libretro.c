@@ -434,6 +434,7 @@ static void change_model(const char *model)
 {
   if (strcmp(model, "Auto") == 0)
   {
+    // Auto-detection of the model is only done when a game is loaded
     return;
   }
   if (strncmp(model, "MO", 2) == 0)
@@ -607,7 +608,7 @@ static void check_automodel(const char *filename)
   struct retro_variable var = {0, 0};
 
   var.key = PACKAGE_NAME"_rom";
-  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && (strcmp(var.value, "Auto") == 0))
   {
     change_model(autodetect_model(filename));
   }
