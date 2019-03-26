@@ -37,6 +37,7 @@
 #include "rom/rom_to9p.inc"
 #include "rom/rom_mo5.inc"
 #include "rom/rom_mo6.inc"
+#include "rom/rom_pc128.inc"
 
 #define VBL_NUMBER_MAX  2
 // Number of keys of the TO8D keyboard
@@ -51,16 +52,20 @@ typedef struct
   int *basic_patch;   // Patch to apply to the "BASIC and other embedded software" part of the ROM
   char *monitor;      // Pointer to the beginning of the "monitor" part of the ROM
   int *monitor_patch; // Patch to apply to the "monitor" part of the ROM
-  char *disk_drive_monitor;      // MO5: disk driver monitor
-  int *disk_drive_monitor_patch; // MO5: Patch to apply to the disk drive monitor
+  char *disk_drive_monitor;      // MO5/MO6: disk driver monitor
+  int *disk_drive_monitor_patch; // MO5/MO6: Patch to apply to the disk drive monitor
+  bool is_mo;                    // If it is a MO or TO system
+  bool is_mo6;                   // If it is a MO6 or a PC128
 } SystemRom;
 
-static SystemRom ROM_TO8 = { to8_basic_rom, to8_basic_patch, to8_monitor_rom, to8_monitor_patch, NULL, NULL };
-static SystemRom ROM_TO8D = { to8_basic_rom, to8_basic_patch, to8d_monitor_rom, to8d_monitor_patch, NULL, NULL };
-static SystemRom ROM_TO9 = { to9_basic_rom, to9_basic_patch, to9_monitor_rom, to9_monitor_patch, NULL, NULL };
-static SystemRom ROM_TO9P = { to9p_basic_rom, to9p_basic_patch, to9p_monitor_rom, to9p_monitor_patch, NULL, NULL };
-static SystemRom ROM_MO5 = { mo5_v2_basic_rom, mo5_v2_basic_patch, mo5_v2_monitor_rom, mo5_v2_monitor_patch, cd90_640_rom, cd90_640_patch };
-static SystemRom ROM_MO6 = { mo6_v3_basic128_rom, mo6_v3_basic128_patch, mo6_v3_basic1_rom, mo6_v3_basic1_patch, NULL, NULL };
+static SystemRom ROM_TO8 = { to8_basic_rom, to8_basic_patch, to8_monitor_rom, to8_monitor_patch, NULL, NULL, false, false };
+static SystemRom ROM_TO8D = { to8_basic_rom, to8_basic_patch, to8d_monitor_rom, to8d_monitor_patch, NULL, NULL, false, false };
+static SystemRom ROM_TO9 = { to9_basic_rom, to9_basic_patch, to9_monitor_rom, to9_monitor_patch, NULL, NULL, false, false };
+static SystemRom ROM_TO9P = { to9p_basic_rom, to9p_basic_patch, to9p_monitor_rom, to9p_monitor_patch, NULL, NULL, false, false };
+static SystemRom ROM_MO5 = { mo5_v2_basic_rom, mo5_v2_basic_patch, mo5_v2_monitor_rom, mo5_v2_monitor_patch, cd90_640_rom, cd90_640_patch, true, false };
+static SystemRom ROM_MO6 = { mo6_v3_basic128_rom, mo6_v3_basic128_patch, mo6_v3_basic1_rom, mo6_v3_basic1_patch, cd90_640_rom, cd90_640_patch, true, true };
+static SystemRom ROM_PC128 = { pc128_basic128_rom, pc128_basic128_patch, pc128_basic1_rom, pc128_basic1_patch, cd90_640_rom, cd90_640_patch, true, true };
+
 
 static ThomsonModel currentModel = TO8;
 static SystemRom *rom = &ROM_TO8;
@@ -192,14 +197,6 @@ void SetThomsonModel(ThomsonModel model)
 {
   if (model != currentModel)
   {
-    if ((model == MO5) || (model == MO6))
-    {
-      SetModeTO(false);
-    }
-    else
-    {
-      SetModeTO(true);
-    }
     switch (model)
     {
       case TO8:
@@ -220,10 +217,14 @@ void SetThomsonModel(ThomsonModel model)
       case MO6:
         rom = &ROM_MO6;
         break;
+      case PC128:
+        rom = &ROM_PC128;
+        break;
       default:
         return;
     }
     currentModel = model;
+    SetModeTO(!rom->is_mo);
     Hardreset();
   }
 }
@@ -240,7 +241,7 @@ void keyboard(int scancode, bool down)
   // Filter false key down events when the key was already down
   if (down && !touche[scancode]) return;
   touche[scancode] = down ? 0x00 : 0x80;
-  if ((currentModel == MO5) || (currentModel == MO6))
+  if (rom->is_mo)
   {
     return;
   }
@@ -469,7 +470,7 @@ static void selectVideomode(char c)
     case 0x2a: SetVideoMode(VIDEO_640X2); break;
     case 0x41: SetVideoMode(VIDEO_320X4_SPECIAL); break;
     case 0x7b: SetVideoMode(VIDEO_160X16); break;
-    default:   if (currentModel == MO6)
+    default:   if (rom->is_mo)
                  SetVideoMode(VIDEO_320_16_MO5);
                else SetVideoMode(VIDEO_320X16);
                break;
@@ -559,7 +560,7 @@ void Initprog(void)
     selectVideoRam = selectVideoRamMo5;
     selectRomBank = selectRomBankMo5;
   }
-  else if (currentModel == MO6)
+  else if (rom->is_mo6)
   {
     ramuser = ram + 0x2000;
     Mputc = MputMo;
@@ -697,11 +698,11 @@ int Run(int ncyclesmax)
       {
         videolinenumber -= 312;
         if(++vblnumber >= VBL_NUMBER_MAX) vblnumber = 0;
-        if (currentModel == MO5) Irq();
+        if (rom->is_mo) Irq();
       }
       displayflag = ((vblnumber == 0) && (videolinenumber > 47) && (videolinenumber < 264));
     }
-    if (currentModel != MO5 && currentModel != MO6)
+    if (!rom->is_mo)
     {
       //decompte du temps de presence du signal irq timer
       if(timer_irqcount > 0) timer_irqcount -= opcycles;
@@ -904,7 +905,7 @@ static void MputMo(unsigned short a, char c)
     case 0x0: case 0x1: ramvideo[a] = c; return;
     case 0x2: case 0x3: case 0x4: case 0x5: ramuser[a] = c; return;
     case 0x6: case 0x7: case 0x8: case 0x9:
-      if (currentModel == MO6) rambank[a] = c; else ramuser[a] = c; return;
+      if (rom->is_mo6) rambank[a] = c; else ramuser[a] = c; return;
     case 0xa:
       switch(a)
       {
@@ -919,12 +920,12 @@ static void MputMo(unsigned short a, char c)
         case 0xa7cd: port[0x0d] = c; sound = c & 0x3f; return;
         case 0xa7ce: port[0x0e] = c; return; //registre controle position joysticks
         case 0xa7cf: port[0x0f] = c; return; //registre controle action - musique
-        case 0xa7da: if (currentModel == MO6) { Palettecolor(c); } return;
-        case 0xa7db: if (currentModel == MO6) { port[0x1b] = c; } return;
-        case 0xa7dc: if (currentModel == MO6) { selectVideomode(c); } return;
-        case 0xa7dd: if (currentModel == MO6) { videopage_bordercolor(c); carflags = (~c & 0x20) << 1; selectRomBankMo6(); } return;
-        case 0xa7e4: if (currentModel == MO6) { port[0x24] = c & 0x01; } return;
-        case 0xa7e5: if (currentModel == MO6) { port[0x25] = c; selectRamBankMo6(); } return;
+        case 0xa7da: if (rom->is_mo6) { Palettecolor(c); } return;
+        case 0xa7db: if (rom->is_mo6) { port[0x1b] = c; } return;
+        case 0xa7dc: if (rom->is_mo6) { selectVideomode(c); } return;
+        case 0xa7dd: if (rom->is_mo6) { videopage_bordercolor(c); carflags = (~c & 0x20) << 1; selectRomBankMo6(); } return;
+        case 0xa7e4: if (rom->is_mo6) { port[0x24] = c & 0x01; } return;
+        case 0xa7e5: if (rom->is_mo6) { port[0x25] = c; selectRamBankMo6(); } return;
       }
       return;
     case 0xb: case 0xc: case 0xd: case 0xe:
@@ -946,7 +947,7 @@ static char MgetMo(unsigned short a)
     case 0x0: case 0x1: return ramvideo[a];
     case 0x2: case 0x3: case 0x4: case 0x5: return ramuser[a];
     case 0x6: case 0x7: case 0x8: case 0x9:
-          if (currentModel == MO6) return rambank[a]; else return ramuser[a];
+          if (rom->is_mo6) return rambank[a]; else return ramuser[a];
     case 0xa:
       switch(a)
       {
@@ -959,11 +960,11 @@ static char MgetMo(unsigned short a)
         case 0xa7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
         case 0xa7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
         case 0xa7ce: return 4;
-        case 0xa7da: return (currentModel == MO6) ? x7da[port[0x1b]++ & 0x1f] : port[a & 0x3f];
+        case 0xa7da: return (rom->is_mo6) ? x7da[port[0x1b]++ & 0x1f] : port[a & 0x3f];
         case 0xa7d8: return ~Initn(); //octet etat disquette
         case 0xa7e1: return 0xff;     //zero provoque erreur 53 sur imprimante
         // A7E4->A7E7 : Gate Array
-        case 0xa7e4: return (currentModel == MO6) ? port[0x1d] & 0xf0 : port[a & 0x3f];
+        case 0xa7e4: return (rom->is_mo6) ? port[0x1d] & 0xf0 : port[a & 0x3f];
         case 0xa7e6: return Iniln() << 1;
         case 0xa7e7: return (currentModel == MO5) ? Initn() : (port[0x24] & 0x01) | Initn() | Iniln();
         default: if(a < 0xa7c0) return(cd90_640_rom[a & 0x7ff]);
@@ -1133,7 +1134,7 @@ void toemulator_unserialize(const void *data)
   if (currentModel != MO5)
   {
     videopage_bordercolor(port[0x1d]);
-    selectRamBankTo();
+    if (rom->is_mo6) selectRamBankMo6(); else selectRamBankTo();
   }
   selectVideoRam();
   selectRomBank();

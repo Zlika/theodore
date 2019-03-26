@@ -9,7 +9,7 @@ Theodore - Thomson MO/TO emulator
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) and [DCMO5](http://dcmo5.free.fr/) emulators, and currently supports the following models: TO8, TO8D, TO9, TO9+, MO5, MO6.
+This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) and [DCMO5](http://dcmo5.free.fr/) emulators, and currently supports the following models: TO8, TO8D, TO9, TO9+, MO5, MO6 and also the Olivetti Prodest PC128 (a rebranded MO6 for the Italian market).
 
 ### How to install
 
@@ -84,7 +84,7 @@ The emulator can read the following file formats: *.fd and *.sap (floppy disks),
 
 ### :computer: Thomson models
 
-By default, the core tries to guess the required Thomson model based on the name of the file loaded (e.g. saphir_to8.fd will switch to TO8, pulsar_mo5.k7 will switch to MO5 and so on). The fallback is to emulate a TO8 computer. Using the "Thomson model" option you can force the emulation of a particular model (currently: TO8, TO8D, TO9, TO9+, MO5, MO6), or use "Auto" for the default "best guess" behavior.
+By default, the core tries to guess the required Thomson model based on the name of the file loaded (e.g. saphir_to8.fd will switch to TO8, pulsar_mo5.k7 will switch to MO5 and so on). The fallback is to emulate a TO8 computer. Using the "Thomson model" option you can force the emulation of a particular model, or use "Auto" for the default "best guess" behavior.
 
 ### :rewind: Save states & Rewind
 

@@ -9,7 +9,7 @@ Theodore - Emulateur Thomson MO/TO
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson](https://fr.wikipedia.org/wiki/Gamme_MOTO). Cet émulateur est dérivé des émulateurs [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) et [DCMO5](http://dcmo5.free.fr/) de Daniel Coulom, et supporte actuellement les modèles suivants: TO8, TO8D, TO9, TO9+, MO5, MO6.
+Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson](https://fr.wikipedia.org/wiki/Gamme_MOTO). Cet émulateur est dérivé des émulateurs [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) et [DCMO5](http://dcmo5.free.fr/) de Daniel Coulom, et supporte actuellement les modèles suivants: TO8, TO8D, TO9, TO9+, MO5, MO6 ainsi que l'Olivetti Prodest PC128 (un dérivé du MO6 pour le marché italien).
 
 ### Instructions d'installation
 
@@ -84,7 +84,7 @@ L'émulateur peut lire les formats de fichiers suivants : *.fd et *.sap (disquet
 
 ### :computer: Modèles Thomson émulés
 
-Par défaut, l'émulateur essaye de déduire le modèle d'ordinateur à émuler en se basant sur le nom du fichier chargé (par exemple : saphir_to8.fd utilisera un TO8, pulsar_mo5.k7 utilisera un MO5, etc...). En dernier recours, un TO8 est émulé. En utilisant l'option "Thomson model", il est possible de forcer l'émulation d'un modèle particulier (actuellement : TO8, TO8D, TO9, TO9+, MO5, MO6), ou d'utiliser l'option "Auto" décrite précédemment.
+Par défaut, l'émulateur essaye de déduire le modèle d'ordinateur à émuler en se basant sur le nom du fichier chargé (par exemple : saphir_to8.fd utilisera un TO8, pulsar_mo5.k7 utilisera un MO5, etc...). En dernier recours, un TO8 est émulé. En utilisant l'option "Thomson model", il est possible de forcer l'émulation d'un modèle particulier, ou d'utiliser l'option "Auto" décrite précédemment.
 
 ### :rewind: Sauvegardes instantanées et rembobinage
 

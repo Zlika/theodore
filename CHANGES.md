@@ -1,6 +1,7 @@
 Next Release
 ===========
 * Add MO6 emulation.
+* Add Olivetti Prodest PC128 emulation.
 * Add compile-time flag (UNDOC_OPCODES=1) to enable emulation of some undocumented 6809 opcodes.
 * Fix auto-detection of Thomson model always enabled.
 

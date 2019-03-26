@@ -93,5 +93,13 @@ char *autodetect_model(const char *filename)
   {
     return "MO5";
   }
+  if ((strstr(filename, "mo6") != NULL) || (strstr(filename, "MO6") != NULL))
+  {
+    return "MO6";
+  }
+  if ((strstr(filename, "pc128") != NULL) || (strstr(filename, "PC128") != NULL))
+  {
+    return "PC128";
+  }
   return "";
 }
