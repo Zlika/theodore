@@ -1,7 +1,8 @@
 Next Release
 ===========
 * Add MO6 emulation.
-* Add compile-time flag (UNDOC_OPCODES=1) to enable emulation of 6809 undocumented opcodes.
+* Add compile-time flag (UNDOC_OPCODES=1) to enable emulation of some undocumented 6809 opcodes.
+* Fix auto-detection of Thomson model always enabled.
 
 Release 1.7 (2019/03/15)
 ===========

@@ -352,9 +352,9 @@ static void selectRamBankTo(void)
 
 static void selectRamBankMo6(void)
 {
-  int nrambank;        //numero banque ram (0-7)
+  int nrambank;        //numero banque ram (0-5)
   nrambank = port[0x25] & 0x07;
-  rambank = ram - 0x6000 + (nrambank << 13);
+  rambank = ram - 0x6000 + (nrambank << 14);
 }
 
 static void selectRomBankTo(void)
@@ -567,6 +567,7 @@ void Initprog(void)
     selectVideoRam = selectVideoRamMo6;
     selectRomBank = selectRomBankMo6;
     port[0x25] = 0x0; // RAM bank 0 selected
+    selectRamBankMo6();
   }
   else
   {
@@ -900,7 +901,8 @@ static void MputMo(unsigned short a, char c)
 #endif
   switch(a >> 12)
   {
-    case 0x0: case 0x1: ramvideo[a] = c; break;
+    case 0x0: case 0x1: ramvideo[a] = c; return;
+    case 0x2: case 0x3: case 0x4: case 0x5: ramuser[a] = c; return;
     case 0x6: case 0x7: case 0x8: case 0x9:
       if (currentModel == MO6) rambank[a] = c; else ramuser[a] = c; return;
     case 0xa:
@@ -908,11 +910,11 @@ static void MputMo(unsigned short a, char c)
       {
         // A7C0->A7C3 : PIA 6821 Systeme
         case 0xa7c0: if (currentModel == MO5) { port[0] = c & 0x5f; selectVideoRam(); }
-                     else { port[0] = c & 0x39; selectVideoRam(); selectRomBank(); } break;
-        case 0xa7c1: port[1] = c & 0x7f; sound = (c & 1) << 5; break;
-        case 0xa7c2: port[2] = c & 0x3f; break;
-        case 0xa7c3: port[3] = c & 0x3f; break;
-        case 0xa7cb: carflags = c; selectRomBank(); break;
+                     else { port[0] = c & 0x39; selectVideoRam(); selectRomBank(); } return;
+        case 0xa7c1: port[1] = c & 0x7f; sound = (c & 1) << 5; return;
+        case 0xa7c2: port[2] = c & 0x3f; return;
+        case 0xa7c3: port[3] = c & 0x3f; return;
+        case 0xa7cb: carflags = c; selectRomBank(); return;
         case 0xa7cc: port[0x0c] = c; return;
         case 0xa7cd: port[0x0d] = c; sound = c & 0x3f; return;
         case 0xa7ce: port[0x0e] = c; return; //registre controle position joysticks
@@ -924,11 +926,11 @@ static void MputMo(unsigned short a, char c)
         case 0xa7e4: if (currentModel == MO6) { port[0x24] = c & 0x01; } return;
         case 0xa7e5: if (currentModel == MO6) { port[0x25] = c; selectRamBankMo6(); } return;
       }
-      break;
+      return;
     case 0xb: case 0xc: case 0xd: case 0xe:
       if ((carflags & 8) && (cartype == 0)) rombank[a] = c;
-      break;
-    case 0xf: break;
+      return;
+    case 0xf: return;
     default: ramuser[a] = c;
  }
 }
@@ -942,6 +944,7 @@ static char MgetMo(unsigned short a)
   switch(a >> 12)
   {
     case 0x0: case 0x1: return ramvideo[a];
+    case 0x2: case 0x3: case 0x4: case 0x5: return ramuser[a];
     case 0x6: case 0x7: case 0x8: case 0x9:
           if (currentModel == MO6) return rambank[a]; else return ramuser[a];
     case 0xa:
