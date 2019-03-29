@@ -326,36 +326,40 @@ static void selectVideoRamMo6(void)
 
 static void selectRamBankTo(void)
 {
-  int nrambank;        //numero banque ram (00-1f)
+  int nrambank; // RAM page (TO8 mode) or bank (TO7/TO9 mode) number
 
   // TO8 mode (5 lower bits of e7e5 = RAM page number)
   // (bit D4 of gate array mode page's "system 1" register at e7e7 = 0
   // if RAM bank switching is done via PIA bits for TO7-70/TO9 emulation)
   if ((port[0x27] & 0x10) && (currentModel != TO9))
   {
-    nrambank = port[0x25] & 0x1f;
+    nrambank = port[0x25] & 0x1f; // RAM page number (0-31)
     rambank = ram - 0xa000 + (nrambank << 14);
-    return;
   }
-  // TO7-70/TO9 compatibility mode via e7c9
-  switch (port[0x09] & 0xf8)
+  else
   {
-    case 0x08: nrambank = 0; break;
-    case 0x10: nrambank = 1; break;
-    case 0xe0: nrambank = 2; break;
-    case 0xa0: nrambank = currentModel == TO9 ? 4 : 3; break;  // banks 3 and 4
-    case 0x60: nrambank = currentModel == TO9 ? 3 : 4; break;  // inverted/TO7-70&TO9
-    case 0x20: nrambank = 5; break;
-    default: return;
+    // TO7-70/TO9 compatibility mode via e7c9
+    switch (port[0x09] & 0xf8)
+    {
+      case 0x08: nrambank = 0; break;
+      case 0x10: nrambank = 1; break;
+      case 0xe0: nrambank = 2; break;
+      case 0xa0: nrambank = currentModel == TO9 ? 4 : 3; break;  // banks 3 and 4
+      case 0x60: nrambank = currentModel == TO9 ? 3 : 4; break;  // inverted/TO7-70&TO9
+      case 0x20: nrambank = 5; break;
+      default: return;
+    }
+    // RAM bank 0 = RAM page 2 at physical address 0x8000 and logical address 0xa000
+    // RAM bank n = RAM page n+2 at physical address 0x4000*(n+2) and logical address 0xa000
+    rambank = ram - (0xa000 - 0x8000) + (nrambank << 14);
   }
-  rambank = ram - 0x2000 + (nrambank << 14);
 }
 
 static void selectRamBankMo6(void)
 {
-  int nrambank;        //numero banque ram (0-5)
-  nrambank = port[0x25] & 0x07;
-  rambank = ram - 0x6000 + (nrambank << 14);
+  int nrampage; // RAM page number
+  nrampage = port[0x25] & 0x1f;
+  rambank = ram - 0x6000 + (nrampage << 14);
 }
 
 static void selectRomBankTo(void)
@@ -567,7 +571,7 @@ void Initprog(void)
     Mgetc = MgetMo;
     selectVideoRam = selectVideoRamMo6;
     selectRomBank = selectRomBankMo6;
-    port[0x25] = 0x0; // RAM bank 0 selected
+    port[0x25] = 0x02; // RAM bank 0 selected
     selectRamBankMo6();
   }
   else
