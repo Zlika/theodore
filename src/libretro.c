@@ -278,7 +278,7 @@ static void autostart_mo5_begin(void)
 {
   current_mo5_autostart_key_pos = 0;
   virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[mo5_autostart_keys[0]];
-  keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], true);
+  keyboard(libretroKeyCodeToThomsonScanCode[RETROK_LSHIFT], true);
 }
 
 static void autostart_mo5_continue(void)
@@ -288,16 +288,16 @@ static void autostart_mo5_continue(void)
     if (mo5_autostart_keys[++current_mo5_autostart_key_pos] == -1)
     {
       // Special case: release the shift key
-      keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], false);
+      keyboard(libretroKeyCodeToThomsonScanCode[RETROK_LSHIFT], false);
       return;
     }
     virtualkb_pressed = true;
-    virtualkb_lastscancode = libretroKeyCodeToThomsonMoScanCode[
+    virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[
                                                      mo5_autostart_keys[current_mo5_autostart_key_pos]];
     keyboard(virtualkb_lastscancode, true);
     if (current_mo5_autostart_key_pos == mo5_autostart_keys_length - 1)
     {
-      keyboard(libretroKeyCodeToThomsonMoScanCode[RETROK_LSHIFT], false);
+      keyboard(libretroKeyCodeToThomsonScanCode[RETROK_LSHIFT], false);
       current_mo5_autostart_key_pos = -1;
     }
   }
@@ -437,9 +437,13 @@ static void change_model(const char *model)
     // Auto-detection of the model is only done when a game is loaded
     return;
   }
-  if ((strncmp(model, "MO", 2) == 0) || (strcmp(model, "PC128") == 0))
+  if (strcmp(model, "MO5") == 0)
   {
-    libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMoScanCode;
+    libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMo5ScanCode;
+  }
+  else if ((strcmp(model, "MO6") == 0) || (strcmp(model, "PC128") == 0))
+  {
+    libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMo6ScanCode;
   }
   else
   {

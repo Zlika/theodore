@@ -203,8 +203,8 @@ const char libretroKeyCodeToThomsonToScanCode[RETROK_LAST] =
   0x2c     /* 323 ([ on Thomson keyboard) */
 };
 
-/* Mapping libretro -> Thomson MO scancodes */
-const char libretroKeyCodeToThomsonMoScanCode[RETROK_LAST] =
+/* Mapping libretro -> Thomson MO5 scancodes */
+const char libretroKeyCodeToThomsonMo5ScanCode[RETROK_LAST] =
 {
     -1,    /* 0 */  -1,    /* 1 */  -1,    /* 2 */  -1,    /* 3 */  -1,    /* 4 */  -1,    /* 5 */  -1,    /* 6 */  -1,    /* 7 */
   0x36,    /* RETROK_BACKSPACE = 8 (ACC on Thomson keyboard) */
@@ -366,6 +366,171 @@ const char libretroKeyCodeToThomsonMoScanCode[RETROK_LAST] =
     -1,    /* RETROK_EURO = 321 */
     -1,    /* RETROK_UNDO = 322 */
     -1     /* 323 */
+};
+
+/* Mapping libretro -> Thomson MO6 scancodes */
+const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST] =
+{
+    -1,    /* 0 */  -1,    /* 1 */  -1,    /* 2 */  -1,    /* 3 */  -1,    /* 4 */  -1,    /* 5 */  -1,    /* 6 */  -1,    /* 7 */
+  0x36,    /* RETROK_BACKSPACE = 8 (ACC on Thomson keyboard) */
+  0x37,    /* RETROK_TAB = 9 (STOP on Thomson keyboard) */
+    -1,    /* 10 */ -1,    /* 11 */
+    -1,    /* RETROK_CLEAR = 12 */
+  0x34,    /* RETROK_RETURN = 13 */
+    -1,    /* 14 */ -1,    /* 15 */ -1,    /* 16 */ -1,    /* 17 */ -1,    /* 18 */
+    -1,    /* RETROK_PAUSE = 19 */
+    -1,    /* 20 */ -1,    /* 21 */ -1,    /* 22 */ -1,    /* 23 */ -1,    /* 24 */ -1,    /* 25 */ -1,    /* 26 */
+    -1,    /* RETROK_ESCAPE = 27 */
+    -1,    /* 28 */ -1,    /* 29 */ -1,    /* 30 */ -1,    /* 31 */
+  0x20,    /* RETROK_SPACE = 32 */
+    -1,    /* RETROK_EXCLAIM = 33 */
+    -1,    /* RETROK_QUOTEDBL = 34 */
+    -1,    /* RETROK_HASH = 35 */
+    -1,    /* RETROK_DOLLAR = 36 */
+    -1,    /* 37 */
+    -1,    /* RETROK_AMPERSAND = 38 */
+  0x09,    /* RETROK_QUOTE = 39 (ù on Thomson MO6 keyboard) */
+    -1,    /* RETROK_LEFTPAREN = 40 */
+    -1,    /* RETROK_RIGHTPAREN = 41 */
+    -1,    /* RETROK_ASTERISK = 42 */
+    -1,    /* RETROK_PLUS = 43 */
+  0x10,    /* RETROK_COMMA = 44 (; on Thomson keyboard) */
+  0x26,    /* RETROK_MINUS = 45 */
+  0x24,    /* RETROK_PERIOD = 46 (: on Thomson MO6 keyboard) */
+  0x11,    /* RETROK_SLASH = 47 (> on Thomson MO6 keyboard) */
+  0x1e,    /* RETROK_0 = 48 */
+  0x2f,    /* RETROK_1 = 49 */
+  0x27,    /* RETROK_2 = 50 */
+  0x1f,    /* RETROK_3 = 51 */
+  0x17,    /* RETROK_4 = 52 */
+  0x0f,    /* RETROK_5 = 53 */
+  0x07,    /* RETROK_6 = 54 */
+  0x06,    /* RETROK_7 = 55 */
+  0x0e,    /* RETROK_8 = 56 */
+  0x16,    /* RETROK_9 = 57 */
+    -1,    /* RETROK_COLON = 58 */
+  0x1a,    /* RETROK_SEMICOLON = 59 (M on Thomson keyboard) */
+    -1,    /* RETROK_LESS = 60 */
+  0x2e,    /* RETROK_EQUALS = 61 (= on Thomson MO6 keyboard) */
+    -1,    /* RETROK_GREATER  = 62 */
+    -1,    /* RETROK_QUESTION = 63 */
+    -1,    /* RETROK_AT = 64 */
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 65 - 77 */
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 78 - 90 */
+  0x36,    /* RETROK_LEFTBRACKET = 91 (^ on Thomson MO6 keyboard) */
+  0x01,    /* RETROK_BACKSLASH = 92 (] on Thomson MO6 keyboard) */
+  0x2c,    /* RETROK_RIGHTBRACKET = 93 ($ on Thomson MO6 keyboard) */
+    -1,    /* RETROK_CARET = 94 */
+    -1,    /* RETROK_UNDERSCORE = 95 */
+  0x18,    /* RETROK_BACKQUOTE = 96 (# on Thomson MO6 keyboard) */
+  0x2b,    /* A = 97 */
+  0x22,    /* B = 98 */
+  0x32,    /* C = 99 */
+  0x1b,    /* D = 100 */
+  0x1d,    /* E = 101 */
+  0x13,    /* F = 102 */
+  0x0b,    /* G = 103 */
+  0x03,    /* H = 104 */
+  0x0c,    /* I = 105 */
+  0x02,    /* J = 106 */
+  0x0a,    /* K = 107 */
+  0x12,    /* L = 108 */
+  0x08,    /* M = 109 (, on Thomson keyboard) */
+  0x00,    /* N = 110 */
+  0x14,    /* O = 111 */
+  0x1c,    /* P = 112 */
+  0x2d,    /* Q = 113 */
+  0x15,    /* R = 114 */
+  0x23,    /* S = 115 */
+  0x0d,    /* T = 116 */
+  0x04,    /* U = 117 */
+  0x2a,    /* V = 118 */
+  0x25,    /* W = 119 */
+  0x28,    /* X = 120 */
+  0x05,    /* Y = 121 */
+  0x30,    /* Z = 122 */
+    -1,    /* 123 */    -1,    /* 124 */    -1,    /* 125 */    -1,    /* 126 */
+  0x01,    /* RETROK_DELETE = 127 */
+    /* End of ASCII mapped keycodes */
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 128-143*/
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 144-159*/
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 160-175*/
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 176-191*/
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 192-207*/
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 208-223*/
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 224-239*/
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 240-255*/
+    /* Numeric keypad: */
+  0x1e,    /* RETROK_KP0 = 256 */
+  0x2f,    /* RETROK_KP1 = 257 */
+  0x27,    /* RETROK_KP2 = 258 */
+  0x1f,    /* RETROK_KP3 = 259 */
+  0x17,    /* RETROK_KP4 = 260 */
+  0x0f,    /* RETROK_KP5 = 261 */
+  0x07,    /* RETROK_KP6 = 262 */
+  0x06,    /* RETROK_KP7 = 263 */
+  0x0e,    /* RETROK_KP8 = 264 */
+  0x16,    /* RETROK_KP9 = 265 */
+  0x10,    /* RETROK_KP_PERIOD = 266 */
+    -1,    /* RETROK_KP_DIVIDE = 267 */
+    -1,    /* RETROK_KP_MULTIPLY = 268 */
+    -1,    /* RETROK_KP_MINUS = 269 */
+    -1,    /* RETROK_KP_PLUS = 270 */
+    -1,    /* RETROK_KP_ENTER = 271 */
+    -1,    /* RETROK_KP_EQUALS = 272 */
+    /* Arrows + Home/End pad */
+  0x31,    /* RETROK_UP = 273 */
+  0x21,    /* RETROK_DOWN = 274 */
+  0x19,    /* RETROK_RIGHT = 275 */
+  0x29,    /* RETROK_LEFT = 276 */
+  0x09,    /* RETROK_INSERT = 277 */
+  0x11,    /* RETROK_HOME = 278 */
+    -1,    /* RETROK_END = 279 */
+    -1,    /* RETROK_PAGEUP = 280 */
+    -1,    /* RETROK_PAGEDOWN = 281 */
+    /* Function keys */
+    -1,    /* RETROK_F1 = 282 */
+    -1,    /* RETROK_F2 = 283 */
+    -1,    /* RETROK_F3 = 284 */
+    -1,    /* RETROK_F4 = 285 */
+    -1,    /* RETROK_F5 = 286 */
+    -1,    /* RETROK_F6 = 287 */
+    -1,    /* RETROK_F7 = 288 */
+    -1,    /* RETROK_F8 = 289 */
+    -1,    /* RETROK_F9 = 290 */
+    -1,    /* RETROK_F10 = 291 */
+    -1,    /* RETROK_F11 = 292 */
+    -1,    /* RETROK_F12 = 293 */
+    -1,    /* RETROK_F13 = 294 */
+    -1,    /* RETROK_F14 = 295 */
+    -1,    /* RETROK_F15 = 296 */
+    -1,    /* 297 */  -1,      /* 298 */  -1,      /* 299 */
+    /* Key state modifier keys */
+    -1,    /* RETROK_NUMLOCK = 300 */
+    -1,    /* RETROK_CAPSLOCK = 301 */
+    -1,    /* RETROK_SCROLLOCK = 302 */
+  0x39,    /* RETROK_RSHIFT = 303 (BASIC key on Thomson keyboard) */
+  0x38,    /* RETROK_LSHIFT = 304 (Yellow key on Thomson keyboard) */
+  0x35,    /* RETROK_RCTRL = 305 (CNT key on Thomson keyboard) */
+  0x35,    /* RETROK_LCTRL = 306 (CNT key on Thomson keyboard) */
+  0x33,    /* RETROK_RALT = 307 (RAZ key on Thomson keyboard) */
+  0x33,    /* RETROK_LALT = 308 (RAZ key on Thomson keyboard) */
+    -1,    /* RETROK_RMETA = 309 */
+    -1,    /* RETROK_LMETA = 310 */
+    -1,    /* RETROK_LSUPER = 311 */
+    -1,    /* RETROK_RSUPER = 312 */
+    -1,    /* RETROK_MODE = 313 */     /* "Alt Gr" key */
+    -1,    /* RETROK_COMPOSE = 314 */
+    /* Miscellaneous function keys */
+    -1,    /* RETROK_HELP = 315 */
+    -1,    /* RETROK_PRINT = 316 */
+    -1,    /* RETROK_SYSREQ = 317 */
+    -1,    /* RETROK_BREAK = 318 */
+    -1,    /* RETROK_MENU = 319 */
+    -1,    /* RETROK_POWER = 320 */
+    -1,    /* RETROK_EURO = 321 */
+    -1,    /* RETROK_UNDO = 322 */
+  0x40     /* 323 ([ on Thomson keyboard) */
 };
 
 /* Mapping libretro -> Thomson scancodes for the current MO/TO version */

@@ -25,9 +25,10 @@
 
 /* Mapping libretro -> Thomson TO scancodes */
 extern const char libretroKeyCodeToThomsonToScanCode[RETROK_LAST];
-
-/* Mapping libretro -> Thomson MO scancodes */
-extern const char libretroKeyCodeToThomsonMoScanCode[RETROK_LAST];
+/* Mapping libretro -> Thomson MO5 scancodes */
+extern const char libretroKeyCodeToThomsonMo5ScanCode[RETROK_LAST];
+/* Mapping libretro -> Thomson MO6 scancodes */
+extern const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST];
 
 /* Mapping libretro -> Thomson scancodes for the current MO/TO version */
 extern const char *libretroKeyCodeToThomsonScanCode;
