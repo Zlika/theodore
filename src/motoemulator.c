@@ -40,7 +40,7 @@
 #include "rom/rom_pc128.inc"
 
 #define VBL_NUMBER_MAX  2
-// Number of keys of the TO8D keyboard
+// Number of keys of the keyboard
 #define KEYBOARDKEY_MAX 84
 #define PALETTE_SIZE    32
 // Sound level on 6 bits
@@ -86,7 +86,7 @@ static char *rombank;       //pointeur banque rom ou cartouche
 int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
 int carflags = 0;    //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
 //keyboard, joysticks, mouse
-static int touche[KEYBOARDKEY_MAX]; //etat touches to8d
+static int touche[KEYBOARDKEY_MAX]; //etat touches
 static int capslock;         //1=capslock, 0 sinon
 static int joysposition;     //position des manches
 static int joysaction;       //position des boutons d'action
@@ -898,6 +898,7 @@ static char MgetTo(unsigned short a)
   }
 }
 
+#include <stdio.h>
 // MO5/MO6 memory write ///////////////////////////////////////////////////////////
 static void MputMo(unsigned short a, char c)
 {
@@ -921,7 +922,7 @@ static void MputMo(unsigned short a, char c)
         case 0xa7c3: port[3] = c & 0x3f; return;
         case 0xa7cb: carflags = c; selectRomBank(); return;
         case 0xa7cc: port[0x0c] = c; return;
-        case 0xa7cd: port[0x0d] = c; sound = c & 0x3f; return;
+        case 0xa7cd: port[0x0d] = c; sound = c & MAX_SOUND_LEVEL; return;
         case 0xa7ce: port[0x0e] = c; return; //registre controle position joysticks
         case 0xa7cf: port[0x0f] = c; return; //registre controle action - musique
         case 0xa7da: if (rom->is_mo6) { Palettecolor(c); } return;
@@ -957,7 +958,8 @@ static char MgetMo(unsigned short a)
       {
         // A7C0->A7C3 : PIA 6821 Systeme
         case 0xa7c0: return (currentModel == MO5) ? port[0] | 0x80 | (penbutton << 5) : port[0] | 0x80 | (penbutton << 1);
-        case 0xa7c1: return port[1] | touche[(port[1] & 0xfe)>> 1];
+        case 0xa7c1: return (currentModel == MO5) ? port[1] | touche[(port[1] & 0xfe) >> 1]
+                     : port[1] | touche[((port[1] & 0x70) >> 4) | ((port[1] & 0x0e) << 2) | ((port[0] & 0x08) << 3)];
         case 0xa7c2: return port[2];
         case 0xa7c3: return port[3] | ~Initn();
         case 0xa7cb: return (carflags&0x3f)|((carflags&0x80)>>1)|((carflags&0x40)<<1);
