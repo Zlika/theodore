@@ -417,7 +417,7 @@ const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST] =
     -1,    /* RETROK_AT = 64 */
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 65 - 77 */
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 78 - 90 */
-  0x36,    /* RETROK_LEFTBRACKET = 91 (^ on Thomson MO6 keyboard) */
+  0x43,    /* RETROK_LEFTBRACKET = 91 (^ on Thomson MO6 keyboard) */
   0x41,    /* RETROK_BACKSLASH = 92 (] on Thomson MO6 keyboard) */
   0x25,    /* RETROK_RIGHTBRACKET = 93 ($ on Thomson MO6 keyboard) */
     -1,    /* RETROK_CARET = 94 */
@@ -450,7 +450,7 @@ const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST] =
   0x28,    /* Y = 121 */
   0x06,    /* Z = 122 */
     -1,    /* 123 */    -1,    /* 124 */    -1,    /* 125 */    -1,    /* 126 */
-  0x20,    /* RETROK_DELETE = 127 */
+  0x08,    /* RETROK_DELETE = 127 */
     /* End of ASCII mapped keycodes */
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 128-143*/
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 144-159*/
@@ -489,11 +489,11 @@ const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST] =
     -1,    /* RETROK_PAGEUP = 280 */
     -1,    /* RETROK_PAGEDOWN = 281 */
     /* Function keys */
-    -1,    /* RETROK_F1 = 282 */
-    -1,    /* RETROK_F2 = 283 */
-    -1,    /* RETROK_F3 = 284 */
-    -1,    /* RETROK_F4 = 285 */
-    -1,    /* RETROK_F5 = 286 */
+  0x1f,    /* RETROK_F1 = 282 */
+  0x27,    /* RETROK_F2 = 283 */
+  0x2f,    /* RETROK_F3 = 284 */
+  0x37,    /* RETROK_F4 = 285 */
+  0x3f,    /* RETROK_F5 = 286 */
     -1,    /* RETROK_F6 = 287 */
     -1,    /* RETROK_F7 = 288 */
     -1,    /* RETROK_F8 = 289 */
