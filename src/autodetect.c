@@ -89,10 +89,6 @@ char *autodetect_model(const char *filename)
   {
     return "TO9";
   }
-  if ((strstr(filename, "mo5") != NULL) || (strstr(filename, "MO5") != NULL))
-  {
-    return "MO5";
-  }
   if ((strstr(filename, "mo6") != NULL) || (strstr(filename, "MO6") != NULL))
   {
     return "MO6";
@@ -100,6 +96,20 @@ char *autodetect_model(const char *filename)
   if ((strstr(filename, "pc128") != NULL) || (strstr(filename, "PC128") != NULL))
   {
     return "PC128";
+  }
+  if ((strstr(filename, "mo5") != NULL) || (strstr(filename, "MO5") != NULL))
+  {
+    return "MO5";
+  }
+  if ((strstr(filename, "memo5") != NULL) || (strstr(filename, "MEMO5") != NULL)
+      || (strstr(filename, ".m5") != NULL) || (strstr(filename, ".M5") != NULL))
+  {
+    return "MO5";
+  }
+  if ((strstr(filename, "memo7") != NULL) || (strstr(filename, "MEMO7") != NULL)
+      || (strstr(filename, ".m7") != NULL) || (strstr(filename, ".M7") != NULL))
+  {
+    return "TO8";
   }
   return "";
 }

@@ -74,7 +74,7 @@ The order of the keys in the virtual keyboard is: digits (0->9) then letters (A-
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
 | Yellow key (MO5) | Left SHIFT |
-| BASIC (MO5) | Right SHIFT |
+| BASIC (MO5/MO6) | Right SHIFT |
 
 RetroArch already uses lots of keyboard shortcuts for its own need that interfere with the core's keyboard emulation. To avoid this problem, configure RetroArch with a "Hotkey", as indicated in [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys), and/or use the "Game Focus" mode (toggle with "Scroll Lock" key).
 

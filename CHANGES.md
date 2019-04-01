@@ -4,6 +4,7 @@ Next Release
 * Add Olivetti Prodest PC128 emulation.
 * Add compile-time flag (UNDOC_OPCODES=1) to enable emulation of some undocumented 6809 opcodes.
 * Fix auto-detection of Thomson model always enabled.
+* In model autodetect mode, use MO5 for "memo5" files and TO8 for "memo7" files if the name of the file does not include the name of the computer.
 
 Release 1.7 (2019/03/15)
 ===========
