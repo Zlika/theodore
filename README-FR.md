@@ -38,7 +38,7 @@ ndk-build
 
 ### :video_game: Correspondance des boutons de la manette
 
-A => Bouton "Action"
+B => Bouton "Action"
 
 Start => "Démarrer le programme". Simule la frappe d'une ou plusieurs touches sur le clavier pour démarrer un jeu. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier. La touche simulée dépend du type de media chargé et de l'ordinateur émulé. Sur MO5/MO6, la commande utilisée dépend du format détecté pour le premier fichier de la cassette (BAS => RUN", BIN => LOADM"",,R).
 

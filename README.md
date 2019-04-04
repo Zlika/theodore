@@ -38,7 +38,7 @@ ndk-build
 
 ### :video_game: Gamepad: mapping of the buttons
 
-A => "Fire" button
+B => "Fire" button
 
 Start => "Start Program". Simulates one or several keystrokes on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated. On MO5/MO6, the command used depends on the format detected for the first file of the tape (BAS => RUN", BIN => LOADM"",,R).
 
