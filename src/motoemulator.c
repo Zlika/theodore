@@ -454,7 +454,7 @@ static void SwitchMemo5Bank(int a)
  if(cartype != 1) return;
  if((a & 0xfffc) != 0xbffc) return;
  carflags = (carflags & 0xfc) | (a & 3);
- selectRomBankMo5();
+ selectRomBank();
 }
 
 static void videopage_bordercolor(char c)
@@ -898,7 +898,6 @@ static char MgetTo(unsigned short a)
   }
 }
 
-#include <stdio.h>
 // MO5/MO6 memory write ///////////////////////////////////////////////////////////
 static void MputMo(unsigned short a, char c)
 {
@@ -921,14 +920,18 @@ static void MputMo(unsigned short a, char c)
         case 0xa7c2: port[2] = c & 0x3f; return;
         case 0xa7c3: port[3] = c & 0x3f; return;
         case 0xa7cb: carflags = c; selectRomBank(); return;
+        // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: port[0x0c] = c; return;
         case 0xa7cd: port[0x0d] = c; sound = c & MAX_SOUND_LEVEL; return;
         case 0xa7ce: port[0x0e] = c; return; //registre controle position joysticks
         case 0xa7cf: port[0x0f] = c; return; //registre controle action - musique
+        // A7DA->A7DB : Gate Palette Registers
         case 0xa7da: if (rom->is_mo6) { Palettecolor(c); } return;
         case 0xa7db: if (rom->is_mo6) { port[0x1b] = c; } return;
+        // A7DC->A7DD : Gate Mode Page Registers
         case 0xa7dc: if (rom->is_mo6) { selectVideomode(c); } return;
-        case 0xa7dd: if (rom->is_mo6) { videopage_bordercolor(c); carflags = (~c & 0x20) << 1; selectRomBankMo6(); } return;
+        case 0xa7dd: if (rom->is_mo6) { videopage_bordercolor(c); carflags = (~c & 0x20) >> 3; selectRomBankMo6(); } return;
+        // A7E4->A7E7 : Gate Mode Page Registers
         case 0xa7e4: if (rom->is_mo6) { port[0x24] = c & 0x01; } return;
         case 0xa7e5: if (rom->is_mo6) { port[0x25] = c; selectRamBankMo6(); } return;
       }
@@ -963,13 +966,15 @@ static char MgetMo(unsigned short a)
         case 0xa7c2: return port[2];
         case 0xa7c3: return port[3] | ~Initn();
         case 0xa7cb: return (carflags&0x3f)|((carflags&0x80)>>1)|((carflags&0x40)<<1);
+        // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
         case 0xa7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
         case 0xa7ce: return 4;
+        // A7DA->A7DB : Gate Palette Registers
         case 0xa7da: return (rom->is_mo6) ? x7da[port[0x1b]++ & 0x1f] : port[a & 0x3f];
         case 0xa7d8: return ~Initn(); //octet etat disquette
         case 0xa7e1: return 0xff;     //zero provoque erreur 53 sur imprimante
-        // A7E4->A7E7 : Gate Array
+        // A7E4->A7E7 : Gate Mode Page Registers
         case 0xa7e4: return (rom->is_mo6) ? port[0x1d] & 0xf0 : port[a & 0x3f];
         case 0xa7e6: return Iniln() << 1;
         case 0xa7e7: return (currentModel == MO5) ? Initn() : (port[0x24] & 0x01) | Initn() | Iniln();
