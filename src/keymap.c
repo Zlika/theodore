@@ -536,7 +536,8 @@ const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST] =
 /* Mapping libretro -> Thomson scancodes for the current MO/TO version */
 const char *libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
 
-const int virtualkb_keysyms[VIRTUALKB_NB_KEYS] =
+/* Keysyms for the virtual keyboard (AZERTY mode, i.e. all models but PC128) */
+const int virtualkb_keysyms_azerty[VIRTUALKB_NB_KEYS] =
 {
     RETROK_KP0, RETROK_KP1, RETROK_KP2, RETROK_KP3, RETROK_KP4,
     RETROK_KP5, RETROK_KP6, RETROK_KP7, RETROK_KP8, RETROK_KP9,
@@ -546,6 +547,21 @@ const int virtualkb_keysyms[VIRTUALKB_NB_KEYS] =
     RETROK_s, RETROK_t, RETROK_u, RETROK_v, RETROK_z, RETROK_x,
     RETROK_y, RETROK_w, RETROK_SPACE, RETROK_RETURN
 };
+
+/* Keysyms for the virtual keyboard (QWERTY mode, i.e. only for Olivetti Prodest PC128) */
+const int virtualkb_keysyms_qwerty[VIRTUALKB_NB_KEYS] =
+{
+    RETROK_KP0, RETROK_KP1, RETROK_KP2, RETROK_KP3, RETROK_KP4,
+    RETROK_KP5, RETROK_KP6, RETROK_KP7, RETROK_KP8, RETROK_KP9,
+    RETROK_a, RETROK_b, RETROK_c, RETROK_d, RETROK_e, RETROK_f,
+    RETROK_g, RETROK_h, RETROK_i, RETROK_j, RETROK_k, RETROK_l,
+    RETROK_m, RETROK_n, RETROK_o, RETROK_p, RETROK_q, RETROK_r,
+    RETROK_s, RETROK_t, RETROK_u, RETROK_v, RETROK_w, RETROK_x,
+    RETROK_y, RETROK_z, RETROK_SPACE, RETROK_RETURN
+};
+
+/* Virtual keyboard keysyms for the current computer version */
+const int *virtualkb_keysyms = virtualkb_keysyms_azerty;
 
 const char* virtualkb_chars[VIRTUALKB_NB_KEYS] =
 {

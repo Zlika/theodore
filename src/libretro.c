@@ -449,6 +449,7 @@ static void change_model(const char *model)
   {
     libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
   }
+  virtualkb_keysyms = virtualkb_keysyms_azerty;
   if (strcmp(model, "TO8") == 0)
   {
     SetThomsonModel(TO8);
@@ -475,6 +476,7 @@ static void change_model(const char *model)
   }
   else if (strcmp(model, "PC128") == 0)
   {
+    virtualkb_keysyms = virtualkb_keysyms_qwerty;
     SetThomsonModel(PC128);
   }
   // Default: TO8
