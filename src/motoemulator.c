@@ -944,6 +944,26 @@ static void MputMo(unsigned short a, char c)
  }
 }
 
+static char mo6keybPB7()
+{
+  int line, col, scancode;
+  // column = PB4-PB6 (0-7)
+  col = (port[1] & 0x70) >> 4;
+  // line = PA3,PB1-PB3 (0-8)
+  line = (port[0] & 0x08) | ((port[1] & 0x0e) >> 1);
+  // I don't know why but Saphir (and maybe other games) always set PA3 to 1 on MO6
+  // whereas it should be set to 0. This gives either illegal or wrong scancodes.
+  // This is just a dirty workaround that don't even work for some keys, but
+  // I don't know how to manage that cleanly.
+  if ((line > 8) // line cannot be > 8
+    || ((line == 8) && (col > 4))) // line 8 only have 5 keys
+  {
+    line &= 0x07;
+  }
+  scancode = (line << 3) | col;
+  return touche[scancode];
+}
+
 // MO5/MO6 memory read ////////////////////////////////////////////////////////////
 static char MgetMo(unsigned short a)
 {
@@ -962,7 +982,7 @@ static char MgetMo(unsigned short a)
         // A7C0->A7C3 : PIA 6821 Systeme
         case 0xa7c0: return (currentModel == MO5) ? port[0] | 0x80 | (penbutton << 5) : port[0] | 0x80 | (penbutton << 1);
         case 0xa7c1: return (currentModel == MO5) ? port[1] | touche[(port[1] & 0xfe) >> 1]
-                     : port[1] | touche[((port[1] & 0x70) >> 4) | ((port[1] & 0x0e) << 2) | ((port[0] & 0x08) << 3)];
+                     : port[1] | mo6keybPB7();
         case 0xa7c2: return port[2];
         case 0xa7c3: return port[3] | ~Initn();
         case 0xa7cb: return (carflags&0x3f)|((carflags&0x80)>>1)|((carflags&0x40)<<1);
