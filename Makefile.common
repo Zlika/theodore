@@ -9,7 +9,7 @@ SOURCES_C =
 
 SOURCES_C += $(CORE_DIR)/src/6809disasm.c
 SOURCES_C += $(CORE_DIR)/src/6809cpu.c
-SOURCES_C += $(CORE_DIR)/src/autodetect.c
+SOURCES_C += $(CORE_DIR)/src/autostart.c
 SOURCES_C += $(CORE_DIR)/src/debugger.c
 SOURCES_C += $(CORE_DIR)/src/devices.c
 SOURCES_C += $(CORE_DIR)/src/libretro.c

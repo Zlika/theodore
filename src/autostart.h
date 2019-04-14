@@ -16,17 +16,29 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Auto-detection functions */
+/* Functions to autostart a program or implement autodetection features */
 
-#ifndef __AUTODETECT_H
-#define __AUTODETECT_H
+#ifndef __AUTOSTART_H
+#define __AUTOSTART_H
 
 #include "boolean.h"
 
-/* Returns true if the first file of the tape has a BAS extension, false otherwise. */
-bool autodetect_tape_first_file_is_basic(const char *filename);
+/* Kind of media inserted. */
+typedef enum { NO_MEDIA, MEDIA_FLOPPY, MEDIA_TAPE, MEDIA_CARTRIDGE } Media;
+
+/* Returns the kind of media represented by the given filename. */
+Media get_media_type(const char *filename);
+/** Returns true if the given filename is an SAP file. */
+bool is_sap_file(const char *filename);
 /* Returns the name of the Thomson model found in the name of the file,
    or an empty string if not found. */
 char *autodetect_model(const char *filename);
 
-#endif /* __AUTODETECT_H */
+/* Initialise the autostart feature.
+ * This function must be called when a file/game is loaded. */
+void autostart_init(const char *filename);
+/* This function must be called once per call of input_poll_cb() until it returns false
+ * to simulate the keystrokes needed to start the currently loaded media. */
+bool autostart_nextkey();
+
+#endif /* __AUTOSTART_H */
