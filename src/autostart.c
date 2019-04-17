@@ -104,6 +104,12 @@ static const Key PC128_AUTOSTART_BIN_KEYS[MO6_AUTOSTART_BIN_KEYS_LENGTH] =
 static const Key BASIC512_KEYS[BASIC512_AUTOSTART_KEYS_LENGTH] = { {RETROK_b, true}, {RETROK_b, false} };
 #define BASIC128_AUTOSTART_KEYS_LENGTH 2
 static const Key BASIC128_KEYS[BASIC128_AUTOSTART_KEYS_LENGTH] = { {RETROK_d, true}, {RETROK_d, false} };
+#define BASIC1_TO8_AUTOSTART_KEYS_LENGTH 2
+static const Key BASIC1_TO8_AUTOSTART_KEYS[BASIC1_TO8_AUTOSTART_KEYS_LENGTH] = { {RETROK_c, true}, {RETROK_c, false} };
+#define BASIC1_TO9_AUTOSTART_KEYS_LENGTH 2
+static const Key BASIC1_TO9_AUTOSTART_KEYS[BASIC1_TO9_AUTOSTART_KEYS_LENGTH] = { {RETROK_e, true}, {RETROK_e, false} };
+#define CARTRIDGE_AUTOSTART_KEYS_LENGTH 2
+static const Key CARTRIDGE_AUTOSTART_KEYS[CARTRIDGE_AUTOSTART_KEYS_LENGTH] = { {RETROK_KP0, true}, {RETROK_KP0, false} };
 
 static int autostart_keys_length = 0;
 static const Key *autostart_keys = NULL;
@@ -269,7 +275,12 @@ bool autostart_nextkey()
         }
         break;
       case MO6:
-        if (program_is_basic)
+        if (currentMedia == MEDIA_CARTRIDGE)
+        {
+          autostart_keys = CARTRIDGE_AUTOSTART_KEYS;
+          autostart_keys_length = CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+        }
+        else if (program_is_basic)
         {
           autostart_keys = MO6_AUTOSTART_BASIC_KEYS;
           autostart_keys_length = MO6_AUTOSTART_BASIC_KEYS_LENGTH;
@@ -281,7 +292,12 @@ bool autostart_nextkey()
         }
         break;
       case PC128:
-        if (program_is_basic)
+        if (currentMedia == MEDIA_CARTRIDGE)
+        {
+          autostart_keys = CARTRIDGE_AUTOSTART_KEYS;
+          autostart_keys_length = CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+        }
+        else if (program_is_basic)
         {
           autostart_keys = PC128_AUTOSTART_BASIC_KEYS;
           autostart_keys_length = MO6_AUTOSTART_BASIC_KEYS_LENGTH;
@@ -293,14 +309,42 @@ bool autostart_nextkey()
         }
         break;
       // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
-      // and the 'D' key (Basic 128) on TO9
+      // and the 'D' key (Basic 128) on TO9.
+      // Tapes generally requires BASIC 1 ('C' key on TO8/TO8D/TO9+, 'E' key on TO9).
+      // Cartridges are started by '0'.
       case TO9:
-        autostart_keys = BASIC128_KEYS;
-        autostart_keys_length = BASIC128_AUTOSTART_KEYS_LENGTH;
+        if (currentMedia == MEDIA_CARTRIDGE)
+        {
+          autostart_keys = CARTRIDGE_AUTOSTART_KEYS;
+          autostart_keys_length = CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+        }
+        else if (currentMedia == MEDIA_TAPE)
+        {
+          autostart_keys = BASIC1_TO9_AUTOSTART_KEYS;
+          autostart_keys_length = BASIC1_TO9_AUTOSTART_KEYS_LENGTH;
+        }
+        else
+        {
+          autostart_keys = BASIC128_KEYS;
+          autostart_keys_length = BASIC128_AUTOSTART_KEYS_LENGTH;
+        }
         break;
       default:
-        autostart_keys = BASIC512_KEYS;
-        autostart_keys_length = BASIC512_AUTOSTART_KEYS_LENGTH;
+        if (currentMedia == MEDIA_CARTRIDGE)
+        {
+          autostart_keys = CARTRIDGE_AUTOSTART_KEYS;
+          autostart_keys_length = CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+        }
+        else if (currentMedia == MEDIA_TAPE)
+        {
+          autostart_keys = BASIC1_TO8_AUTOSTART_KEYS;
+          autostart_keys_length = BASIC1_TO8_AUTOSTART_KEYS_LENGTH;
+        }
+        else
+        {
+          autostart_keys = BASIC512_KEYS;
+          autostart_keys_length = BASIC512_AUTOSTART_KEYS_LENGTH;
+        }
         break;
     }
   }
@@ -311,7 +355,6 @@ bool autostart_nextkey()
     return false;
   }
 
-  printf("pos %d key %d pressed %d\n", current_autostart_key_pos, autostart_keys[current_autostart_key_pos].retrokey, autostart_keys[current_autostart_key_pos].down);
   keyboard(libretroKeyCodeToThomsonScanCode[autostart_keys[current_autostart_key_pos].retrokey],
            autostart_keys[current_autostart_key_pos].down);
   current_autostart_key_pos++;
