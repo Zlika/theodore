@@ -9,7 +9,7 @@ Theodore - Thomson MO/TO emulator
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) and [DCMO5](http://dcmo5.free.fr/) emulators, and currently supports the following models: TO8, TO8D, TO9, TO9+, MO5.
+This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) and [DCMO5](http://dcmo5.free.fr/) emulators, and currently supports the following models: TO8, TO8D, TO9, TO9+, MO5, MO6 and also the Olivetti Prodest PC128 (a rebranded MO6 for the Italian market).
 
 ### How to install
 
@@ -38,9 +38,9 @@ ndk-build
 
 ### :video_game: Gamepad: mapping of the buttons
 
-A => "Fire" button
+B => "Fire" button
 
-Start => "Start Program". Simulates a keystroke (or several keystrokes for the MO5) on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated. On MO5, the command used depends on the format detected for the first file of the tape (BAS => RUN", BIN => LOADM"",,R).
+Start => "Start Program". Simulates one or several keystrokes on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated. On MO5/MO6, the command used depends on the format detected for the first file of the tape (BAS => RUN", BIN => LOADM"",,R).
 
 | Media loaded | Thomson computer | Key                 |
 | ------------ | ---------------- | ------------------- |
@@ -74,21 +74,22 @@ The order of the keys in the virtual keyboard is: digits (0->9) then letters (A-
 | F1-F5  | F1-F5  |
 | F6-F10  | SHIFT+F1-F5  |
 | Yellow key (MO5) | Left SHIFT |
-| BASIC (MO5) | Right SHIFT |
+| BASIC (MO5/MO6) | Right SHIFT |
 
-RetroArch already uses lots of keyboard shortcuts for its own need that interfere with the core's keyboard emulation. To avoid this problem, configure RetroArch with a "Hotkey", as indicated in [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys).
+RetroArch already uses lots of keyboard shortcuts for its own need that interfere with the core's keyboard emulation. To avoid this problem, configure RetroArch with a "Hotkey", as indicated in [Introduction to Hotkeys](https://docs.libretro.com/guides/retroarch-keyboard-controls/#introduction-to-hotkeys), and/or use the "Game Focus" mode (toggle with "Scroll Lock" key).
 
 ### :floppy_disk: File formats
 
 The emulator can read the following file formats: *.fd and *.sap (floppy disks), *.k7 (tapes), *.m7/*.m5 and *.rom (cartridges).
 
-### Thomson models
+### :computer: Thomson models
 
-By default, the core tries to guess the required Thomson model based on the name of the file loaded (e.g. saphir_to8.fd will switch to TO8, pulsar_mo5.k7 will switch to MO5 and so on). The fallback is to emulate a TO8 computer. Using the "Thomson model" option you can force the emulation of a particular model (currently: TO8, TO8D, TO9, TO9+, MO5), or use "Auto" for the default "best guess" behavior.
+By default, the core tries to guess the required Thomson model based on the name of the file loaded (e.g. saphir_to8.fd will switch to TO8, pulsar_mo5.k7 will switch to MO5 and so on). The fallback is to emulate a TO8 computer. Using the "Thomson model" option you can force the emulation of a particular model, or use "Auto" for the default "best guess" behavior.
 
-### Save states
+### :rewind: Save states & Rewind
 
-The emulator supports libretro's "save state" feature. Under RetroArch, use the following keys: F2 (save state), F4 (load state), F6/F7 (change state slot).
+The emulator supports libretro's "save state" feature. Under RetroArch, use the following keys: F2 (save state), F4 (load state), F6/F7 (change state slot). Under Recalbox, use the following buttons: Hotkey + Y (save state), Hotkey + X (load state), Hotkey + "Up/Down Arrow" (change state slot).
+The emulator also supports libretro's "rewind" feature. Under RetroArch, press and hold the "R" key. Under Recalbox, press and hold the HotKey button and the "Left Arrow".
 
 ### :innocent: Cheat codes
 
@@ -96,7 +97,7 @@ The emulator is compatible with RetroArch's cheat codes feature (cf. [Cheat code
 
 The [libretro-database-thomson](https://github.com/Zlika/libretro-database-thomson) repository includes cheat codes for some Thomson games.
 
-### Disassembler / Debugger
+### :beetle: Disassembler / Debugger
 
 A simple disassembler / debugger is available. It requires the use of the command-line, and then is not available on platforms where the standard input & output are not (easily) available.
 The core must be compiled with the "DASM=1" option to enable this feature (binaries produced by the libretro buildbot does not enable this feature, so you have to compile the core by yourself).

@@ -36,9 +36,11 @@
 #include "rom/rom_to9.inc"
 #include "rom/rom_to9p.inc"
 #include "rom/rom_mo5.inc"
+#include "rom/rom_mo6.inc"
+#include "rom/rom_pc128.inc"
 
 #define VBL_NUMBER_MAX  2
-// Number of keys of the TO8D keyboard
+// Number of keys of the keyboard
 #define KEYBOARDKEY_MAX 84
 #define PALETTE_SIZE    32
 // Sound level on 6 bits
@@ -50,15 +52,20 @@ typedef struct
   int *basic_patch;   // Patch to apply to the "BASIC and other embedded software" part of the ROM
   char *monitor;      // Pointer to the beginning of the "monitor" part of the ROM
   int *monitor_patch; // Patch to apply to the "monitor" part of the ROM
-  char *disk_drive_monitor;      // MO5: disk driver monitor
-  int *disk_drive_monitor_patch; // MO5: Patch to apply to the disk drive monitor
+  char *disk_drive_monitor;      // MO5/MO6: disk driver monitor
+  int *disk_drive_monitor_patch; // MO5/MO6: Patch to apply to the disk drive monitor
+  bool is_mo;                    // If it is a MO or TO system
+  bool is_mo6;                   // If it is a MO6 or a PC128
 } SystemRom;
 
-static SystemRom ROM_TO8 = { to8_basic_rom, to8_basic_patch, to8_monitor_rom, to8_monitor_patch, NULL, NULL };
-static SystemRom ROM_TO8D = { to8_basic_rom, to8_basic_patch, to8d_monitor_rom, to8d_monitor_patch, NULL, NULL };
-static SystemRom ROM_TO9 = { to9_basic_rom, to9_basic_patch, to9_monitor_rom, to9_monitor_patch, NULL, NULL };
-static SystemRom ROM_TO9P = { to9p_basic_rom, to9p_basic_patch, to9p_monitor_rom, to9p_monitor_patch, NULL, NULL };
-static SystemRom ROM_MO5 = { mo5_v2_basic_rom, mo5_v2_basic_patch, mo5_v2_monitor_rom, mo5_v2_monitor_patch, cd90_640_rom, cd90_640_patch };
+static SystemRom ROM_TO8 = { to8_basic_rom, to8_basic_patch, to8_monitor_rom, to8_monitor_patch, NULL, NULL, false, false };
+static SystemRom ROM_TO8D = { to8_basic_rom, to8_basic_patch, to8d_monitor_rom, to8d_monitor_patch, NULL, NULL, false, false };
+static SystemRom ROM_TO9 = { to9_basic_rom, to9_basic_patch, to9_monitor_rom, to9_monitor_patch, NULL, NULL, false, false };
+static SystemRom ROM_TO9P = { to9p_basic_rom, to9p_basic_patch, to9p_monitor_rom, to9p_monitor_patch, NULL, NULL, false, false };
+static SystemRom ROM_MO5 = { mo5_v2_basic_rom, mo5_v2_basic_patch, mo5_v2_monitor_rom, mo5_v2_monitor_patch, cd90_640_rom, cd90_640_patch, true, false };
+static SystemRom ROM_MO6 = { mo6_v3_basic128_rom, mo6_v3_basic128_patch, mo6_v3_basic1_rom, mo6_v3_basic1_patch, cd90_640_rom, cd90_640_patch, true, true };
+static SystemRom ROM_PC128 = { pc128_basic128_rom, pc128_basic128_patch, pc128_basic1_rom, pc128_basic1_patch, cd90_640_rom, cd90_640_patch, true, true };
+
 
 static ThomsonModel currentModel = TO8;
 static SystemRom *rom = &ROM_TO8;
@@ -79,7 +86,7 @@ static char *rombank;       //pointeur banque rom ou cartouche
 int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
 int carflags = 0;    //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
 //keyboard, joysticks, mouse
-static int touche[KEYBOARDKEY_MAX]; //etat touches to8d
+static int touche[KEYBOARDKEY_MAX]; //etat touches
 static int capslock;         //1=capslock, 0 sinon
 static int joysposition;     //position des manches
 static int joysaction;       //position des boutons d'action
@@ -103,18 +110,12 @@ static int reserved1 = 0;
 static int reserved2 = 0;
 static int reserved3 = 0;
 static int reserved4 = 0;
-static int reserved5 = 0;
-static int reserved6 = 0;
 
 //Forward declarations
 static char MgetTo(unsigned short a);
 static void MputTo(unsigned short a, char c);
 static char MgetMo(unsigned short a);
 static void MputMo(unsigned short a, char c);
-static void selectVideoRamTo(void);
-static void selectVideoRamMo(void);
-static void selectRomBankTo(void);
-static void selectRomBankMo(void);
 
 void (*selectVideoRam)(void);
 void (*selectRomBank)(void);
@@ -196,14 +197,6 @@ void SetThomsonModel(ThomsonModel model)
 {
   if (model != currentModel)
   {
-    if (model == MO5)
-    {
-      SetModeTO(false);
-    }
-    else
-    {
-      SetModeTO(true);
-    }
     switch (model)
     {
       case TO8:
@@ -221,10 +214,17 @@ void SetThomsonModel(ThomsonModel model)
       case MO5:
         rom = &ROM_MO5;
         break;
+      case MO6:
+        rom = &ROM_MO6;
+        break;
+      case PC128:
+        rom = &ROM_PC128;
+        break;
       default:
         return;
     }
     currentModel = model;
+    SetModeTO(!rom->is_mo);
     Hardreset();
   }
 }
@@ -241,7 +241,7 @@ void keyboard(int scancode, bool down)
   // Filter false key down events when the key was already down
   if (down && !touche[scancode]) return;
   touche[scancode] = down ? 0x00 : 0x80;
-  if (currentModel == MO5)
+  if (rom->is_mo)
   {
     return;
   }
@@ -305,7 +305,7 @@ static void selectVideoRamTo(void)
   romsys = rom->monitor - 0xe000 + (nsystbank << 13);
 }
 
-static void selectVideoRamMo(void)
+static void selectVideoRamMo5(void)
 {
   int nvideopage = port[0] & 1; //numero page video (00-01)
   // The "video" data (either from RAMA or RAMB) is mapped in memory at 0x0000-0x1FFF
@@ -315,31 +315,51 @@ static void selectVideoRamMo(void)
   bordercolor = (port[0] >> 1) & 0x0f;
 }
 
+static void selectVideoRamMo6(void)
+{
+  int nvideopage = port[0] & 1; //numero page video (00-01)
+  // The "video" data (either from RAMA or RAMB) is mapped in memory at 0x0000-0x1FFF
+  ramvideo = ram + (nvideopage << 13);
+  // The "monitor" software is mapped in memory starting at address 0xf000
+  romsys = rom->monitor + ((port[0] & 0x20) << 9) + 0x3000 - 0xf000;
+}
+
 static void selectRamBankTo(void)
 {
-  int nrambank;        //numero banque ram (00-1f)
+  int nrambank; // RAM page (TO8 mode) or bank (TO7/TO9 mode) number
 
   // TO8 mode (5 lower bits of e7e5 = RAM page number)
   // (bit D4 of gate array mode page's "system 1" register at e7e7 = 0
   // if RAM bank switching is done via PIA bits for TO7-70/TO9 emulation)
   if ((port[0x27] & 0x10) && (currentModel != TO9))
   {
-    nrambank = port[0x25] & 0x1f;
+    nrambank = port[0x25] & 0x1f; // RAM page number (0-31)
     rambank = ram - 0xa000 + (nrambank << 14);
-    return;
   }
-  // TO7-70/TO9 compatibility mode via e7c9
-  switch (port[0x09] & 0xf8)
+  else
   {
-    case 0x08: nrambank = 0; break;
-    case 0x10: nrambank = 1; break;
-    case 0xe0: nrambank = 2; break;
-    case 0xa0: nrambank = currentModel == TO9 ? 4 : 3; break;  // banks 3 and 4
-    case 0x60: nrambank = currentModel == TO9 ? 3 : 4; break;  // inverted/TO7-70&TO9
-    case 0x20: nrambank = 5; break;
-    default: return;
+    // TO7-70/TO9 compatibility mode via e7c9
+    switch (port[0x09] & 0xf8)
+    {
+      case 0x08: nrambank = 0; break;
+      case 0x10: nrambank = 1; break;
+      case 0xe0: nrambank = 2; break;
+      case 0xa0: nrambank = currentModel == TO9 ? 4 : 3; break;  // banks 3 and 4
+      case 0x60: nrambank = currentModel == TO9 ? 3 : 4; break;  // inverted/TO7-70&TO9
+      case 0x20: nrambank = 5; break;
+      default: return;
+    }
+    // RAM bank 0 = RAM page 2 at physical address 0x8000 and logical address 0xa000
+    // RAM bank n = RAM page n+2 at physical address 0x4000*(n+2) and logical address 0xa000
+    rambank = ram - (0xa000 - 0x8000) + (nrambank << 14);
   }
-  rambank = ram - 0x2000 + (nrambank << 14);
+}
+
+static void selectRamBankMo6(void)
+{
+  int nrampage; // RAM page number
+  nrampage = port[0x25] & 0x1f;
+  rambank = ram - 0x6000 + (nrampage << 14);
 }
 
 static void selectRomBankTo(void)
@@ -394,7 +414,7 @@ static void selectRomBankTo(void)
   }
 }
 
-static void selectRomBankMo(void)
+static void selectRomBankMo5(void)
 {
   if ((carflags & 4) == 0)
   {
@@ -405,12 +425,36 @@ static void selectRomBankMo(void)
   if ((cartype == 2) && (carflags & 0x10)) rombank += 0x10000;
 }
 
+static void selectRomBankMo6(void)
+{
+  if ((carflags & 4) == 0)
+  {
+    if (port[0x1d] & 0x10)
+    {
+      // BASIC128 EPROM selected
+      rombank = rom->basic + ((port[0x00] & 0x20) << 9) - 0xb000;
+      romsys = rom->monitor + ((port[0x00] & 0x20) << 9) + 0x3000 - 0xf000;
+    }
+    else
+    {
+      // BASIC1 EPROM selected
+      rombank = rom->monitor + ((port[0x00] & 0x20) << 9) - 0xc000;
+      romsys = rom->monitor + ((port[0x00] & 0x20) << 9) + 0x3000 - 0xf000;
+    }
+  }
+  else
+  {
+    rombank = car - 0xb000 + ((carflags & 0x03) << 14);
+    if ((cartype == 2) && (carflags & 0x10)) rombank += 0x10000;
+  }
+}
+
 static void SwitchMemo5Bank(int a)
 {
  if(cartype != 1) return;
  if((a & 0xfffc) != 0xbffc) return;
  carflags = (carflags & 0xfc) | (a & 3);
- selectRomBankMo();
+ selectRomBank();
 }
 
 static void videopage_bordercolor(char c)
@@ -430,7 +474,10 @@ static void selectVideomode(char c)
     case 0x2a: SetVideoMode(VIDEO_640X2); break;
     case 0x41: SetVideoMode(VIDEO_320X4_SPECIAL); break;
     case 0x7b: SetVideoMode(VIDEO_160X16); break;
-    default:   SetVideoMode(VIDEO_320X16); break;
+    default:   if (rom->is_mo)
+                 SetVideoMode(VIDEO_320_16_MO5);
+               else SetVideoMode(VIDEO_320X16);
+               break;
   }
 }
 
@@ -507,7 +554,27 @@ void Initprog(void)
 
   SetVideoMode(VIDEO_320X16);
 
-  if (currentModel != MO5)
+  if (currentModel == MO5)
+  {
+    ramuser = ram + 0x2000;
+    SetVideoMode(VIDEO_320_16_MO5);
+    pagevideo = ram;
+    Mputc = MputMo;
+    Mgetc = MgetMo;
+    selectVideoRam = selectVideoRamMo5;
+    selectRomBank = selectRomBankMo5;
+  }
+  else if (rom->is_mo6)
+  {
+    ramuser = ram + 0x2000;
+    Mputc = MputMo;
+    Mgetc = MgetMo;
+    selectVideoRam = selectVideoRamMo6;
+    selectRomBank = selectRomBankMo6;
+    port[0x25] = 0x02; // RAM bank 0 selected
+    selectRamBankMo6();
+  }
+  else
   {
     ramuser = ram - 0x2000;
     Mputc = MputTo;
@@ -517,16 +584,6 @@ void Initprog(void)
     videopage_bordercolor(port[0x1d]);
     port[0x09] = 0x0f; // RAM bank 0 selected
     selectRamBankTo();
-  }
-  else
-  {
-    ramuser = ram + 0x2000;
-    SetVideoMode(VIDEO_320_16_MO5);
-    pagevideo = ram;
-    Mputc = MputMo;
-    Mgetc = MgetMo;
-    selectVideoRam = selectVideoRamMo;
-    selectRomBank = selectRomBankMo;
   }
 
   selectVideoRam();
@@ -645,11 +702,11 @@ int Run(int ncyclesmax)
       {
         videolinenumber -= 312;
         if(++vblnumber >= VBL_NUMBER_MAX) vblnumber = 0;
-        if (currentModel == MO5) Irq();
+        if (rom->is_mo) Irq();
       }
       displayflag = ((vblnumber == 0) && (videolinenumber > 47) && (videolinenumber < 264));
     }
-    if (currentModel != MO5)
+    if (!rom->is_mo)
     {
       //decompte du temps de presence du signal irq timer
       if(timer_irqcount > 0) timer_irqcount -= opcycles;
@@ -841,40 +898,74 @@ static char MgetTo(unsigned short a)
   }
 }
 
-// MO5 memory write ///////////////////////////////////////////////////////////
-void MputMo(unsigned short a, char c)
+// MO5/MO6 memory write ///////////////////////////////////////////////////////////
+static void MputMo(unsigned short a, char c)
 {
 #ifdef THEODORE_DASM
   debug_mem_write(a);
 #endif
   switch(a >> 12)
   {
-    case 0x0: case 0x1: ramvideo[a] = c; break;
+    case 0x0: case 0x1: ramvideo[a] = c; return;
+    case 0x2: case 0x3: case 0x4: case 0x5: ramuser[a] = c; return;
+    case 0x6: case 0x7: case 0x8: case 0x9:
+      if (rom->is_mo6) rambank[a] = c; else ramuser[a] = c; return;
     case 0xa:
       switch(a)
       {
         // A7C0->A7C3 : PIA 6821 Systeme
-        case 0xa7c0: port[0] = c & 0x5f; selectVideoRam(); break;
-        case 0xa7c1: port[1] = c & 0x7f; sound = (c & 1) << 5; break;
-        case 0xa7c2: port[2] = c & 0x3f; break;
-        case 0xa7c3: port[3] = c & 0x3f; break;
-        case 0xa7cb: carflags = c; selectRomBank(); break;
+        case 0xa7c0: if (currentModel == MO5) { port[0] = c & 0x5f; selectVideoRam(); }
+                     else { port[0] = c & 0x39; selectVideoRam(); selectRomBank(); } return;
+        case 0xa7c1: port[1] = c & 0x7f; sound = (c & 1) << 5; return;
+        case 0xa7c2: port[2] = c & 0x3f; return;
+        case 0xa7c3: port[3] = c & 0x3f; return;
+        case 0xa7cb: carflags = c; selectRomBank(); return;
+        // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: port[0x0c] = c; return;
-        case 0xa7cd: port[0x0d] = c; sound = c & 0x3f; return;
+        case 0xa7cd: port[0x0d] = c; sound = c & MAX_SOUND_LEVEL; return;
         case 0xa7ce: port[0x0e] = c; return; //registre controle position joysticks
         case 0xa7cf: port[0x0f] = c; return; //registre controle action - musique
+        // A7DA->A7DB : Gate Palette Registers
+        case 0xa7da: if (rom->is_mo6) { Palettecolor(c); } return;
+        case 0xa7db: if (rom->is_mo6) { port[0x1b] = c; } return;
+        // A7DC->A7DD : Gate Mode Page Registers
+        case 0xa7dc: if (rom->is_mo6) { selectVideomode(c); } return;
+        case 0xa7dd: if (rom->is_mo6) { videopage_bordercolor(c); carflags = (~c & 0x20) >> 3; selectRomBankMo6(); } return;
+        // A7E4->A7E7 : Gate Mode Page Registers
+        case 0xa7e4: if (rom->is_mo6) { port[0x24] = c & 0x01; } return;
+        case 0xa7e5: if (rom->is_mo6) { port[0x25] = c; selectRamBankMo6(); } return;
       }
-      break;
+      return;
     case 0xb: case 0xc: case 0xd: case 0xe:
       if ((carflags & 8) && (cartype == 0)) rombank[a] = c;
-      break;
-    case 0xf: break;
+      return;
+    case 0xf: return;
     default: ramuser[a] = c;
  }
 }
 
-// MO5 memory read ////////////////////////////////////////////////////////////
-char MgetMo(unsigned short a)
+static char mo6keybPB7()
+{
+  int line, col, scancode;
+  // column = PB4-PB6 (0-7)
+  col = (port[1] & 0x70) >> 4;
+  // line = PA3,PB1-PB3 (0-8)
+  line = (port[0] & 0x08) | ((port[1] & 0x0e) >> 1);
+  // I don't know why but Saphir (and maybe other games) always set PA3 to 1 on MO6
+  // whereas it should be set to 0. This gives either illegal or wrong scancodes.
+  // This is just a dirty workaround that don't even work for some keys, but
+  // I don't know how to manage that cleanly.
+  if ((line > 8) // line cannot be > 8
+    || ((line == 8) && (col > 4))) // line 8 only have 5 keys
+  {
+    line &= 0x07;
+  }
+  scancode = (line << 3) | col;
+  return touche[scancode];
+}
+
+// MO5/MO6 memory read ////////////////////////////////////////////////////////////
+static char MgetMo(unsigned short a)
 {
 #ifdef THEODORE_DASM
   debug_mem_read(a);
@@ -882,23 +973,31 @@ char MgetMo(unsigned short a)
   switch(a >> 12)
   {
     case 0x0: case 0x1: return ramvideo[a];
+    case 0x2: case 0x3: case 0x4: case 0x5: return ramuser[a];
+    case 0x6: case 0x7: case 0x8: case 0x9:
+          if (rom->is_mo6) return rambank[a]; else return ramuser[a];
     case 0xa:
       switch(a)
       {
         // A7C0->A7C3 : PIA 6821 Systeme
-        case 0xa7c0: return port[0] | 0x80 | (penbutton << 5);
-        case 0xa7c1: return port[1] | touche[(port[1] & 0xfe)>> 1];
+        case 0xa7c0: return (currentModel == MO5) ? port[0] | 0x80 | (penbutton << 5) : port[0] | 0x80 | (penbutton << 1);
+        case 0xa7c1: return (currentModel == MO5) ? port[1] | touche[(port[1] & 0xfe) >> 1]
+                     : port[1] | mo6keybPB7();
         case 0xa7c2: return port[2];
         case 0xa7c3: return port[3] | ~Initn();
         case 0xa7cb: return (carflags&0x3f)|((carflags&0x80)>>1)|((carflags&0x40)<<1);
+        // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
         case 0xa7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
         case 0xa7ce: return 4;
+        // A7DA->A7DB : Gate Palette Registers
+        case 0xa7da: return (rom->is_mo6) ? x7da[port[0x1b]++ & 0x1f] : port[a & 0x3f];
         case 0xa7d8: return ~Initn(); //octet etat disquette
         case 0xa7e1: return 0xff;     //zero provoque erreur 53 sur imprimante
-        // A7E4->A7E7 : Gate Array
+        // A7E4->A7E7 : Gate Mode Page Registers
+        case 0xa7e4: return (rom->is_mo6) ? port[0x1d] & 0xf0 : port[a & 0x3f];
         case 0xa7e6: return Iniln() << 1;
-        case 0xa7e7: return Initn();
+        case 0xa7e7: return (currentModel == MO5) ? Initn() : (port[0x24] & 0x01) | Initn() | Iniln();
         default: if(a < 0xa7c0) return(cd90_640_rom[a & 0x7ff]);
              if(a < 0xa800) return(port[a & 0x3f]);
              return(0);
@@ -914,8 +1013,8 @@ char MgetMo(unsigned short a)
 unsigned int toemulator_serialize_size(void)
 {
   return sizeof(currentModel) + cpu_serialize_size() + video_serialize_size()
-      + sizeof(ram) + sizeof(port) + sizeof(x7da) + sizeof(reserved1) + sizeof(reserved2)
-      + sizeof(reserved3) + sizeof(reserved4) + sizeof(reserved5) + sizeof(reserved6)
+      + sizeof(ram) + sizeof(port) + sizeof(x7da) + device_serialize_size()
+      + sizeof(reserved1) + sizeof(reserved2) + sizeof(reserved3) + sizeof(reserved4)
       + sizeof(carflags) + sizeof(touche) + sizeof(capslock) + sizeof(joysposition)
       + sizeof(joysaction) + sizeof(xpen) + sizeof(ypen) + sizeof(penbutton)
       + sizeof(videolinecycle) + sizeof(videolinenumber) + sizeof(vblnumber)
@@ -942,6 +1041,10 @@ void toemulator_serialize(void *data)
   offset += sizeof(port);
   memcpy(buffer+offset, x7da, sizeof(x7da));
   offset += sizeof(x7da);
+
+  device_serialize(buffer+offset);
+  offset += device_serialize_size();
+
   memcpy(buffer+offset, &reserved1, sizeof(reserved1));
   offset += sizeof(reserved1);
   memcpy(buffer+offset, &reserved2, sizeof(reserved2));
@@ -950,10 +1053,6 @@ void toemulator_serialize(void *data)
   offset += sizeof(reserved3);
   memcpy(buffer+offset, &reserved4, sizeof(reserved4));
   offset += sizeof(reserved4);
-  memcpy(buffer+offset, &reserved5, sizeof(reserved5));
-  offset += sizeof(reserved5);
-  memcpy(buffer+offset, &reserved6, sizeof(reserved6));
-  offset += sizeof(reserved6);
   memcpy(buffer+offset, &carflags, sizeof(carflags));
   offset += sizeof(carflags);
   memcpy(buffer+offset, touche, sizeof(touche));
@@ -1013,6 +1112,10 @@ void toemulator_unserialize(const void *data)
   offset += sizeof(port);
   memcpy(x7da, buffer+offset, sizeof(x7da));
   offset += sizeof(x7da);
+
+  device_unserialize(buffer+offset);
+  offset += device_serialize_size();
+
   memcpy(&reserved1, buffer+offset, sizeof(reserved1));
   offset += sizeof(reserved1);
   memcpy(&reserved2, buffer+offset, sizeof(reserved2));
@@ -1021,10 +1124,6 @@ void toemulator_unserialize(const void *data)
   offset += sizeof(reserved3);
   memcpy(&reserved4, buffer+offset, sizeof(reserved4));
   offset += sizeof(reserved4);
-  memcpy(&reserved5, buffer+offset, sizeof(reserved5));
-  offset += sizeof(reserved5);
-  memcpy(&reserved6, buffer+offset, sizeof(reserved6));
-  offset += sizeof(reserved6);
   memcpy(&carflags, buffer+offset, sizeof(carflags));
   offset += sizeof(carflags);
   memcpy(touche, buffer+offset, sizeof(touche));
@@ -1066,7 +1165,7 @@ void toemulator_unserialize(const void *data)
   if (currentModel != MO5)
   {
     videopage_bordercolor(port[0x1d]);
-    selectRamBankTo();
+    if (rom->is_mo6) selectRamBankMo6(); else selectRamBankTo();
   }
   selectVideoRam();
   selectRomBank();

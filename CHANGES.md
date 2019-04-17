@@ -1,5 +1,14 @@
 Next Release
 ===========
+* Add MO6 emulation.
+* Add Olivetti Prodest PC128 emulation.
+* Add compile-time flag (UNDOC_OPCODES=1) to enable emulation of some undocumented 6809 opcodes.
+* Fix auto-detection of Thomson model always enabled.
+* In model autodetect mode, use MO5 for "memo5" files and TO8 for "memo7" files if the name of the file does not include the name of the computer.
+* Change mapping of "fire" button to "B" button.
+
+Release 1.7 (2019/03/15)
+===========
 * Fix sound in some games (#8).
 * Add emulation of illegal opcode 0x11F1. Fixes some MO5 games (#10).
 * Add core option to break on illegal opcodes in the debugger.
@@ -7,6 +16,8 @@ Next Release
 * MO5: add heuristic to choose between RUN" and LOADM"",,R for autorun (#9).
 * Add auto-detection of the Thomson model based on the content filename.
 * Change mapping of virtual keyboard: now Start button starts the program and Select button simulates a keystroke.
+* Fix save state/rewind during tape loading.
+* Add support for so called "Classic platforms" in Makefile.
 
 Release 1.6 (2019/02/05)
 ===========

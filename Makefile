@@ -2,6 +2,8 @@
 DEBUG = 0
 # DASM=1 to enable theodore's disassembler/debugger
 DASM = 0
+# UNDOC_OPCODES=1 to enable theodore's emulation of undocumented 6809 opcodes
+UNDOC_OPCODES = 0
 GIT_VERSION := "$(shell git describe --dirty --always --tags)"
 HAS_GCC = 1
 
@@ -407,11 +409,46 @@ else ifeq ($(platform), libnx)
 	DEFINES := -DSWITCH=1 -U__linux__ -U__linux -DRARCH_INTERNAL
 	CFLAGS := $(DEFINES) -g -O3 -fPIE -I$(LIBNX)/include/ -ffunction-sections -fdata-sections -ftls-model=local-exec -Wl,--allow-multiple-definition -specs=$(LIBNX)/switch.specs
 	CFLAGS += $(INCDIRS)
-	CFLAGS += $(INCLUDE)  -D__SWITCH__ -DHAVE_LIBNX -march=armv8-a -mtune=cortex-a57 -mtp=soft
+	CFLAGS += -D__SWITCH__ -DHAVE_LIBNX -march=armv8-a -mtune=cortex-a57 -mtp=soft
 	CXXFLAGS := $(ASFLAGS) $(CFLAGS) -fno-rtti -std=gnu++11
 	CFLAGS += -std=gnu11
 	STATIC_LINKING = 1
 	DISABLE_GCC_SECURITY_FLAGS = 1
+
+# Classic Platforms ####################
+# Platform affix = classic_<ISA>_<µARCH>
+# Help at https://modmyclassic.com/comp
+
+# (armv7 a7, hard point, neon based) ### 
+# NESC, SNESC, C64 mini 
+else ifeq ($(platform), classic_armv7_a7)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,--version-script=link.T -Wl,-no-undefined
+	CFLAGS += -Ofast \
+	-flto=4 -fwhole-program -fuse-linker-plugin \
+	-fdata-sections -ffunction-sections -Wl,--gc-sections \
+	-fno-stack-protector -fno-ident -fomit-frame-pointer \
+	-falign-functions=1 -falign-jumps=1 -falign-loops=1 \
+	-fno-unwind-tables -fno-asynchronous-unwind-tables -fno-unroll-loops \
+	-fmerge-all-constants -fno-math-errno \
+	-marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+	CXXFLAGS += $(CFLAGS)
+	CPPFLAGS += $(CFLAGS)
+	ASFLAGS += $(CFLAGS)
+	HAVE_NEON = 1
+	ARCH = arm
+	BUILTIN_GPU = neon
+	USE_DYNAREC = 1
+	ifeq ($(shell echo `$(CC) -dumpversion` "< 4.9" | bc -l), 1)
+		CFLAGS += -march=armv7-a
+	else
+		CFLAGS += -march=armv7ve
+		# If gcc is 5.0 or later
+		ifeq ($(shell echo `$(CC) -dumpversion` ">= 5" | bc -l), 1)
+			LDFLAGS += -static-libgcc -static-libstdc++
+		endif
+	endif
 
 # ARM
 else ifneq (,$(findstring armv,$(platform)))
@@ -645,6 +682,11 @@ endif
 ifeq ($(DASM), 1)
 	CFLAGS += -DTHEODORE_DASM
 	CXXFLAGS += -DTHEODORE_DASM
+endif
+# Enable emulation of undocumented opcodes
+ifeq ($(UNDOC_OPCODES), 1)
+	CFLAGS += -DTHEODORE_UNDOC_OPCODES
+	CXXFLAGS += -DTHEODORE_UNDOC_OPCODES
 endif
 
 CORE_DIR = .

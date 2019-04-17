@@ -25,16 +25,23 @@
 
 /* Mapping libretro -> Thomson TO scancodes */
 extern const char libretroKeyCodeToThomsonToScanCode[RETROK_LAST];
-
-/* Mapping libretro -> Thomson MO scancodes */
-extern const char libretroKeyCodeToThomsonMoScanCode[RETROK_LAST];
+/* Mapping libretro -> Thomson MO5 scancodes */
+extern const char libretroKeyCodeToThomsonMo5ScanCode[RETROK_LAST];
+/* Mapping libretro -> Thomson MO6 scancodes */
+extern const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST];
 
 /* Mapping libretro -> Thomson scancodes for the current MO/TO version */
 extern const char *libretroKeyCodeToThomsonScanCode;
 
+/* Number of keys of the virtual keyboard */
 #define VIRTUALKB_NB_KEYS 38
-extern const int virtualkb_keysyms[VIRTUALKB_NB_KEYS];
+/* Keysyms for the virtual keyboard (AZERTY mode, i.e. all models but PC128) */
+extern const int virtualkb_keysyms_azerty[VIRTUALKB_NB_KEYS];
+/* Keysyms for the virtual keyboard (QWERTY mode, i.e. only for Olivetti Prodest PC128) */
+extern const int virtualkb_keysyms_qwerty[VIRTUALKB_NB_KEYS];
+/* Virtual keyboard keysyms for the current computer version */
+extern const int *virtualkb_keysyms;
+/* Letters of the virtual keyboard */
 extern const char* virtualkb_chars[VIRTUALKB_NB_KEYS];
 
 #endif /* __KEYMAP_H */
-
