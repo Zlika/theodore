@@ -433,17 +433,17 @@ static void selectRomBankMo6(void)
     {
       // BASIC128 EPROM selected
       rombank = rom->basic + ((port[0x00] & 0x20) << 9) - 0xb000;
-      romsys = rom->monitor + ((port[0x00] & 0x20) << 9) + 0x3000 - 0xf000;
     }
     else
     {
       // BASIC1 EPROM selected
       rombank = rom->monitor + ((port[0x00] & 0x20) << 9) - 0xc000;
-      romsys = rom->monitor + ((port[0x00] & 0x20) << 9) + 0x3000 - 0xf000;
     }
+    romsys = rom->monitor + ((port[0x00] & 0x20) << 9) + 0x3000 - 0xf000;
   }
   else
   {
+    // Cartridge enabled
     rombank = car - 0xb000 + ((carflags & 0x03) << 14);
     if ((cartype == 2) && (carflags & 0x10)) rombank += 0x10000;
   }
