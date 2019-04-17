@@ -16,6 +16,8 @@ Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordin
 Cet émulateur est disponible sur les plateformes suivantes :
 * RetroArch : [Installer RetroArch](http://www.retroarch.com/?page=platforms), puis démarrer RetroArch et télécharger le core "theodore" via le "Core Updater".
 * [Recalbox](https://www.recalbox.com/) : Theodore est inclus dans votre console de retrogaming préférée depuis la version 2018.06.27.
+* [Lakka](http://www.lakka.tv/): Theodore est inclus dans cette distribution Linux légère à partir de la version 2.2.2.
+* [Kodi](https://kodi.tv/): Depuis la version 18 de Kodi, celui-ci permet de télécharger et d'exécuter des émulateurs basés sur libretro, dont Theodore.
 
 Il devrait être compatible avec toutes les plateformes supportées par RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
 
