@@ -419,10 +419,12 @@ static void selectRomBankMo5(void)
   if ((carflags & 4) == 0)
   {
     rombank = rom->basic - 0xc000;
-    return;
   }
-  rombank = car - 0xb000 + ((carflags & 0x03) << 14);
-  if ((cartype == 2) && (carflags & 0x10)) rombank += 0x10000;
+  else
+  {
+    rombank = car - 0xb000 + ((carflags & 0x03) << 14);
+    if ((cartype == 2) && (carflags & 0x10)) rombank += 0x10000;
+  }
 }
 
 static void selectRomBankMo6(void)
@@ -451,10 +453,10 @@ static void selectRomBankMo6(void)
 
 static void SwitchMemo5Bank(int a)
 {
- if(cartype != 1) return;
- if((a & 0xfffc) != 0xbffc) return;
- carflags = (carflags & 0xfc) | (a & 3);
- selectRomBank();
+  if(cartype != 1) return;
+  if((a & 0xfffc) != 0xbffc) return;
+  carflags = (carflags & 0xfc) | (a & 3);
+  selectRomBank();
 }
 
 static void videopage_bordercolor(char c)
@@ -919,7 +921,6 @@ static void MputMo(unsigned short a, char c)
         case 0xa7c1: port[1] = c & 0x7f; sound = (c & 1) << 5; return;
         case 0xa7c2: port[2] = c & 0x3f; return;
         case 0xa7c3: port[3] = c & 0x3f; return;
-        case 0xa7cb: carflags = c; selectRomBank(); return;
         // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: port[0x0c] = c; return;
         case 0xa7cd: port[0x0d] = c; sound = c & MAX_SOUND_LEVEL; return;
@@ -985,7 +986,6 @@ static char MgetMo(unsigned short a)
                      : port[1] | mo6keybPB7();
         case 0xa7c2: return port[2];
         case 0xa7c3: return port[3] | ~Initn();
-        case 0xa7cb: return (carflags&0x3f)|((carflags&0x80)>>1)|((carflags&0x40)<<1);
         // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
         case 0xa7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
