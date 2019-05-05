@@ -83,7 +83,7 @@ static char *rambank;       //pointeur banque ram utilisateur
 static char *romsys;        //pointeur rom systeme
 static char *rombank;       //pointeur banque rom ou cartouche
 //flags cartouche
-int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
+int cartype;         //type de cartouche (0=simple, 1=switch bank, 2=os-9)
 int carflags = 0;    //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
 //keyboard, joysticks, mouse
 static int touche[KEYBOARDKEY_MAX]; //etat touches
@@ -921,6 +921,7 @@ static void MputMo(unsigned short a, char c)
         case 0xa7c1: port[1] = c & 0x7f; sound = (c & 1) << 5; return;
         case 0xa7c2: port[2] = c & 0x3f; return;
         case 0xa7c3: port[3] = c & 0x3f; return;
+        case 0xa7cb: carflags = c; selectRomBank(); break;
         // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: port[0x0c] = c; return;
         case 0xa7cd: port[0x0d] = c; sound = c & MAX_SOUND_LEVEL; return;
@@ -986,6 +987,7 @@ static char MgetMo(unsigned short a)
                      : port[1] | mo6keybPB7();
         case 0xa7c2: return port[2];
         case 0xa7c3: return port[3] | ~Initn();
+        case 0xa7cb: return (carflags&0x3f)|((carflags&0x80)>>1)|((carflags&0x40)<<1);
         // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
         case 0xa7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
