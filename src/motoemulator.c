@@ -83,7 +83,7 @@ static char *rambank;       //pointeur banque ram utilisateur
 static char *romsys;        //pointeur rom systeme
 static char *rombank;       //pointeur banque rom ou cartouche
 //flags cartouche
-int cartype;         //type de cartouche (0=simple 1=switch bank, 2=os-9)
+int cartype;         //type de cartouche (0=simple, 1=switch bank, 2=os-9)
 int carflags = 0;    //bits0,1,4=bank, 2=cart-enabled, 3=write-enabled
 //keyboard, joysticks, mouse
 static int touche[KEYBOARDKEY_MAX]; //etat touches
@@ -419,10 +419,12 @@ static void selectRomBankMo5(void)
   if ((carflags & 4) == 0)
   {
     rombank = rom->basic - 0xc000;
-    return;
   }
-  rombank = car - 0xb000 + ((carflags & 0x03) << 14);
-  if ((cartype == 2) && (carflags & 0x10)) rombank += 0x10000;
+  else
+  {
+    rombank = car - 0xb000 + ((carflags & 0x03) << 14);
+    if ((cartype == 2) && (carflags & 0x10)) rombank += 0x10000;
+  }
 }
 
 static void selectRomBankMo6(void)
@@ -433,17 +435,17 @@ static void selectRomBankMo6(void)
     {
       // BASIC128 EPROM selected
       rombank = rom->basic + ((port[0x00] & 0x20) << 9) - 0xb000;
-      romsys = rom->monitor + ((port[0x00] & 0x20) << 9) + 0x3000 - 0xf000;
     }
     else
     {
       // BASIC1 EPROM selected
       rombank = rom->monitor + ((port[0x00] & 0x20) << 9) - 0xc000;
-      romsys = rom->monitor + ((port[0x00] & 0x20) << 9) + 0x3000 - 0xf000;
     }
+    romsys = rom->monitor + ((port[0x00] & 0x20) << 9) + 0x3000 - 0xf000;
   }
   else
   {
+    // Cartridge enabled
     rombank = car - 0xb000 + ((carflags & 0x03) << 14);
     if ((cartype == 2) && (carflags & 0x10)) rombank += 0x10000;
   }
@@ -451,10 +453,11 @@ static void selectRomBankMo6(void)
 
 static void SwitchMemo5Bank(int a)
 {
- if(cartype != 1) return;
- if((a & 0xfffc) != 0xbffc) return;
- carflags = (carflags & 0xfc) | (a & 3);
- selectRomBank();
+  if(cartype != 1) return;
+  // Read in $BFFC-$BFFF changes the cartridge ROM bank (2 LSB bits = bank number)
+  if((a & 0xfffc) != 0xbffc) return;
+  carflags = (carflags & 0xfc) | (a & 3);
+  selectRomBank();
 }
 
 static void videopage_bordercolor(char c)
@@ -919,7 +922,8 @@ static void MputMo(unsigned short a, char c)
         case 0xa7c1: port[1] = c & 0x7f; sound = (c & 1) << 5; return;
         case 0xa7c2: port[2] = c & 0x3f; return;
         case 0xa7c3: port[3] = c & 0x3f; return;
-        case 0xa7cb: carflags = c; selectRomBank(); return;
+        // A7CB is used by the Jane cartridge and the 64k RAM extension
+        case 0xa7cb: carflags = c; selectRomBank(); break;
         // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: port[0x0c] = c; return;
         case 0xa7cd: port[0x0d] = c; sound = c & MAX_SOUND_LEVEL; return;
@@ -930,7 +934,7 @@ static void MputMo(unsigned short a, char c)
         case 0xa7db: if (rom->is_mo6) { port[0x1b] = c; } return;
         // A7DC->A7DD : Gate Mode Page Registers
         case 0xa7dc: if (rom->is_mo6) { selectVideomode(c); } return;
-        case 0xa7dd: if (rom->is_mo6) { videopage_bordercolor(c); carflags = (~c & 0x20) >> 3; selectRomBankMo6(); } return;
+        case 0xa7dd: if (rom->is_mo6) { videopage_bordercolor(c); carflags = (carflags & ~0x04) | ((~c & 0x20) >> 3); selectRomBankMo6(); } return;
         // A7E4->A7E7 : Gate Mode Page Registers
         case 0xa7e4: if (rom->is_mo6) { port[0x24] = c & 0x01; } return;
         case 0xa7e5: if (rom->is_mo6) { port[0x25] = c; selectRamBankMo6(); } return;
@@ -985,6 +989,7 @@ static char MgetMo(unsigned short a)
                      : port[1] | mo6keybPB7();
         case 0xa7c2: return port[2];
         case 0xa7c3: return port[3] | ~Initn();
+        // A7CB is used by the Jane cartridge and the 64k RAM extension
         case 0xa7cb: return (carflags&0x3f)|((carflags&0x80)>>1)|((carflags&0x40)<<1);
         // A7CC->A7CF : Music and Game Extension
         case 0xa7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);

@@ -15,7 +15,9 @@ This is a [libretro](https://github.com/libretro) core for emulation of [Thomson
 
 This emulator is available on the following platforms:
 * RetroArch: [Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
-* [Recalbox](https://www.recalbox.com/): Starting from version 2018.06.27, this emulator is built into your favorite retrogaming operating system.
+* [Recalbox](https://www.recalbox.com/): Starting from version 2018.06.27, Theodore is built into your favorite retrogaming operating system.
+* [Lakka](http://www.lakka.tv/): Starting from version 2.2.2, Theodore is built into this lightweight Linux distribution.
+* [Kodi](https://kodi.tv/): Starting from version 18, Kodi allows to download and run libretro-based emulators, including Theodore.
 
 It should be compatible with all the platforms supported by RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
 
