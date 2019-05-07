@@ -1,4 +1,4 @@
-Next Release
+Release 2.0 (2019/05/07)
 ===========
 * Add MO6 emulation.
 * Add Olivetti Prodest PC128 emulation.
