@@ -98,7 +98,7 @@ static const Key PC128_AUTOSTART_BIN_KEYS[MO6_AUTOSTART_BIN_KEYS_LENGTH] =
   {RETROK_a, true}, {RETROK_a, false}, {RETROK_d, true}, {RETROK_d, false},
   {RETROK_m, true}, {RETROK_m, false},
   {RETROK_LSHIFT, true}, {RETROK_2, true}, {RETROK_2, false}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, false}, {RETROK_SEMICOLON, true}, {RETROK_SEMICOLON, false}, {RETROK_SEMICOLON, true}, {RETROK_SEMICOLON, false},
+  {RETROK_LSHIFT, false}, {RETROK_COMMA, true}, {RETROK_COMMA, false}, {RETROK_COMMA, true}, {RETROK_COMMA, false},
   {RETROK_r, true}, {RETROK_r, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
 #define BASIC512_AUTOSTART_KEYS_LENGTH 2
 static const Key BASIC512_KEYS[BASIC512_AUTOSTART_KEYS_LENGTH] = { {RETROK_b, true}, {RETROK_b, false} };
