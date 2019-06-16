@@ -1,3 +1,7 @@
+Release 2.0.1 (2019/06/16)
+===========
+* [#12](https://github.com/Zlika/theodore/pull/12): Fix autostart for binary games on the Olivetti Prodest PC128 - [@troffmo5](https://github.com/troffmo5).
+
 Release 2.0 (2019/05/07)
 ===========
 * Add MO6 emulation.
