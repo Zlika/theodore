@@ -485,6 +485,9 @@ else ifneq (,$(findstring armv,$(platform)))
 else ifeq ($(platform),emscripten)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).bc
 	STATIC_LINKING = 1
+	# stack protector flag breaks emscripten build
+	# https://github.com/emscripten-core/emscripten/issues/9780
+	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Windows MSVC 2017 all architectures
 else ifneq (,$(findstring windows_msvc2017,$(platform)))
@@ -785,4 +788,3 @@ uninstall:
 
 .PHONY: clean clean-objs
 endif
-
