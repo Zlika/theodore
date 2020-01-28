@@ -38,6 +38,8 @@
 #include "rom/rom_mo5.inc"
 #include "rom/rom_mo6.inc"
 #include "rom/rom_pc128.inc"
+#include "rom/rom_to7.inc"
+#include "rom/rom_to770.inc"
 
 #define VBL_NUMBER_MAX  2
 // Number of keys of the keyboard
@@ -65,7 +67,8 @@ static SystemRom ROM_TO9P = { to9p_basic_rom, to9p_basic_patch, to9p_monitor_rom
 static SystemRom ROM_MO5 = { mo5_v2_basic_rom, mo5_v2_basic_patch, mo5_v2_monitor_rom, mo5_v2_monitor_patch, cd90_640_rom, cd90_640_patch, true, false };
 static SystemRom ROM_MO6 = { mo6_v3_basic128_rom, mo6_v3_basic128_patch, mo6_v3_basic1_rom, mo6_v3_basic1_patch, cd90_640_rom, cd90_640_patch, true, true };
 static SystemRom ROM_PC128 = { pc128_basic128_rom, pc128_basic128_patch, pc128_basic1_rom, pc128_basic1_patch, cd90_640_rom, cd90_640_patch, true, true };
-
+static SystemRom ROM_TO770 = { NULL, NULL, to770_monitor_rom, to770_monitor_patch, NULL, NULL, false, false };
+static SystemRom ROM_TO7 = { NULL, NULL, to7_monitor_rom, to7_monitor_patch, NULL, NULL, false, false };
 
 static ThomsonModel currentModel = TO8;
 static SystemRom *rom = &ROM_TO8;
@@ -116,6 +119,8 @@ static char MgetTo(unsigned short a);
 static void MputTo(unsigned short a, char c);
 static char MgetMo(unsigned short a);
 static void MputMo(unsigned short a, char c);
+static char MgetTo7(unsigned short a);
+static void MputTo7(unsigned short a, char c);
 
 void (*selectVideoRam)(void);
 void (*selectRomBank)(void);
@@ -220,6 +225,12 @@ void SetThomsonModel(ThomsonModel model)
       case PC128:
         rom = &ROM_PC128;
         break;
+      case TO7:
+        rom = &ROM_TO7;
+        break;
+      case TO7_70:
+        rom = &ROM_TO770;
+        break;
       default:
         return;
     }
@@ -300,9 +311,16 @@ static void selectVideoRamTo(void)
   nvideopage = port[0x03] & 1;
   // The "video" data (either from RAMA or RAMB) is mapped in memory at 0x4000-0x5FFF
   ramvideo = ram - 0x4000 + (nvideopage << 13);
-  nsystbank = (currentModel != TO9) ? (port[0x03] & 0x10) >> 4 : 0;
+  nsystbank = (currentModel != TO9 && currentModel != TO7 && currentModel != TO7_70) ? (port[0x03] & 0x10) >> 4 : 0;
   // The "monitor" software is mapped in memory starting at address 0xe000
   romsys = rom->monitor - 0xe000 + (nsystbank << 13);
+}
+
+static void selectVideoRamTo7(void)
+{
+  selectVideoRamTo();
+  // The "monitor" software is mapped in memory starting at address 0xe800
+  romsys = rom->monitor - 0xe800;
 }
 
 static void selectVideoRamMo5(void)
@@ -331,7 +349,7 @@ static void selectRamBankTo(void)
   // TO8 mode (5 lower bits of e7e5 = RAM page number)
   // (bit D4 of gate array mode page's "system 1" register at e7e7 = 0
   // if RAM bank switching is done via PIA bits for TO7-70/TO9 emulation)
-  if ((port[0x27] & 0x10) && (currentModel != TO9))
+  if ((port[0x27] & 0x10) && (currentModel != TO9) && (currentModel != TO7) && (currentModel != TO7_70))
   {
     nrambank = port[0x25] & 0x1f; // RAM page number (0-31)
     rambank = ram - 0xa000 + (nrambank << 14);
@@ -344,8 +362,8 @@ static void selectRamBankTo(void)
       case 0x08: nrambank = 0; break;
       case 0x10: nrambank = 1; break;
       case 0xe0: nrambank = 2; break;
-      case 0xa0: nrambank = currentModel == TO9 ? 4 : 3; break;  // banks 3 and 4
-      case 0x60: nrambank = currentModel == TO9 ? 3 : 4; break;  // inverted/TO7-70&TO9
+      case 0xa0: nrambank = ((currentModel == TO9) || (currentModel == TO7) || (currentModel == TO7_70)) ? 4 : 3; break;  // banks 3 and 4
+      case 0x60: nrambank = ((currentModel == TO9) || (currentModel == TO7) || (currentModel == TO7_70)) ? 3 : 4; break;  // inverted/TO7-70&TO9
       case 0x20: nrambank = 5; break;
       default: return;
     }
@@ -365,7 +383,7 @@ static void selectRamBankMo6(void)
 static void selectRomBankTo(void)
 {
   int nrombank;        //numero banque rom (00-07)
-  if (currentModel != TO9)
+  if ((currentModel != TO9) && (currentModel != TO7) && (currentModel != TO7_70))
   {
     //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
     //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
@@ -577,6 +595,17 @@ void Initprog(void)
     port[0x25] = 0x02; // RAM bank 0 selected
     selectRamBankMo6();
   }
+  else if ((currentModel == TO7) || (currentModel == TO7_70))
+  {
+    ramuser = ram - 0x2000;
+    Mputc = MputTo7;
+    Mgetc = MgetTo7;
+    selectVideoRam = selectVideoRamTo7;
+    selectRomBank = selectRomBankTo;
+    videopage_bordercolor(port[0x1d]);
+    port[0x09] = 0x0f; // RAM bank 0 selected
+    selectRamBankTo();
+  }
   else
   {
     ramuser = ram - 0x2000;
@@ -648,8 +677,14 @@ void Hardreset(void)
   RewindTape();
 
   // Patch the ROM
-  patch_rom(rom->basic, rom->basic_patch);
-  patch_rom(rom->monitor, rom->monitor_patch);
+  if ((rom->basic != NULL) && (rom->basic_patch != NULL))
+  {
+    patch_rom(rom->basic, rom->basic_patch);
+  }
+  if ((rom->monitor != NULL) && (rom->monitor_patch != NULL))
+  {
+    patch_rom(rom->monitor, rom->monitor_patch);
+  }
   if (rom->disk_drive_monitor != NULL) patch_rom(rom->disk_drive_monitor, rom->disk_drive_monitor_patch);
   // Set the current date
   set_current_date();
@@ -851,6 +886,113 @@ static char floppy_controller_emu(unsigned short a)
 
 // TO8/TO9 memory read //////////////////////////////////////////////////////
 static char MgetTo(unsigned short a)
+{
+#ifdef THEODORE_DASM
+  debug_mem_read(a);
+#endif
+  switch(a >> 12)
+  {
+    //subtilite : quand la rom est recouverte par la ram, les 2 segments de 8 Ko sont inverses
+    case 0x0: case 0x1: return (port[0x26] & 0x20) ? rombank[a + 0x2000] : rombank[a];
+    case 0x2: case 0x3: return (port[0x26] & 0x20) ? rombank[a - 0x2000] : rombank[a];
+    case 0x4: case 0x5: return ramvideo[a];
+    case 0x6: case 0x7: case 0x8: case 0x9: return ramuser[a];
+    case 0xa: case 0xb: case 0xc: case 0xd: return rambank[a];
+    case 0xe:
+      switch(a)
+      {
+        //e7c0 = 6846 composite status register
+        //csr0 = timer interrupt flag
+        //csr1 = cp1 interrupt flag (keyboard)
+        //csr2 = cp2 interrupt flag
+        //csr3-csr6 unused and set to zeroes
+        //csr7 = composite interrupt flag (if at least one interrupt flag is set)
+        case 0xe7c0: return((port[0]) ? (port[0] | 0x80) : 0);
+        case 0xe7c3: return(port[0x03] | 0x80 | (penbutton << 1));
+        case 0xe7c6: return (timer6846 >> 11 & 0xff);
+        case 0xe7c7: return (timer6846 >> 3 & 0xff);
+        case 0xe7ca: return (videolinenumber < 200) ? 0 : 2; //non, registre de controle PIA
+        // Extension musique et jeux (Motorola 6821)
+        //e7cc= registre de direction ou de donnees port A (6821 systeme)
+        //e7cd= registre de direction ou de donnees port B
+        //e7ce= registre de controle port A (CRA)
+        //e7cf= registre de controle port B (CRB)
+        case 0xe7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
+        case 0xe7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
+        case 0xe7ce: return 0x04;
+        case 0xe7da: return x7da[port[0x1b]++ & 0x1f];
+        case 0xe7df: port[0x1e] = 0; return(port[0x1f]);
+        case 0xe7e4: return port[0x1d] & 0xf0;
+        case 0xe7e5: return port[0x25] & 0x1f;
+        case 0xe7e6: return port[0x26] & 0x7f;
+        case 0xe7e7: return (port[0x24] & 0x01) | Initn() | Iniln();
+        default:
+          if (a >= 0xe7d0 && a <= 0xe7d3) return floppy_controller_emu(a);
+          if (a < 0xe7c0) return romsys[a];
+          if (a < 0xe800) return port[a & 0x3f];
+      }
+      return romsys[a];
+    default: return romsys[a];
+  }
+}
+
+// TO7-107/70 memory write /////////////////////////////////////////////////////
+static void MputTo7(unsigned short a, char c)
+{
+#ifdef THEODORE_DASM
+  debug_mem_write(a);
+#endif
+  switch(a >> 12)
+  {
+    case 0x0: case 0x1:
+      carflags = (carflags & 0xfc) | (a & 3);
+      selectRomBank();
+      return;
+    case 0x2: case 0x3: if((port[0x26] & 0x60) != 0x60) return;
+    if(port[0x26] & 0x20) rombank[a - 0x2000] = c; else rombank[a] = c; return;
+    case 0x4: case 0x5: ramvideo[a] = c; return;
+    case 0x6: case 0x7: case 0x8: case 0x9: ramuser[a] = c; return;
+    case 0xa: case 0xb: case 0xc: case 0xd: rambank[a] = c; return;
+    case 0xe:
+      switch(a)
+      {
+        case 0xe7c0: port[0x00] = c; return;
+        case 0xe7c1: port[0x01] = c; mute = c & 8; return;
+        case 0xe7c3: port[0x03] = (c & 0x3d); if((c & 0x20) == 0) keyb_irqcount = 0;
+        selectVideoRam(); selectRomBank(); return;
+        case 0xe7c5: port[0x05] = c; Timercontrol(); return; //controle timer
+        case 0xe7c6: latch6846 = (latch6846 & 0xff) | ((c & 0xff) << 8); return;
+        case 0xe7c7: latch6846 = (latch6846 & 0xff00) | (c & 0xff); return;
+        case 0xe7c9: port[0x09] = c; selectRamBankTo(); return;
+        // Extension musique et jeux (Motorola 6821)
+        //e7cc= registre de direction ou de donnees port A (6821 systeme)
+        //e7cd= registre de direction ou de donnees port B
+        //e7ce= registre de controle port A (CRA)
+        //e7cf= registre de controle port B (CRB)
+        case 0xe7cc: port[0x0c] = c; return;
+        case 0xe7cd: if(port[0x0f] & 4) sound = c & MAX_SOUND_LEVEL; else port[0x0d] = c; return;
+        case 0xe7ce: port[0x0e] = c; return; //registre controle position joysticks
+        case 0xe7cf: port[0x0f] = c; return; //registre controle action - musique
+        case 0xe7d0: port[0x10] = c; return; //save the value written to know if an
+                                             //intelligent function of the floppy controller is used
+        case 0xe7d8: return;
+        case 0xe7da: Palettecolor(c); return;
+        case 0xe7db: port[0x1b] = c; return;
+        case 0xe7dc: selectVideomode(c); return;
+        case 0xe7dd: videopage_bordercolor(c); return;
+        case 0xe7e4: port[0x24] = c; return;
+        case 0xe7e5: port[0x25] = c; selectRamBankTo(); return;
+        case 0xe7e6: port[0x26] = c; selectRomBank(); return;
+        case 0xe7e7: port[0x27] = c; selectRamBankTo(); return;
+        default: return;
+      }
+      return;
+    default: return;
+  }
+}
+
+// TO7-TO7/70 memory read //////////////////////////////////////////////////////
+static char MgetTo7(unsigned short a)
 {
 #ifdef THEODORE_DASM
   debug_mem_read(a);

@@ -223,6 +223,14 @@ char *autodetect_model(const char *filename)
   {
     return "TO9";
   }
+  if ((strstr(filename, "to770") != NULL) || (strstr(filename, "TO770") != NULL))
+  {
+    return "TO7/70";
+  }
+  if ((strstr(filename, "to7") != NULL) || (strstr(filename, "TO7") != NULL))
+  {
+    return "TO7";
+  }
   if ((strstr(filename, "mo6") != NULL) || (strstr(filename, "MO6") != NULL))
   {
     return "MO6";

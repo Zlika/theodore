@@ -83,7 +83,7 @@ static int autorun_counter = -1;
 static bool autostart_pending = false;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128" },
+    { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128|TO7|TO7/70" },
     { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
@@ -379,6 +379,14 @@ static void change_model(const char *model)
   {
     virtualkb_keysyms = virtualkb_keysyms_qwerty;
     SetThomsonModel(PC128);
+  }
+  else if (strcmp(model, "TO7") == 0)
+  {
+    SetThomsonModel(TO7);
+  }
+  else if (strcmp(model, "TO7-70") == 0)
+  {
+    SetThomsonModel(TO7_70);
   }
   // Default: TO8
   else

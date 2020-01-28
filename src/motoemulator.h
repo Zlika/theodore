@@ -65,7 +65,7 @@ typedef enum { JOY0_UP, JOY0_DOWN, JOY0_LEFT, JOY0_RIGHT,
                JOY1_UP, JOY1_DOWN, JOY1_LEFT, JOY1_RIGHT,
                JOY0_FIRE, JOY1_FIRE } JoystickAxis;
 
-typedef enum { TO8, TO8D, TO9, TO9P, MO5, MO6, PC128 } ThomsonModel;
+typedef enum { TO8, TO8D, TO9, TO9P, MO5, MO6, PC128, TO7, TO7_70 } ThomsonModel;
 
 // Returns the current level of the speaker as a signed 16-bit integer
 int16_t GetAudioSample(void);
