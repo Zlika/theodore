@@ -1,5 +1,7 @@
 Next Release
 ===========
+* Change pixel format for better compatibility with low-end devices like PSP.
+This change breaks the compatibility with old save state files.
 * [#19](https://github.com/Zlika/theodore/pull/19): Fix MSVC 2017 build - [@twinaphex](https://github.com/twinaphex)
 * [#17](https://github.com/Zlika/theodore/pull/17): Fix emscripten build - [@ToadKing](https://github.com/ToadKing)
 * [#16](https://github.com/Zlika/theodore/pull/16): Add build support for tvOS - [@yoshisuga](https://github.com/yoshisuga)

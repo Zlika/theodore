@@ -51,7 +51,7 @@ void linearFree(void* mem);
 #define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
 #define CPU_FREQUENCY     1000000
 // Pitch = length in bytes between two lines in video buffer
-#define PITCH             sizeof(uint32_t) * XBITMAP
+#define PITCH             sizeof(pixel_fmt_t) * XBITMAP
 // Autorun: Number of frames to wait before simulating
 // the key stroke to start the program
 #define AUTORUN_DELAY     70
@@ -65,7 +65,7 @@ static retro_input_poll_t input_poll_cb = NULL;
 static retro_input_state_t input_state_cb = NULL;
 
 static unsigned int input_type[MAX_CONTROLLERS];
-static uint32_t *video_buffer = NULL;
+static pixel_fmt_t *video_buffer = NULL;
 static int16_t audio_stereo_buffer[2*AUDIO_SAMPLE_PER_FRAME];
 
 // nb of thousandth of cycles in excess to run the next time
@@ -174,9 +174,9 @@ void retro_init(void)
 
   Hardreset();
 #ifdef _3DS
-  video_buffer = (uint32_t *)linearMemAlign(XBITMAP * YBITMAP * sizeof(uint32_t), 0x80);
+  video_buffer = (pixel_fmt_t *)linearMemAlign(XBITMAP * YBITMAP * sizeof(pixel_fmt_t), 0x80);
 #else
-  video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * sizeof(uint32_t));
+  video_buffer = (pixel_fmt_t *)malloc(XBITMAP * YBITMAP * sizeof(pixel_fmt_t));
 #endif
   SetLibRetroVideoBuffer(video_buffer);
 }
@@ -578,10 +578,12 @@ static void keyboard_cb(bool down, unsigned keycode,
 bool retro_load_game(const struct retro_game_info *game)
 {
   struct retro_keyboard_callback keyb_cb = { keyboard_cb };
-  enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
+  // Use of RGB565 pixel format instead of XRGB8888
+  // for better compatibility with low-end devices
+  enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt) && log_cb)
   {
-    log_cb(RETRO_LOG_ERROR, "XRGB8888 is not supported.\n");
+    log_cb(RETRO_LOG_ERROR, "RGB5656 is not supported.\n");
     return false;
   }
 
