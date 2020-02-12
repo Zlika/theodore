@@ -105,7 +105,6 @@ static void Readsector(void)
 {
   char buffer[SECTOR_SIZE];
   int i, j, u, p, s;
-  int errcode;
 
   if (ffd == NULL && sap.handle == NULL) {Diskerror(DISK_NO_DISK_ERROR); return;}
   // Drive number (0/1: 2 sides of the internal drive,
@@ -130,7 +129,7 @@ static void Readsector(void)
   else
   {
     // SAP file
-    errcode = sap_readSector(&sap, p, s, buffer);
+    int errcode = sap_readSector(&sap, p, s, buffer);
     if (errcode != DISK_NO_ERROR) {Diskerror(errcode); return;}
   }
   i = ((Mgetc(p0+0x4f) & 0xff) << 8) + (Mgetc(p0+0x50) & 0xff);
@@ -143,7 +142,6 @@ static void Writesector(void)
 {
   char buffer[SECTOR_SIZE];
   int i, j, u, p, s;
-  int errcode;
 
   if (ffd == NULL && sap.handle == NULL) {Diskerror(DISK_NO_DISK_ERROR); return;}
   if (fdprotection) {Diskerror(DISK_WRITE_PROTECTION_ERROR); return;}
@@ -168,7 +166,7 @@ static void Writesector(void)
   else
   {
     // SAP file
-    errcode = sap_writeSector(&sap, p, s, buffer);
+    int errcode = sap_writeSector(&sap, p, s, buffer);
     if (errcode != DISK_NO_ERROR) {Diskerror(errcode); return;}
   }
 }
@@ -326,12 +324,11 @@ static void Readmousebutton(void)
 // Read the position of the light pen (device=0) or the mouse (device=1)
 static void Readpenxy(int device)
 {
-  int k;
   if((xpen < 0) || (xpen >= 640)) {CC |= 1; return;} // x out of bounds
   if((ypen < 0) || (ypen >= 200)) {CC |= 1; return;} // y out of bounds
   if (is_to)
   {
-    k = (port[0x1c] == 0x2a) ? 0 : 1; // 40 columns mode: x divided by 2
+    int k = (port[0x1c] == 0x2a) ? 0 : 1; // 40 columns mode: x divided by 2
     if(device > 0) //mouse
     {
       Mputw(0x60d8, xpen >> k);
@@ -388,11 +385,11 @@ unsigned int device_serialize_size(void)
 
 void device_serialize(void *data)
 {
-  int offset = 0;
   char *buffer = (char *) data;
   int k7data;
   if (fk7 != NULL)
   {
+    int offset = 0;
     k7data = (k7octet << 8) + k7bit;
     memcpy(buffer+offset, &k7data, sizeof(int));
     offset += sizeof(int);
@@ -403,11 +400,11 @@ void device_serialize(void *data)
 
 void device_unserialize(const void *data)
 {
-  int offset = 0;
   char *buffer = (char *) data;
   int k7data;
   if (fk7 != NULL)
   {
+    int offset = 0;
     memcpy(&k7data, buffer+offset, sizeof(int));
     offset += sizeof(int);
     k7octet = (k7data >> 8) & 0xFF;
