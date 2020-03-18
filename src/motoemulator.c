@@ -694,7 +694,10 @@ void Hardreset(void)
   {
     patch_rom(rom->monitor, rom->monitor_patch);
   }
-  if (rom->disk_drive_monitor != NULL) patch_rom(rom->disk_drive_monitor, rom->disk_drive_monitor_patch);
+  if ((rom->disk_drive_monitor != NULL) && (rom->disk_drive_monitor_patch != NULL))
+  {
+    patch_rom(rom->disk_drive_monitor, rom->disk_drive_monitor_patch);
+  }
   // Set the current date
   set_current_date();
 
