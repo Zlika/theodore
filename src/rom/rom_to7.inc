@@ -1,8 +1,14 @@
 // The TO7 ROM is composed of two chips (4ko + 2ko), mapped at E800-FFFF.
 
-// Patch for the "monitor" part of the ROM (6ko)
+// Patch for the "monitor" part of the ROM (6ko) (from DCMOTO)
 int to7_monitor_patch[] =
 {
+    3,0x0000,0xed6e,0x11,0xfa,0x39, //interface communication
+    2,0x0000,0xf09c,0x20,0x10,
+    1,0x0000,0xf0b5,0x21,
+    3,0x0000,0xf11a,0x11,0xf2,0x39, //ecriture octet cassette
+    3,0x0000,0xf15c,0x11,0xf1,0x39, //lecture octet cassette
+    3,0x0000,0xfbd3,0x11,0xf7,0x39, //coordonnees crayon
     0
 };
 

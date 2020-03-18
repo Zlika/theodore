@@ -338,7 +338,7 @@ static void change_model(const char *model)
     // Auto-detection of the model is only done when a game is loaded
     return;
   }
-  if (strcmp(model, "MO5") == 0)
+  if ((strcmp(model, "MO5") == 0) || (strcmp(model, "TO7") == 0) || (strcmp(model, "TO7/70") == 0))
   {
     libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMo5ScanCode;
   }
