@@ -387,7 +387,7 @@ static void selectRamBankMo6(void)
 static void selectRomBankTo(void)
 {
   int nrombank;        //numero banque rom (00-07)
-  if ((currentModel != TO9) && (currentModel != TO7) && (currentModel != TO7_70))
+  if (currentModel != TO9)
   {
     //romsys = rom + 0x2000 + ((cnt[0x7c3] & 0x10) << 9);
     //si le bit 0x20 de e7e6 est positionne a 1 l'espace ROM est recouvert
