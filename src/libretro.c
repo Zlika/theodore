@@ -384,7 +384,7 @@ static void change_model(const char *model)
   {
     SetThomsonModel(TO7);
   }
-  else if (strcmp(model, "TO7-70") == 0)
+  else if (strcmp(model, "TO7/70") == 0)
   {
     SetThomsonModel(TO7_70);
   }
