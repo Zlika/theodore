@@ -1,5 +1,7 @@
 Next Release
 ===========
+* Add TO7 emulation.
+* Add TO7/70 emulation.
 * Change pixel format for better compatibility with low-end devices like PSP (thanks [@fjtrujy](https://github.com/fjtrujy) for helping me fix the problem).
 Warning: This change breaks the compatibility with old save state files.
 * [#19](https://github.com/Zlika/theodore/pull/19): Fix MSVC 2017 build - [@twinaphex](https://github.com/twinaphex)
