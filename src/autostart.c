@@ -110,8 +110,10 @@ static const Key BASIC1_TO8_AUTOSTART_KEYS[BASIC1_TO8_AUTOSTART_KEYS_LENGTH] = {
 static const Key BASIC1_TO9_AUTOSTART_KEYS[BASIC1_TO9_AUTOSTART_KEYS_LENGTH] = { {RETROK_e, true}, {RETROK_e, false} };
 #define CARTRIDGE_AUTOSTART_KEYS_LENGTH 2
 static const Key CARTRIDGE_AUTOSTART_KEYS[CARTRIDGE_AUTOSTART_KEYS_LENGTH] = { {RETROK_KP0, true}, {RETROK_KP0, false} };
-#define TO7_AUTOSTART_KEYS_LENGTH 2
-static const Key TO7_AUTOSTART_KEYS[TO7_AUTOSTART_KEYS_LENGTH] = { {RETROK_KP1, true}, {RETROK_KP1, false} };
+#define TO7_CARTRIDGE_AUTOSTART_KEYS_LENGTH 2
+static const Key TO7_CARTRIDGE_AUTOSTART_KEYS[TO7_CARTRIDGE_AUTOSTART_KEYS_LENGTH] = { {RETROK_KP1, true}, {RETROK_KP1, false} };
+#define TO7_TAPE_AUTOSTART_KEYS_LENGTH 2
+static const Key TO7_TAPE_AUTOSTART_KEYS[TO7_TAPE_AUTOSTART_KEYS_LENGTH] = { {RETROK_KP2, true}, {RETROK_KP2, false} };
 
 static int autostart_keys_length = 0;
 static const Key *autostart_keys = NULL;
@@ -320,8 +322,16 @@ bool autostart_nextkey()
         break;
       case TO7:
       case TO7_70:
-        autostart_keys = TO7_AUTOSTART_KEYS;
-        autostart_keys_length = TO7_AUTOSTART_KEYS_LENGTH;
+        if (currentMedia == MEDIA_CARTRIDGE)
+        {
+          autostart_keys = TO7_CARTRIDGE_AUTOSTART_KEYS;
+          autostart_keys_length = TO7_CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+        }
+        else
+        {
+          autostart_keys = TO7_TAPE_AUTOSTART_KEYS;
+          autostart_keys_length = TO7_TAPE_AUTOSTART_KEYS_LENGTH;
+        }
         break;
       // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
       // and the 'D' key (Basic 128) on TO9.
