@@ -42,6 +42,8 @@ void LoadSap(const char *filename);
 void LoadTape(const char *filename);
 // Load a memo7 cartridge
 void LoadMemo(const char *filename);
+// Load a memo7 cartridge from an array
+void LoadMemoFromArray(const char *rom, unsigned int rom_size);
 // Unload the floppy disk
 void UnloadFloppy(void);
 // Unload the tape

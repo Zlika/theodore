@@ -40,6 +40,8 @@
 #include "rom/rom_pc128.inc"
 #include "rom/rom_to7.inc"
 #include "rom/rom_to770.inc"
+#include "rom/basic-1_memo7.inc"
+#include "rom/basic-128_memo7.inc"
 
 #define VBL_NUMBER_MAX  2
 // Number of keys of the keyboard
@@ -227,9 +229,11 @@ void SetThomsonModel(ThomsonModel model)
         break;
       case TO7:
         rom = &ROM_TO7;
+        LoadMemoFromArray(basic_1_memo7_rom, basic_1_memo7_rom_len);
         break;
       case TO7_70:
         rom = &ROM_TO770;
+        LoadMemoFromArray(basic_128_memo7_rom, basic_128_memo7_rom_len);
         break;
       default:
         return;

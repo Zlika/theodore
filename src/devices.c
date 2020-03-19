@@ -315,6 +315,24 @@ void LoadMemo(const char *filename)
   Initprog();   // init to launch the cartridge
 }
 
+void LoadMemoFromArray(const char *rom, unsigned int rom_size)
+{
+  unsigned int i, carsize;
+  // Loading
+  memset(car, 0, CARTRIDGE_MEM_SIZE);
+  carsize = 0;
+  while ((carsize < rom_size) && (carsize < CARTRIDGE_MEM_SIZE))
+  {
+    char c = rom[carsize];
+    car[carsize++] = c;
+  }
+  for(i = 0; i < 0xc000; i++) ram[i] = -((i & 0x80) >> 7);
+  cartype = 0; // cartridge <= 16 Ko
+  if(carsize > 0x4000) cartype = 1;   // bank switch system
+  carflags = 4; // cartridge enabled, write disabled, bank 0
+  Initprog();   // init to launch the cartridge
+}
+
 // Read the buttons of the mouse
 static void Readmousebutton(void)
 {
