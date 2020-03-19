@@ -328,7 +328,15 @@ static void selectVideoRamTo7(void)
   ramvideo = ram - 0x4000 + (nvideopage << 13);
   // The "monitor" software is mapped in memory starting at address 0xe800
   romsys = rom->monitor - 0xe800;
-  bordercolor = (port[0x03] >> 4) & 0x07;
+  if (currentModel == TO7)
+  {
+    bordercolor = (port[0x03] >> 4) & 0x07;
+  }
+  else
+  {
+    // TO7/70 (Pastel + BGR)
+    bordercolor = ((port[0x03] >> 4) & 0x07) | ((~port[0x03] & 0x04) << 1);
+  }
 }
 
 static void selectVideoRamMo5(void)
@@ -357,7 +365,7 @@ static void selectRamBankTo(void)
   // TO8 mode (5 lower bits of e7e5 = RAM page number)
   // (bit D4 of gate array mode page's "system 1" register at e7e7 = 0
   // if RAM bank switching is done via PIA bits for TO7-70/TO9 emulation)
-  if ((port[0x27] & 0x10) && (currentModel != TO9) && (currentModel != TO7) && (currentModel != TO7_70))
+  if ((port[0x27] & 0x10) && (currentModel != TO9) && (currentModel != TO7_70))
   {
     nrambank = port[0x25] & 0x1f; // RAM page number (0-31)
     rambank = ram - 0xa000 + (nrambank << 14);
@@ -370,8 +378,8 @@ static void selectRamBankTo(void)
       case 0x08: nrambank = 0; break;
       case 0x10: nrambank = 1; break;
       case 0xe0: nrambank = 2; break;
-      case 0xa0: nrambank = ((currentModel == TO9) || (currentModel == TO7) || (currentModel == TO7_70)) ? 4 : 3; break;  // banks 3 and 4
-      case 0x60: nrambank = ((currentModel == TO9) || (currentModel == TO7) || (currentModel == TO7_70)) ? 3 : 4; break;  // inverted/TO7-70&TO9
+      case 0xa0: nrambank = ((currentModel == TO9) || (currentModel == TO7_70)) ? 4 : 3; break;  // banks 3 and 4
+      case 0x60: nrambank = ((currentModel == TO9) || (currentModel == TO7_70)) ? 3 : 4; break;  // inverted/TO7-70&TO9
       case 0x20: nrambank = 5; break;
       default: return;
     }
@@ -616,8 +624,11 @@ void Initprog(void)
     selectVideoRam = selectVideoRamTo7;
     selectRomBank = selectRomBankTo7;
     videopage_bordercolor(port[0x1d]);
-    port[0x09] = 0x0f; // RAM bank 0 selected
-    selectRamBankTo();
+    if (currentModel == TO7_70)
+    {
+      port[0x09] = 0x0f; // RAM bank 0 selected
+      selectRamBankTo();
+    }
   }
   else
   {
@@ -970,8 +981,9 @@ static void MputTo7(unsigned short a, char c)
     // 4000->5fff: Memoire Ecran
     case 0x4: case 0x5: ramvideo[a] = c; return;
     // 6000->dfff: Memoire
-    case 0x6: case 0x7: case 0x8: case 0x9:
-    case 0xa: case 0xb: case 0xc: case 0xd: ramuser[a] = c; return;
+    case 0x6: case 0x7: case 0x8: case 0x9: ramuser[a] = c; return;
+    case 0xa: case 0xb: case 0xc: case 0xd:
+      if (currentModel == TO7) ramuser[a] = c; else rambank[a] = c; return;
     case 0xe:
       switch(a)
       {
@@ -994,12 +1006,13 @@ static void MputTo7(unsigned short a, char c)
         case 0xe7c7: latch6846 = (latch6846 & 0xff00) | (c & 0xff); return;
         // e7c8->e7cb: PIA 6821
         // e7c8: Data Register Port A (input keyboard matrix)
-        // e7c9: Data Register Port B (output keyboard matrix)
+        // e7c9: TO7: Data Register Port B (output keyboard matrix)
+        //       TO7/70: RAM banks and coded output keyboard matrix
         // e7ca: Control Register Port A (CA1 (input): read  INITRAME,
         //                                CA2 (output): command tape drive)
         // e7cb: Control Register Port B
         // (CB1 (output): OUTPUT_ENABLE command (TO7) or compositing command (TO7/70))
-        case 0xe7c9: port[0x09] = c; return;
+        case 0xe7c9: port[0x09] = c; if (currentModel == TO7_70) selectRamBankTo(); return;
         // e7cc->e7cf: Extension musique et jeux (Motorola 6821)
         //e7cc: registre de direction ou de donnees port A
         //e7cd: registre de direction ou de donnees port B
@@ -1032,14 +1045,22 @@ static void MputTo7(unsigned short a, char c)
  */
 static char readTo7KeybPortA()
 {
-  int keyb_matrix_line, keyb_matrix_column, matrix_offset, porta_inv, portb_inv;
+  int keyb_matrix_line, keyb_matrix_column, matrix_offset, porta_inv;
   char result;
-  keyb_matrix_line = 7;
-  portb_inv= (~port[0x09] & 0xff);
-  while (portb_inv != 1)
+  if (currentModel == TO7)
   {
-    portb_inv >>= 1;
-    keyb_matrix_line--;
+    int portb_inv= (~port[0x09] & 0xff);
+    keyb_matrix_line = 7;
+    while (portb_inv != 1)
+    {
+      portb_inv >>= 1;
+      keyb_matrix_line--;
+    }
+  }
+  else
+  {
+    // TO7/70: only bits PB0,PB1,PB2 are used to code the line number (0->7)
+    keyb_matrix_line = port[0x09] & 0x07;
   }
   matrix_offset = keyb_matrix_line * 8;
   porta_inv = 0;
@@ -1068,12 +1089,16 @@ static char MgetTo7(unsigned short a)
     // 4000->5fff: Memoire Ecran
     case 0x4: case 0x5: return ramvideo[a];
     // 6000->dfff: Memoire
-    // (6000->60ff: page 0 reservee au systeme,
-    //  6100->7fff: memoire utilisateur,
-    //  8000->bfff: extension memoire,
-    //  c000->dfff: RAM non utilisée)
-    case 0x6: case 0x7: case 0x8: case 0x9:
-    case 0xa: case 0xb: case 0xc: case 0xd: return ramuser[a];
+    //   6000->60ff: page 0 reservee au systeme,
+    //   TO7:
+    //     6100->7fff: memoire utilisateur,
+    //     8000->bfff: extension memoire,
+    //     c000->dfff: RAM non utilisée
+    //   TO7/70:
+    //     6100->9fff: memoire utilisateur
+    //     a000->dfff: extension memoire paginable
+    case 0x6: case 0x7: case 0x8: case 0x9: return ramuser[a];
+    case 0xa: case 0xb: case 0xc: case 0xd: return currentModel == TO7 ? ramuser[a] : rambank[a];
     case 0xe:
       switch(a)
       {
