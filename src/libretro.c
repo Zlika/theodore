@@ -51,7 +51,7 @@ void linearFree(void* mem);
 #define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
 #define CPU_FREQUENCY     1000000
 // Pitch = length in bytes between two lines in video buffer
-#define PITCH             sizeof(uint32_t) * XBITMAP
+#define PITCH             sizeof(pixel_fmt_t) * XBITMAP
 // Autorun: Number of frames to wait before simulating
 // the key stroke to start the program
 #define AUTORUN_DELAY     70
@@ -65,7 +65,7 @@ static retro_input_poll_t input_poll_cb = NULL;
 static retro_input_state_t input_state_cb = NULL;
 
 static unsigned int input_type[MAX_CONTROLLERS];
-static uint32_t *video_buffer = NULL;
+static pixel_fmt_t *video_buffer = NULL;
 static int16_t audio_stereo_buffer[2*AUDIO_SAMPLE_PER_FRAME];
 
 // nb of thousandth of cycles in excess to run the next time
@@ -83,7 +83,7 @@ static int autorun_counter = -1;
 static bool autostart_pending = false;
 
 static const struct retro_variable prefs[] = {
-    { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128" },
+    { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128|TO7|TO7/70" },
     { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
@@ -174,9 +174,9 @@ void retro_init(void)
 
   Hardreset();
 #ifdef _3DS
-  video_buffer = (uint32_t *)linearMemAlign(XBITMAP * YBITMAP * sizeof(uint32_t), 0x80);
+  video_buffer = (pixel_fmt_t *)linearMemAlign(XBITMAP * YBITMAP * sizeof(pixel_fmt_t), 0x80);
 #else
-  video_buffer = (uint32_t *)malloc(XBITMAP * YBITMAP * sizeof(uint32_t));
+  video_buffer = (pixel_fmt_t *)malloc(XBITMAP * YBITMAP * sizeof(pixel_fmt_t));
 #endif
   SetLibRetroVideoBuffer(video_buffer);
 }
@@ -338,7 +338,7 @@ static void change_model(const char *model)
     // Auto-detection of the model is only done when a game is loaded
     return;
   }
-  if (strcmp(model, "MO5") == 0)
+  if ((strcmp(model, "MO5") == 0) || (strcmp(model, "TO7") == 0) || (strcmp(model, "TO7/70") == 0))
   {
     libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonMo5ScanCode;
   }
@@ -379,6 +379,14 @@ static void change_model(const char *model)
   {
     virtualkb_keysyms = virtualkb_keysyms_qwerty;
     SetThomsonModel(PC128);
+  }
+  else if (strcmp(model, "TO7") == 0)
+  {
+    SetThomsonModel(TO7);
+  }
+  else if (strcmp(model, "TO7/70") == 0)
+  {
+    SetThomsonModel(TO7_70);
   }
   // Default: TO8
   else
@@ -578,10 +586,12 @@ static void keyboard_cb(bool down, unsigned keycode,
 bool retro_load_game(const struct retro_game_info *game)
 {
   struct retro_keyboard_callback keyb_cb = { keyboard_cb };
-  enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
+  // Use of RGB565 pixel format instead of XRGB8888
+  // for better compatibility with low-end devices
+  enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt) && log_cb)
   {
-    log_cb(RETRO_LOG_ERROR, "XRGB8888 is not supported.\n");
+    log_cb(RETRO_LOG_ERROR, "RGB5656 is not supported.\n");
     return false;
   }
 

@@ -27,8 +27,11 @@
 #define XBITMAP 672
 #define YBITMAP 432
 
+// RGB565 pixel format = 16bits
+#define pixel_fmt_t uint16_t
+
 // Sets the framebuffer to use
-void SetLibRetroVideoBuffer(uint32_t *video_buffer);
+void SetLibRetroVideoBuffer(pixel_fmt_t *video_buffer);
 
 // List of available video modes
 enum VideoMode { VIDEO_320X16, VIDEO_320X4, VIDEO_320X4_SPECIAL,

@@ -86,7 +86,7 @@ else ifneq (,$(findstring ios,$(platform)))
 	ifeq ($(IOSSDK),)
 		IOSSDK := $(shell xcodebuild -version -sdk iphoneos Path)
 	endif
-	ifeq ($(platform),"ios-arm64")
+	ifeq ($(platform), ios-arm64)
 	  CC = cc -arch arm64 -isysroot $(IOSSDK)
 	  CCX = c++ -arch arm64 -isysroot $(IOSSDK)
 	else
@@ -102,6 +102,15 @@ else
 	CXX              += -miphoneos-version-min=5.0
 	PLATFORM_DEFINES += -miphoneos-version-min=5.0
 endif
+
+# tvOS
+else ifeq ($(platform), tvos-arm64)
+	TARGET := $(TARGET_NAME)_libretro_tvos.dylib
+	fpic := -fPIC
+	SHARED := -dynamiclib
+	ifeq ($(IOSSDK),)
+		IOSSDK := $(shell xcodebuild -version -sdk appletvos Path)
+	endif
 
 # Theos
 else ifeq ($(platform), theos_ios)
@@ -181,7 +190,7 @@ else ifeq ($(platform), ctr)
 	STATIC_LINKING = 1
 	DISABLE_GCC_SECURITY_FLAGS = 1
 
-# Raspberry Pi 2 (Raspbian)
+# Raspberry Pi 2
 else ifeq ($(platform), rpi2)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
@@ -189,12 +198,20 @@ else ifeq ($(platform), rpi2)
 	PLATFORM_DEFINES += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -ffast-math
 	PLATFORM_DEFINES += -DARM
 
-# Raspberry Pi 3 (Raspbian)
+# Raspberry Pi 3
 else ifeq ($(platform), rpi3)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
 	PLATFORM_DEFINES += -marm -mcpu=cortex-a53 -mfpu=neon-fp-armv8 -mfloat-abi=hard -ffast-math
+	PLATFORM_DEFINES += -DARM
+
+# Raspberry Pi 4
+else ifeq ($(platform), rpi4)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
+	PLATFORM_DEFINES += -marm -mcpu=cortex-a72 -mfpu=neon-fp-armv8 -mfloat-abi=hard -ffast-math
 	PLATFORM_DEFINES += -DARM
 
 # Lightweight PS3 Homebrew SDK
@@ -287,7 +304,7 @@ else ifneq (,$(findstring windows_msvc2017,$(platform)))
 	reg_query = $(call filter_out2,$(subst $2,,$(shell reg query "$2" -v "$1" 2>nul)))
 	fix_path = $(subst $(SPACE),\ ,$(subst \,/,$1))
 
-	ProgramFiles86w := $(shell cmd /c "echo %PROGRAMFILES(x86)%")
+	ProgramFiles86w := $(shell cmd //c "echo %PROGRAMFILES(x86)%")
 	ProgramFiles86 := $(shell cygpath "$(ProgramFiles86w)")
 
 	WindowsSdkDir ?= $(call reg_query,InstallationFolder,HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Microsoft SDKs\Windows\v10.0)
@@ -476,6 +493,9 @@ else ifneq (,$(findstring armv,$(platform)))
 else ifeq ($(platform),emscripten)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).bc
 	STATIC_LINKING = 1
+	# stack protector flag breaks emscripten build
+	# https://github.com/emscripten-core/emscripten/issues/9780
+	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Windows MSVC 2017 all architectures
 else ifneq (,$(findstring windows_msvc2017,$(platform)))
@@ -636,8 +656,8 @@ else ifeq ($(platform), windows_msvc2005_x86)
 # Windows
 else
 	TARGET := $(TARGET_NAME)_libretro.dll
-	CC = gcc
-	CXX = g++
+	CC ?= gcc
+	CXX ?= g++
 	SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
 	DISABLE_GCC_SECURITY_FLAGS = 1
 endif
@@ -776,4 +796,3 @@ uninstall:
 
 .PHONY: clean clean-objs
 endif
-

@@ -9,7 +9,7 @@ Theodore - Emulateur Thomson MO/TO
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson](https://fr.wikipedia.org/wiki/Gamme_MOTO). Cet émulateur est dérivé des émulateurs [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) et [DCMO5](http://dcmo5.free.fr/) de Daniel Coulom, et supporte actuellement les modèles suivants: TO8, TO8D, TO9, TO9+, MO5, MO6 ainsi que l'Olivetti Prodest PC128 (un dérivé du MO6 pour le marché italien).
+Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordinateur [Thomson](https://fr.wikipedia.org/wiki/Gamme_MOTO). Cet émulateur est dérivé des émulateurs [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) et [DCMO5](http://dcmo5.free.fr/) de Daniel Coulom, et supporte les modèles suivants: TO7, TO7/70, TO8, TO8D, TO9, TO9+, MO5, MO6 ainsi que l'Olivetti Prodest PC128 (un dérivé du MO6 pour le marché italien).
 
 ### Instructions d'installation
 
@@ -42,20 +42,23 @@ ndk-build
 
 B => Bouton "Action"
 
-Start => "Démarrer le programme". Simule la frappe d'une ou plusieurs touches sur le clavier pour démarrer un jeu. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier. La touche simulée dépend du type de media chargé et de l'ordinateur émulé. Sur MO5/MO6, la commande utilisée dépend du format détecté pour le premier fichier de la cassette (BAS => RUN", BIN => LOADM"",,R).
+Start => "Démarrer le programme". Simule la frappe d'une ou plusieurs touches sur le clavier pour démarrer un jeu. Cette fonctionnalité permet de démarrer la plupart des jeux sans avoir besoin d'un clavier. La touche simulée dépend du type de media chargé et de l'ordinateur émulé. Sur MO5/MO6/TO7/TO7-70, la commande utilisée dépend du format détecté pour le premier fichier de la cassette (BAS => RUN", BIN => LOADM"",,R).
 
-| Media chargé | Modèle Thomson   | Touche                 |
-| ------------ | ---------------- | ---------------------- |
-| Disquette    | TO8/TO8D/TO9+    | Touche 'B' (BASIC 512) |
-|              | TO9              | Touche 'D' (BASIC 128) |
-|              | MO5              | RUN" + Entrée          |
-| Cassette     | TO8/TO8D/TO9+    | Touche 'C' (BASIC 1.0) |
-|              | TO9              | Touche 'E' (BASIC 1.0) |
-|              | MO5              | RUN" ou LOADM"",,R + Entrée |
-| Cartouche    | Tous sauf MO5    | Touche '0'             |
-|              | MO5              | Rien (cartouches déjà démarrées automatiquement sur le MO5) |
+| Media chargé | Modèle Thomson    | Touche                 |
+| ------------ | ----------------- | ---------------------- |
+| Disquette    | TO8/TO8D/TO9+     | Touche 'B' (BASIC 512) |
+|              | TO9               | Touche 'D' (BASIC 128) |
+|              | MO5               | RUN" + Entrée          |
+| Cassette     | TO8/TO8D/TO9+     | Touche 'C' (BASIC 1.0) |
+|              | TO9               | Touche 'E' (BASIC 1.0) |
+|              | MO5/MO6/TO7       | RUN" ou LOADM"",,R + Entrée |
+| Cartouche    | Tous sauf MO5/TO7 | Touche '0'             |
+|              | TO7/TO7-70        | Touche '1'             |
+|              | MO5               | Rien (cartouches déjà démarrées automatiquement sur le MO5) |
 
-Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilisé. 
+Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilisé.
+
+TO7 et TO7/70 : Quand une cartouche n'est pas chargée, la cartouche BASIC est automatiquement chargée (BASIC 1 pour le TO7, BASIC 128 pour le TO7/70).
 
 **Fonctionnalité de clavier virtuel :** les boutons Y/X de la manette permettent de faire défiler des chiffres/lettres (Y=défilement vers le bas, X=défilement vers le haut). Le bouton "Select" simule un appui sur la touche choisie.
 L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A à Z) puis "Espace" puis "Entrée".

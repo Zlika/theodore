@@ -9,7 +9,7 @@ Theodore - Thomson MO/TO emulator
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
-This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) and [DCMO5](http://dcmo5.free.fr/) emulators, and currently supports the following models: TO8, TO8D, TO9, TO9+, MO5, MO6 and also the Olivetti Prodest PC128 (a rebranded MO6 for the Italian market).
+This is a [libretro](https://github.com/libretro) core for emulation of [Thomson computers](https://en.wikipedia.org/wiki/Thomson_computers). It is based on Daniel Coulom's [DCTO8D](http://dcto8.free.fr/), [DCTO9P](http://dcto9p.free.fr/) and [DCMO5](http://dcmo5.free.fr/) emulators, and supports the following models: TO7, TO7/70, TO8, TO8D, TO9, TO9+, MO5, MO6 and also the Olivetti Prodest PC128 (a rebranded MO6 for the Italian market).
 
 ### How to install
 
@@ -42,7 +42,7 @@ ndk-build
 
 B => "Fire" button
 
-Start => "Start Program". Simulates one or several keystrokes on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated. On MO5/MO6, the command used depends on the format detected for the first file of the tape (BAS => RUN", BIN => LOADM"",,R).
+Start => "Start Program". Simulates one or several keystrokes on the keyboard to start a game. This feature allows to start most games without the need for a keyboard. The key depends on the loaded media and of the current computer emulated. On MO5/MO6/TO7/TO7-70, the command used depends on the format detected for the first file of the tape (BAS => RUN", BIN => LOADM"",,R).
 
 | Media loaded | Thomson computer | Key                 |
 | ------------ | ---------------- | ------------------- |
@@ -51,11 +51,14 @@ Start => "Start Program". Simulates one or several keystrokes on the keyboard to
 |              | MO5              | RUN" + Enter        |
 | Tape         | TO8/TO8D/TO9+    | 'C' key (BASIC 1.0) |
 |              | TO9              | 'E' key (BASIC 1.0) |
-|              | MO5              | RUN" or LOADM"",,R + Enter |
-| Cartridge    | All but MO5      | '0' key             |
+|              | MO5/MO6/TO7      | RUN" or LOADM"",,R + Enter |
+| Cartridge    | All but MO5/TO7  | '0' key             |
+|              | TO7/TO7-70       | '1' key             |
 |              | MO5              | Nothing (cartridges are already autostarted on MO5) |
 
 If the game does not start, then maybe another BASIC must be used.
+
+TO7 and TO7/70: When a cartridge is not loaded, the BASIC cartridge is automatically loaded (BASIC 1 for TO7, BASIC 128 for TO7/70).
 
 **Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the Select button simulates a keystroke on the selected key.
 The order of the keys in the virtual keyboard is: digits (0->9) then letters (A->Z) then "Space" then "Enter".
