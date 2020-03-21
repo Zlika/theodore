@@ -1,4 +1,4 @@
-Next Release
+Release 3.0 (2020/03/21)
 ===========
 * Add TO7 emulation.
 * Add TO7/70 emulation.
@@ -9,6 +9,7 @@ Warning: This change breaks the compatibility with old save state files.
 * [#16](https://github.com/Zlika/theodore/pull/16): Add build support for tvOS - [@yoshisuga](https://github.com/yoshisuga)
 * [#14](https://github.com/Zlika/theodore/pull/14): Fix build with mingw - [@webgeek1234](https://github.com/webgeek1234)
 * [#13](https://github.com/Zlika/theodore/pull/13): Fix build for ios-arm64 platform - [@yoshisuga](https://github.com/yoshisuga)
+* Update to latest version of the libretro API.
 
 Release 2.0.1 (2019/06/16)
 ===========
