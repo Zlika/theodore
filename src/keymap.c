@@ -221,13 +221,13 @@ const char libretroKeyCodeToThomsonMo5ScanCode[RETROK_LAST] =
     -1,    /* RETROK_EXCLAIM = 33 */
     -1,    /* RETROK_QUOTEDBL = 34 */
     -1,    /* RETROK_HASH = 35 */
-    -1,    /* RETROK_DOLLAR = 36 */
+  0x2c,    /* RETROK_DOLLAR = 36 (* on MO5 keyboard) */
     -1,    /* 37 */
     -1,    /* RETROK_AMPERSAND = 38 */
     -1,    /* RETROK_QUOTE = 39 */
     -1,    /* RETROK_LEFTPAREN = 40 */
     -1,    /* RETROK_RIGHTPAREN = 41 */
-    -1,    /* RETROK_ASTERISK = 42 */
+  0x2c,    /* RETROK_ASTERISK = 42 */
     -1,    /* RETROK_PLUS = 43 */
   0x10,    /* RETROK_COMMA = 44 (. on Thomson keyboard) */
   0x26,    /* RETROK_MINUS = 45 */
@@ -535,39 +535,3 @@ const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST] =
 
 /* Mapping libretro -> Thomson scancodes for the current MO/TO version */
 const char *libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
-
-/* Keysyms for the virtual keyboard (AZERTY mode, i.e. all models but PC128) */
-const int virtualkb_keysyms_azerty[VIRTUALKB_NB_KEYS] =
-{
-    RETROK_KP0, RETROK_KP1, RETROK_KP2, RETROK_KP3, RETROK_KP4,
-    RETROK_KP5, RETROK_KP6, RETROK_KP7, RETROK_KP8, RETROK_KP9,
-    RETROK_q, RETROK_b, RETROK_c, RETROK_d, RETROK_e, RETROK_f,
-    RETROK_g, RETROK_h, RETROK_i, RETROK_j, RETROK_k, RETROK_l,
-    RETROK_SEMICOLON, RETROK_n, RETROK_o, RETROK_p, RETROK_a, RETROK_r,
-    RETROK_s, RETROK_t, RETROK_u, RETROK_v, RETROK_z, RETROK_x,
-    RETROK_y, RETROK_w, RETROK_SPACE, RETROK_RETURN
-};
-
-/* Keysyms for the virtual keyboard (QWERTY mode, i.e. only for Olivetti Prodest PC128) */
-const int virtualkb_keysyms_qwerty[VIRTUALKB_NB_KEYS] =
-{
-    RETROK_KP0, RETROK_KP1, RETROK_KP2, RETROK_KP3, RETROK_KP4,
-    RETROK_KP5, RETROK_KP6, RETROK_KP7, RETROK_KP8, RETROK_KP9,
-    RETROK_a, RETROK_b, RETROK_c, RETROK_d, RETROK_e, RETROK_f,
-    RETROK_g, RETROK_h, RETROK_i, RETROK_j, RETROK_k, RETROK_l,
-    RETROK_m, RETROK_n, RETROK_o, RETROK_p, RETROK_q, RETROK_r,
-    RETROK_s, RETROK_t, RETROK_u, RETROK_v, RETROK_w, RETROK_x,
-    RETROK_y, RETROK_z, RETROK_SPACE, RETROK_RETURN
-};
-
-/* Virtual keyboard keysyms for the current computer version */
-const int *virtualkb_keysyms = virtualkb_keysyms_azerty;
-
-const char* virtualkb_chars[VIRTUALKB_NB_KEYS] =
-{
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-    "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-    "U", "V", "W", "X", "Y", "Z", "Space", "Enter"
-};
-

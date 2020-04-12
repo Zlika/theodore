@@ -16,21 +16,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Mapping Thomson <-> PC keyboard */
+/* Utility functions to write UI elements on the screen */
 
-#ifndef __KEYMAP_H
-#define __KEYMAP_H
+#ifndef __UI_H
+#define __UI_H
 
-#include "libretro-common/include/libretro.h"
+#include <stdint.h>
 
-/* Mapping libretro -> Thomson TO scancodes */
-extern const char libretroKeyCodeToThomsonToScanCode[RETROK_LAST];
-/* Mapping libretro -> Thomson MO5 scancodes */
-extern const char libretroKeyCodeToThomsonMo5ScanCode[RETROK_LAST];
-/* Mapping libretro -> Thomson MO6 scancodes */
-extern const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST];
+// Draw an image at the given position
+extern void draw_bmp(int x, int y, const uint16_t *img, int img_width, int img_height);
+// Draw a colored box at the given position
+extern void draw_box(int x, int y, int width, int height, uint16_t color);
 
-/* Mapping libretro -> Thomson scancodes for the current MO/TO version */
-extern const char *libretroKeyCodeToThomsonScanCode;
-
-#endif /* __KEYMAP_H */
+#endif /* __UI_H */

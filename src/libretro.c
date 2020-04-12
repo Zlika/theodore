@@ -32,6 +32,7 @@
 #include "sap.h"
 #include "motoemulator.h"
 #include "video.h"
+#include "vkeyb/vkeyb.h"
 
 #define PACKAGE_NAME "theodore"
 #ifdef GIT_VERSION
@@ -71,16 +72,23 @@ static int16_t audio_stereo_buffer[2*AUDIO_SAMPLE_PER_FRAME];
 // nb of thousandth of cycles in excess to run the next time
 static int excess = 0;
 
-// current index in virtualkb_* arrays
-static int virtualkb_index = 0;
-// true if a key of the virtual keyboard was being pressed during the last call of update_input()
-static bool virtualkb_pressed = false;
-// scancode of the last key simulated by the virtual keyboard
-static int virtualkb_lastscancode = 0;
 // Autorun counter
 static int autorun_counter = -1;
 // True when autostart is in progress
 static bool autostart_pending = false;
+
+// True if the virtual keyboard must be showed
+static bool vkb_show = false;
+
+struct ButtonsState
+{
+  bool up, down, right, left;
+  bool select, start;
+  bool b;
+};
+// Last state of the buttons
+struct ButtonsState last_btn_state = { 0 };
+// Last
 
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128|TO7|TO7/70" },
@@ -179,6 +187,8 @@ void retro_init(void)
   video_buffer = (pixel_fmt_t *)malloc(XBITMAP * YBITMAP * sizeof(pixel_fmt_t));
 #endif
   SetLibRetroVideoBuffer(video_buffer);
+
+  configure_virtual_keyboard(video_buffer, XBITMAP, YBITMAP);
 }
 
 void retro_deinit(void)
@@ -246,36 +256,97 @@ void retro_reset(void)
   Hardreset();
 }
 
+static void update_input_virtual_keyboard()
+{
+  bool select, start;
+  bool left, right, up, down, fire;
+  
+  // Virtual keyboard:
+  // - Start: starts the program
+  // - Select: show the virtual keyboard
+  start = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START);
+  select = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
+  up = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP);
+  down = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN);
+  left = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT);
+  right = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT);
+  fire = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
+
+  // Try to start the currently loaded program
+  if (start && !last_btn_state.start)
+  {
+    autostart_pending = true;
+  }
+  else if (autostart_pending)
+  {
+    autostart_pending = autostart_nextkey();
+  }
+
+  // Show the virtual keyboard?
+  if (select && !last_btn_state.select)
+  {
+    vkb_show = !vkb_show;
+    // Release current key when virtual keyboard hidden
+    if (!vkb_show)
+    {
+      keyboard(get_current_key_scancode(), false);
+    }
+  }
+
+  if (vkb_show)
+  {
+    if (right && !last_btn_state.right)
+    {
+      move_key(VKB_MOVE_RIGHT);
+    }
+    else if (left && !last_btn_state.left)
+    {
+      move_key(VKB_MOVE_LEFT);
+    }
+    else if (down && !last_btn_state.down)
+    {
+      move_key(VKB_MOVE_DOWN);
+    }
+    else if (up && !last_btn_state.up)
+    {
+      move_key(VKB_MOVE_UP);
+    }
+    keyboard(get_current_key_scancode(), fire);
+  }
+
+  last_btn_state.select = select;
+  last_btn_state.start = start;
+  last_btn_state.left = left;
+  last_btn_state.right = right;
+  last_btn_state.up = up;
+  last_btn_state.down = down;
+}
+
 static void pointerToScreenCoordinates(int *x, int *y)
 {
   *x = (*x + 0x7FFF) * XBITMAP / 0xFFFF;
   *y = (*y + 0x7FFF) * YBITMAP / 0xFFFF;
 }
 
-static void print_current_virtualkb_key()
-{
-  struct retro_message msg;
-  msg.msg = virtualkb_chars[virtualkb_index];
-  msg.frames = VIDEO_FPS;
-  environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
-}
-
 static void update_input(void)
 {
-  int i;
   int xpointer, ypointer;
-  bool select, start, x, y;
 
   input_poll_cb();
-  // Joysticks
-  for (i = 0; i < MAX_CONTROLLERS; i++)
-  {
-    Joysemul(JOY0_UP + 4*i, input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP));
-    Joysemul(JOY0_DOWN + 4*i, input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN));
-    Joysemul(JOY0_LEFT + 4*i, input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT));
-    Joysemul(JOY0_RIGHT + 4*i, input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT));
-    Joysemul(JOY0_FIRE + i, input_state_cb(i, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B));
-  }
+
+  // Joystick 1
+  Joysemul(JOY0_UP, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP));
+  Joysemul(JOY0_DOWN, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN));
+  Joysemul(JOY0_LEFT, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT));
+  Joysemul(JOY0_RIGHT, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT));
+  Joysemul(JOY0_FIRE, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B));
+  // Joystick 2
+  Joysemul(JOY1_UP, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP));
+  Joysemul(JOY1_DOWN, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN));
+  Joysemul(JOY1_LEFT, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT));
+  Joysemul(JOY1_RIGHT, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT));
+  Joysemul(JOY1_FIRE, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B));
+
   // Light pen
   xpointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
   ypointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
@@ -283,52 +354,9 @@ static void update_input(void)
   xpen = xpointer - 16;
   ypen = (ypointer - 16) / 2;
   penbutton = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED);
-  
-  // Virtual keyboard:
-  // - Start program with Start
-  // - Change letter with X/Y and press it with Select
-  start = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START);
-  select = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
-  x = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X);
-  y = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
-  if (!virtualkb_pressed)
-  {
-    // Try to start the currently loaded program
-    if (start)
-    {
-      autostart_pending = true;
-    }
-    else if (x)
-    {
-      virtualkb_index = (virtualkb_index + 1) % VIRTUALKB_NB_KEYS;
-      print_current_virtualkb_key();
-      virtualkb_pressed = true;
-    }
-    else if (y)
-    {
-      virtualkb_index = ((virtualkb_index - 1) % VIRTUALKB_NB_KEYS + VIRTUALKB_NB_KEYS) % VIRTUALKB_NB_KEYS;
-      print_current_virtualkb_key();
-      virtualkb_pressed = true;
-    }
-    else if (select)
-    {
-      virtualkb_lastscancode = libretroKeyCodeToThomsonScanCode[virtualkb_keysyms[virtualkb_index]];
-      keyboard(virtualkb_lastscancode, true);
-      virtualkb_pressed = true;
-    }
-    else if (autostart_pending)
-    {
-      autostart_pending = autostart_nextkey();
-    }
-  }
-  else
-  {
-    if (!select && !x && !y && !start)
-    {
-      virtualkb_pressed = false;
-      keyboard(virtualkb_lastscancode, false);
-    }
-  }
+
+  // Virtual keyboard
+  update_input_virtual_keyboard();
 }
 
 static void change_model(const char *model)
@@ -350,7 +378,6 @@ static void change_model(const char *model)
   {
     libretroKeyCodeToThomsonScanCode = libretroKeyCodeToThomsonToScanCode;
   }
-  virtualkb_keysyms = virtualkb_keysyms_azerty;
   if (strcmp(model, "TO8") == 0)
   {
     SetThomsonModel(TO8);
@@ -377,7 +404,6 @@ static void change_model(const char *model)
   }
   else if (strcmp(model, "PC128") == 0)
   {
-    virtualkb_keysyms = virtualkb_keysyms_qwerty;
     SetThomsonModel(PC128);
   }
   else if (strcmp(model, "TO7") == 0)
@@ -470,6 +496,10 @@ void retro_run(void)
   }
 
   update_input();
+  if (vkb_show)
+  {
+    show_virtual_keyboard();
+  }
 
   if (autorun_counter > 0)
   {

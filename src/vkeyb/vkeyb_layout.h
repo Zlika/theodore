@@ -16,21 +16,25 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Mapping Thomson <-> PC keyboard */
+/* Virtual keyboard layout */
 
-#ifndef __KEYMAP_H
-#define __KEYMAP_H
+#ifndef __VKEYB_LAYOUT_H
+#define __VKEYB_LAYOUT_H
 
-#include "libretro-common/include/libretro.h"
+// A key on the virtual keyboard
+struct VKey
+{
+  int scancode;       // scancode of the key
+  int x;              // x coordinate of the upper left corner of the key
+  int y;              // y coordinate of the upper left corner of the key
+  int width;          // width of the key
+  int height;         // height of the key
+  const struct VKey *left;  // next key at the left side
+  const struct VKey *right; // next key at the right side
+  const struct VKey *up;    // next key at the up side
+  const struct VKey *down;  // next key at the down side
+};
 
-/* Mapping libretro -> Thomson TO scancodes */
-extern const char libretroKeyCodeToThomsonToScanCode[RETROK_LAST];
-/* Mapping libretro -> Thomson MO5 scancodes */
-extern const char libretroKeyCodeToThomsonMo5ScanCode[RETROK_LAST];
-/* Mapping libretro -> Thomson MO6 scancodes */
-extern const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST];
+extern const struct VKey mo5_kb[];
 
-/* Mapping libretro -> Thomson scancodes for the current MO/TO version */
-extern const char *libretroKeyCodeToThomsonScanCode;
-
-#endif /* __KEYMAP_H */
+#endif /* __VKEYB_LAYOUT_H */

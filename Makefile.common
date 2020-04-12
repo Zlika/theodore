@@ -17,3 +17,7 @@ SOURCES_C += $(CORE_DIR)/src/keymap.c
 SOURCES_C += $(CORE_DIR)/src/sap.c
 SOURCES_C += $(CORE_DIR)/src/motoemulator.c
 SOURCES_C += $(CORE_DIR)/src/video.c
+SOURCES_C += $(CORE_DIR)/src/vkeyb/ui.c
+SOURCES_C += $(CORE_DIR)/src/vkeyb/vkeyb.c
+SOURCES_C += $(CORE_DIR)/src/vkeyb/vkeyb_config.c
+SOURCES_C += $(CORE_DIR)/src/vkeyb/vkeyb_layout.c
