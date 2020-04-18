@@ -8,7 +8,7 @@ def rgba888ToRgb565(rgba):
     return ((rgba[0] >> 3) << 11) | ((rgba[1] >> 2) << 5) | (rgba[2] >> 3)
 
 filename = sys.argv[1]
-img = Image.open(filename)
+img = Image.open(filename).convert('RGB')
 pixels = img.load()
 
 c_var_base_name = (os.path.splitext(os.path.basename(filename))[0]).upper()

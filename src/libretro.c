@@ -17,6 +17,7 @@
 */
 
 #include "libretro-common/include/libretro.h"
+#include "libretro-common/include/boolean.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,7 +85,7 @@ struct ButtonsState
 {
   bool up, down, right, left;
   bool select, start;
-  bool b;
+  bool a, b, x, y;
 };
 // Last state of the buttons
 struct ButtonsState last_btn_state = { 0 };
@@ -148,16 +149,16 @@ void retro_init(void)
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "Fire" },
-        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Virtual Keyboard: Press Letter" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,"Show/Hide Virtual Keyboard" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start Program" },
-        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "Virtual Keyboard: Change Letter (Up)" },
-        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Virtual Keyboard: Change Letter (Down)" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Move Virtual Keyboard" },
 
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Left" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Up" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "Fire" },
+        { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "Virtual Keyboard: Hold Key" },
 
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X, "Light Pen X" },
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y, "Light Pen Y" },
@@ -188,7 +189,7 @@ void retro_init(void)
 #endif
   SetLibRetroVideoBuffer(video_buffer);
 
-  configure_virtual_keyboard(video_buffer, XBITMAP, YBITMAP);
+  vkb_configure_virtual_keyboard(video_buffer, XBITMAP, YBITMAP);
 }
 
 void retro_deinit(void)
@@ -259,18 +260,21 @@ void retro_reset(void)
 static void update_input_virtual_keyboard()
 {
   bool select, start;
-  bool left, right, up, down, fire;
+  bool a, b, y;
+  bool left, right, up, down;
   
   // Virtual keyboard:
   // - Start: starts the program
   // - Select: show the virtual keyboard
   start = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START);
   select = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
+  y = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y);
   up = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP);
   down = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN);
   left = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT);
   right = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT);
-  fire = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
+  b = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
+  a = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
 
   // Try to start the currently loaded program
   if (start && !last_btn_state.start)
@@ -289,33 +293,52 @@ static void update_input_virtual_keyboard()
     // Release current key when virtual keyboard hidden
     if (!vkb_show)
     {
-      keyboard(get_current_key_scancode(), false);
+      keyboard(vkb_get_current_key_scancode(), false);
     }
   }
 
   if (vkb_show)
   {
+    if (y && !last_btn_state.y)
+    {
+      vkb_set_virtual_keyboard_position((vkb_get_virtual_keyboard_position() + 1) % 2);
+    }
     if (right && !last_btn_state.right)
     {
-      move_key(VKB_MOVE_RIGHT);
+      vkb_move_key(VKB_MOVE_RIGHT);
     }
     else if (left && !last_btn_state.left)
     {
-      move_key(VKB_MOVE_LEFT);
+      vkb_move_key(VKB_MOVE_LEFT);
     }
     else if (down && !last_btn_state.down)
     {
-      move_key(VKB_MOVE_DOWN);
+      vkb_move_key(VKB_MOVE_DOWN);
     }
     else if (up && !last_btn_state.up)
     {
-      move_key(VKB_MOVE_UP);
+      vkb_move_key(VKB_MOVE_UP);
     }
-    keyboard(get_current_key_scancode(), fire);
+    // Press key
+    if ((b && !last_btn_state.b) || (!b && last_btn_state.b))
+    {
+      keyboard(vkb_get_current_key_scancode(), b);
+    }
+    // Press and hold key
+    if (a && !last_btn_state.a)
+    {
+      if (vkb_hold_current_key())
+      {
+        keyboard(vkb_get_current_key_scancode(), true);
+      }
+    }
   }
 
   last_btn_state.select = select;
   last_btn_state.start = start;
+  last_btn_state.y = y;
+  last_btn_state.a = a;
+  last_btn_state.b = b;
   last_btn_state.left = left;
   last_btn_state.right = right;
   last_btn_state.up = up;
@@ -334,28 +357,31 @@ static void update_input(void)
 
   input_poll_cb();
 
-  // Joystick 1
-  Joysemul(JOY0_UP, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP));
-  Joysemul(JOY0_DOWN, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN));
-  Joysemul(JOY0_LEFT, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT));
-  Joysemul(JOY0_RIGHT, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT));
-  Joysemul(JOY0_FIRE, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B));
-  // Joystick 2
-  Joysemul(JOY1_UP, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP));
-  Joysemul(JOY1_DOWN, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN));
-  Joysemul(JOY1_LEFT, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT));
-  Joysemul(JOY1_RIGHT, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT));
-  Joysemul(JOY1_FIRE, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B));
+  if (!vkb_show)
+  {
+    // Joystick 1
+    Joysemul(JOY0_UP, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP));
+    Joysemul(JOY0_DOWN, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN));
+    Joysemul(JOY0_LEFT, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT));
+    Joysemul(JOY0_RIGHT, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT));
+    Joysemul(JOY0_FIRE, input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B));
+    // Joystick 2
+    Joysemul(JOY1_UP, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP));
+    Joysemul(JOY1_DOWN, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN));
+    Joysemul(JOY1_LEFT, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT));
+    Joysemul(JOY1_RIGHT, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT));
+    Joysemul(JOY1_FIRE, input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B));
 
-  // Light pen
-  xpointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
-  ypointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
-  pointerToScreenCoordinates(&xpointer, &ypointer);
-  xpen = xpointer - 16;
-  ypen = (ypointer - 16) / 2;
-  penbutton = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED);
+    // Light pen
+    xpointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
+    ypointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
+    pointerToScreenCoordinates(&xpointer, &ypointer);
+    xpen = xpointer - 16;
+    ypen = (ypointer - 16) / 2;
+    penbutton = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED);
+  }
 
-  // Virtual keyboard
+  // Virtual keyboard management
   update_input_virtual_keyboard();
 }
 
@@ -381,43 +407,53 @@ static void change_model(const char *model)
   if (strcmp(model, "TO8") == 0)
   {
     SetThomsonModel(TO8);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_TO8);
   }
   else if (strcmp(model, "TO8D") == 0)
   {
     SetThomsonModel(TO8D);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_TO8);
   }
   else if (strcmp(model, "TO9") == 0)
   {
     SetThomsonModel(TO9);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_TO8);
   }
   else if (strcmp(model, "TO9+") == 0)
   {
     SetThomsonModel(TO9P);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_TO8);
   }
   else if (strcmp(model, "MO5") == 0)
   {
     SetThomsonModel(MO5);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_MO5);
   }
   else if (strcmp(model, "MO6") == 0)
   {
     SetThomsonModel(MO6);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_MO6);
   }
   else if (strcmp(model, "PC128") == 0)
   {
     SetThomsonModel(PC128);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_PC128);
   }
   else if (strcmp(model, "TO7") == 0)
   {
     SetThomsonModel(TO7);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_TO7);
   }
   else if (strcmp(model, "TO7/70") == 0)
   {
     SetThomsonModel(TO7_70);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_TO7);
   }
   // Default: TO8
   else
   {
     SetThomsonModel(TO8);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_TO8);
   }
 }
 
@@ -498,7 +534,7 @@ void retro_run(void)
   update_input();
   if (vkb_show)
   {
-    show_virtual_keyboard();
+    vkb_show_virtual_keyboard();
   }
 
   if (autorun_counter > 0)

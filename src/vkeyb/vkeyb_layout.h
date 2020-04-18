@@ -36,5 +36,8 @@ struct VKey
 };
 
 extern const struct VKey mo5_kb[];
+extern const struct VKey mo6_kb[];
+extern const struct VKey to7_kb[];
+extern const struct VKey to8_kb[];
 
 #endif /* __VKEYB_LAYOUT_H */
