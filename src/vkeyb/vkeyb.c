@@ -30,10 +30,10 @@
 #include "bmp_keyboard_to770.inc"
 #include "bmp_keyboard_to8.inc"
 
-static const uint16_t *current_kb_image_data = KEYB_TO8_IMG_DATA;
-static int current_kb_width = KEYB_TO8_IMG_WIDTH;
-static int current_kb_height = KEYB_TO8_IMG_HEIGHT;
-static const struct VKey *current_key = &to8_kb[0];
+static const uint16_t *current_kb_image_data = 0;
+static int current_kb_width = 0;
+static int current_kb_height = 0;
+static const struct VKey *current_key = 0;
 static const struct VKey* hold_keys[VKB_MAX_HOLD_KEYS] = { 0 };
 static enum VkbPosition vkb_position = VKB_POS_DOWN;
 
@@ -45,6 +45,7 @@ void vkb_configure_virtual_keyboard(uint16_t *video_buffer, int width, int heigh
   vkb_video_buffer = video_buffer;
   vkb_screen_width = width;
   vkb_screen_height = height;
+  vkb_set_virtual_keyboard_model(VKB_MODEL_TO8);
 }
 
 void vkb_set_virtual_keyboard_model(enum VkbModel model)
