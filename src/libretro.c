@@ -88,8 +88,9 @@ struct ButtonsState
   bool a, b, x, y;
 };
 // Last state of the buttons
-struct ButtonsState last_btn_state = { 0 };
-// Last
+struct ButtonsState last_btn_state = { false, false, false, false,
+                                       false, false,
+                                       false, false, false, false };
 
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128|TO7|TO7/70" },
