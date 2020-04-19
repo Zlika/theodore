@@ -159,7 +159,7 @@ void retro_init(void)
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "Fire" },
-        { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "Virtual Keyboard: Hold Key" },
+        { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "Hold Virtual Keyboard Key" },
 
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X, "Light Pen X" },
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y, "Light Pen Y" },
@@ -300,25 +300,10 @@ static void update_input_virtual_keyboard()
 
   if (vkb_show)
   {
+    // Move keyboard
     if (y && !last_btn_state.y)
     {
       vkb_set_virtual_keyboard_position((vkb_get_virtual_keyboard_position() + 1) % 2);
-    }
-    if (right && !last_btn_state.right)
-    {
-      vkb_move_key(VKB_MOVE_RIGHT);
-    }
-    else if (left && !last_btn_state.left)
-    {
-      vkb_move_key(VKB_MOVE_LEFT);
-    }
-    else if (down && !last_btn_state.down)
-    {
-      vkb_move_key(VKB_MOVE_DOWN);
-    }
-    else if (up && !last_btn_state.up)
-    {
-      vkb_move_key(VKB_MOVE_UP);
     }
     // Press key
     if ((b && !last_btn_state.b) || (!b && last_btn_state.b))
@@ -326,11 +311,28 @@ static void update_input_virtual_keyboard()
       keyboard(vkb_get_current_key_scancode(), b);
     }
     // Press and hold key
-    if (a && !last_btn_state.a)
+    if ((a && !last_btn_state.a) && (vkb_hold_current_key()))
     {
-      if (vkb_hold_current_key())
+      keyboard(vkb_get_current_key_scancode(), true);
+    }
+    // Move current key
+    if (!b)
+    {
+      if (right && !last_btn_state.right)
       {
-        keyboard(vkb_get_current_key_scancode(), true);
+        vkb_move_key(VKB_MOVE_RIGHT);
+      }
+      else if (left && !last_btn_state.left)
+      {
+        vkb_move_key(VKB_MOVE_LEFT);
+      }
+      else if (down && !last_btn_state.down)
+      {
+        vkb_move_key(VKB_MOVE_DOWN);
+      }
+      else if (up && !last_btn_state.up)
+      {
+        vkb_move_key(VKB_MOVE_UP);
       }
     }
   }
@@ -448,7 +450,7 @@ static void change_model(const char *model)
   else if (strcmp(model, "TO7/70") == 0)
   {
     SetThomsonModel(TO7_70);
-    vkb_set_virtual_keyboard_model(VKB_MODEL_TO7);
+    vkb_set_virtual_keyboard_model(VKB_MODEL_TO770);
   }
   // Default: TO8
   else

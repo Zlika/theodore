@@ -181,9 +181,9 @@ const char libretroKeyCodeToThomsonToScanCode[RETROK_LAST] =
     -1,    /* RETROK_SCROLLOCK = 302 */
   0x52,    /* RETROK_RSHIFT = 303 */
   0x51,    /* RETROK_LSHIFT = 304 */
-  0x53,    /* RETROK_RCTRL = 305 */
-  0x53,    /* RETROK_LCTRL = 306 */
-  0x06,    /* RETROK_RALT = 307 */
+  0x53,    /* RETROK_RCTRL = 305 (CNT on Thomson keyboard) */
+  0x53,    /* RETROK_LCTRL = 306 (CNT on Thomson keyboard) */
+  0x06,    /* RETROK_RALT = 307 (RAZ on Thomson keyboard) */
   0x06,    /* RETROK_LALT = 308 (RAZ on Thomson keyboard) */
     -1,    /* RETROK_RMETA = 309 */
     -1,    /* RETROK_LMETA = 310 */
@@ -252,9 +252,9 @@ const char libretroKeyCodeToThomsonMo5ScanCode[RETROK_LAST] =
     -1,    /* RETROK_AT = 64 */
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 65 - 77 */
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, /* 78 - 90 */
-    -1,    /* RETROK_LEFTBRACKET = 91 */
+  0x24,    /* RETROK_LEFTBRACKET = 91 */
     -1,    /* RETROK_BACKSLASH = 92 */
-    -1,    /* RETROK_RIGHTBRACKET = 93 */
+  0x2c,    /* RETROK_RIGHTBRACKET = 93 */
     -1,    /* RETROK_CARET = 94 */
     -1,    /* RETROK_UNDERSCORE = 95 */
     -1,    /* RETROK_BACKQUOTE = 96 */
