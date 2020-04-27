@@ -50,43 +50,49 @@ void vkb_configure_virtual_keyboard(uint16_t *video_buffer, int width, int heigh
 
 void vkb_set_virtual_keyboard_model(enum VkbModel model)
 {
+  int i;
+  for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
+  {
+    hold_keys[i] = 0;
+  }
+
   switch (model)
   {
     case VKB_MODEL_MO5:
       current_kb_image_data = KEYB_MO5_IMG_DATA;
       current_kb_width = KEYB_MO5_IMG_WIDTH;
       current_kb_height = KEYB_MO5_IMG_HEIGHT;
-      current_key = &mo5_kb[0];
+      current_key = &mo5_kb[16];
       break;
     case VKB_MODEL_MO6:
       current_kb_image_data = KEYB_MO6_IMG_DATA;
       current_kb_width = KEYB_MO6_IMG_WIDTH;
       current_kb_height = KEYB_MO6_IMG_HEIGHT;
-      current_key = &mo6_kb[0];
+      current_key = &mo6_kb[22];
       break;
     case VKB_MODEL_PC128:
       current_kb_image_data = KEYB_PC128_IMG_DATA;
       current_kb_width = KEYB_PC128_IMG_WIDTH;
       current_kb_height = KEYB_PC128_IMG_HEIGHT;
-      current_key = &mo6_kb[0];
+      current_key = &mo6_kb[22];
       break;
     case VKB_MODEL_TO7:
       current_kb_image_data = KEYB_TO7_IMG_DATA;
       current_kb_width = KEYB_TO7_IMG_WIDTH;
       current_kb_height = KEYB_TO7_IMG_HEIGHT;
-      current_key = &to7_kb[0];
+      current_key = &to7_kb[17];
       break;
     case VKB_MODEL_TO770:
       current_kb_image_data = KEYB_TO770_IMG_DATA;
       current_kb_width = KEYB_TO770_IMG_WIDTH;
       current_kb_height = KEYB_TO770_IMG_HEIGHT;
-      current_key = &to7_kb[0];
+      current_key = &to7_kb[17];
       break;
     default:
       current_kb_image_data = KEYB_TO8_IMG_DATA;
       current_kb_width = KEYB_TO8_IMG_WIDTH;
       current_kb_height = KEYB_TO8_IMG_HEIGHT;
-      current_key = &to8_kb[0];
+      current_key = &to8_kb[25];
   }
 }
 
@@ -172,7 +178,7 @@ bool vkb_hold_current_key(void)
       return true;
     }
   }
-  // If key not alread held
+  // If key not already held
   for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
   {
     if (hold_keys[i] == 0)
@@ -198,4 +204,17 @@ void vkb_get_current_hold_keys_scancode(int *scancodes)
       scancodes[i] = -1;
     }
   }
+}
+
+bool vkb_is_key_held(int scancode)
+{
+  int i;
+  for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
+  {
+    if (hold_keys[i] && (hold_keys[i]->scancode == scancode))
+    {
+      return true;
+    }
+  }
+  return false;
 }

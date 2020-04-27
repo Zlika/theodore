@@ -57,6 +57,9 @@ void linearFree(void* mem);
 // Autorun: Number of frames to wait before simulating
 // the key stroke to start the program
 #define AUTORUN_DELAY     70
+// Virtual keyboard: Number of frames to wait when B button is pushed
+// to hold the key
+#define VKB_HOLD_KEY_DELAY 25
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -86,11 +89,12 @@ struct ButtonsState
   bool up, down, right, left;
   bool select, start;
   bool a, b, x, y;
+  int frames_since_b_pressed;
 };
 // Last state of the buttons
 struct ButtonsState last_btn_state = { false, false, false, false,
                                        false, false,
-                                       false, false, false, false };
+                                       false, false, false, false, 0 };
 
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128|TO7|TO7/70" },
@@ -159,7 +163,6 @@ void retro_init(void)
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
         { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "Fire" },
-        { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "Hold Virtual Keyboard Key" },
 
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X, "Light Pen X" },
         { 2, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y, "Light Pen Y" },
@@ -261,7 +264,7 @@ void retro_reset(void)
 static void update_input_virtual_keyboard()
 {
   bool select, start;
-  bool a, b, y;
+  bool b, y;
   bool left, right, up, down;
   
   // Virtual keyboard:
@@ -275,7 +278,6 @@ static void update_input_virtual_keyboard()
   left = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT);
   right = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT);
   b = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
-  a = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
 
   // Try to start the currently loaded program
   if (start && !last_btn_state.start)
@@ -308,12 +310,45 @@ static void update_input_virtual_keyboard()
     // Press key
     if ((b && !last_btn_state.b) || (!b && last_btn_state.b))
     {
-      keyboard(vkb_get_current_key_scancode(), b);
+      printf("b=%d, last_b=%d\n", b, last_btn_state.b);
+      last_btn_state.frames_since_b_pressed = 0;
+      // Do not release key if held
+      if (b || !vkb_is_key_held(vkb_get_current_key_scancode()))
+      {
+        keyboard(vkb_get_current_key_scancode(), b);
+      }
     }
     // Press and hold key
-    if ((a && !last_btn_state.a) && (vkb_hold_current_key()))
+    if (b && last_btn_state.b)
     {
-      keyboard(vkb_get_current_key_scancode(), true);
+      last_btn_state.frames_since_b_pressed += 1;
+      if (last_btn_state.frames_since_b_pressed == VKB_HOLD_KEY_DELAY)
+      {
+        int scancodes_prev[VKB_MAX_HOLD_KEYS];
+        vkb_get_current_hold_keys_scancode(scancodes_prev);
+        if (vkb_hold_current_key())
+        {
+          int scancodes[VKB_MAX_HOLD_KEYS];
+          int i;
+          vkb_get_current_hold_keys_scancode(scancodes);
+          for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
+          {
+            if (scancodes_prev[i] != scancodes[i])
+            {
+              // Key held
+              if (scancodes[i] != -1)
+              {
+                keyboard(scancodes[i], true);
+              }
+              // Key released
+              else
+              {
+                keyboard(scancodes_prev[i], false);
+              }
+            }
+          }
+        }
+      }
     }
     // Move current key
     if (!b)
@@ -340,7 +375,6 @@ static void update_input_virtual_keyboard()
   last_btn_state.select = select;
   last_btn_state.start = start;
   last_btn_state.y = y;
-  last_btn_state.a = a;
   last_btn_state.b = b;
   last_btn_state.left = left;
   last_btn_state.right = right;

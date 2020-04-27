@@ -54,11 +54,13 @@ extern void vkb_move_key(enum VkbMoveDirection direction);
 // Return the scancode of the currently selected key
 extern int vkb_get_current_key_scancode(void);
 // Hold (or unhold) the currently selected key.
-// Returns false if too much keys are already hold.
+// Returns false if too much keys are already held.
 extern bool vkb_hold_current_key(void);
 // Return the scancodes of the keys currently hold.
 // scancodes array must be of size VKB_MAX_HOLD_KEYS.
 // Array element is -1 if no key is held for this element.
 extern void vkb_get_current_hold_keys_scancode(int *scancodes);
+// Return true if the key with the given scancode is currently held.
+extern bool vkb_is_key_held(int scancode);
 
 #endif /* __VKEYB_H */
