@@ -50,7 +50,7 @@ void linearFree(void* mem);
 #define MAX_CONTROLLERS   2
 #define VIDEO_FPS         50
 #define AUDIO_SAMPLE_RATE 22050
-#define AUDIO_SAMPLE_PER_FRAME AUDIO_SAMPLE_RATE / VIDEO_FPS
+#define AUDIO_SAMPLE_PER_FRAME (AUDIO_SAMPLE_RATE / VIDEO_FPS)
 #define CPU_FREQUENCY     1000000
 // Pitch = length in bytes between two lines in video buffer
 #define PITCH             sizeof(pixel_fmt_t) * XBITMAP
@@ -99,6 +99,7 @@ struct ButtonsState last_btn_state = { false, false, false, false,
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128|TO7|TO7/70" },
     { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
+    { PACKAGE_NAME"_vkb_transparency", "Virtual keyboard transparency; 0%|10%|20%|30%|40%|50%|60%|70%|80%|90%" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
     { PACKAGE_NAME"_printer_emulation", "Dump printer data to file; disabled|enabled" },
@@ -517,6 +518,12 @@ static void check_variables(void)
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
   {
     change_model(var.value);
+  }
+  var.key = PACKAGE_NAME"_vkb_transparency";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    int alpha = 255 - (255 * atoi(var.value) / 100);
+    vkb_set_virtual_keyboard_transparency(alpha);
   }
 #ifdef THEODORE_DASM
   var.key = PACKAGE_NAME"_disassembler";

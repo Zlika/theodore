@@ -43,7 +43,10 @@
 #include "rom/basic-1_memo7.inc"
 #include "rom/basic-128_memo7.inc"
 
-#define VBL_NUMBER_MAX  2
+// Screen is refreshed every VBL_NUMBER_MAX vertical blanking intervals.
+// Must be 1 to produce a new frame each time retro_run() is called.
+// If > 1, the virtual keyboard will blink if transparency (alpha) != 255.
+#define VBL_NUMBER_MAX  1
 // Number of keys of the keyboard
 #define KEYBOARDKEY_MAX 84
 #define PALETTE_SIZE    32
