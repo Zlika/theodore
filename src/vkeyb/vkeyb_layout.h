@@ -35,6 +35,12 @@ struct VKey
   const struct VKey *down;  // next key at the down side
 };
 
+// Number of keys for each keyboard type
+#define MO5_KB_KEYS 58
+#define MO6_KB_KEYS 70
+#define TO7_KB_KEYS 58
+#define TO8_KB_KEYS 82
+
 extern const struct VKey mo5_kb[];
 extern const struct VKey mo6_kb[];
 extern const struct VKey to7_kb[];

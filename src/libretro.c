@@ -262,11 +262,18 @@ void retro_reset(void)
   Hardreset();
 }
 
+static void pointerToScreenCoordinates(int *x, int *y)
+{
+  *x = (*x + 0x7FFF) * XBITMAP / 0xFFFF;
+  *y = (*y + 0x7FFF) * YBITMAP / 0xFFFF;
+}
+
 static void update_input_virtual_keyboard()
 {
   bool select, start;
   bool b, y;
   bool left, right, up, down;
+  bool click;
   
   // Virtual keyboard:
   // - Start: starts the program
@@ -279,9 +286,10 @@ static void update_input_virtual_keyboard()
   left = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT);
   right = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT);
   b = input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
+  click = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_PRESSED);
 
   // Try to start the currently loaded program
-  if (start && !last_btn_state.start)
+  if (!vkb_show && start && !last_btn_state.start)
   {
     autostart_pending = true;
   }
@@ -311,7 +319,6 @@ static void update_input_virtual_keyboard()
     // Press key
     if ((b && !last_btn_state.b) || (!b && last_btn_state.b))
     {
-      printf("b=%d, last_b=%d\n", b, last_btn_state.b);
       last_btn_state.frames_since_b_pressed = 0;
       // Do not release key if held
       if (b || !vkb_is_key_held(vkb_get_current_key_scancode()))
@@ -371,6 +378,15 @@ static void update_input_virtual_keyboard()
         vkb_move_key(VKB_MOVE_UP);
       }
     }
+    // Direct click on the keyboard (touch screen)
+    if (click)
+    {
+      int xpointer, ypointer;
+      xpointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
+      ypointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
+      pointerToScreenCoordinates(&xpointer, &ypointer);
+      vkb_move_at(xpointer, ypointer);
+    }
   }
 
   last_btn_state.select = select;
@@ -381,12 +397,6 @@ static void update_input_virtual_keyboard()
   last_btn_state.right = right;
   last_btn_state.up = up;
   last_btn_state.down = down;
-}
-
-static void pointerToScreenCoordinates(int *x, int *y)
-{
-  *x = (*x + 0x7FFF) * XBITMAP / 0xFFFF;
-  *y = (*y + 0x7FFF) * YBITMAP / 0xFFFF;
 }
 
 static void update_input(void)

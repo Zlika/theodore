@@ -53,6 +53,9 @@ extern void vkb_show_virtual_keyboard(void);
 extern void vkb_move_key(enum VkbMoveDirection direction);
 // Return the scancode of the currently selected key
 extern int vkb_get_current_key_scancode(void);
+// Move to the key at the x/y screen coordinates.
+// Returns false if no key was found at these coordinates.
+extern bool vkb_move_at(int x, int y);
 // Hold (or unhold) the currently selected key.
 // Returns false if too much keys are already held.
 extern bool vkb_hold_current_key(void);

@@ -36,6 +36,8 @@ static int current_kb_height = 0;
 static const struct VKey *current_key = 0;
 static const struct VKey* hold_keys[VKB_MAX_HOLD_KEYS] = { 0 };
 static enum VkbPosition vkb_position = VKB_POS_DOWN;
+static const struct VKey *current_keyboard_layout = 0;
+static int current_keyboard_keys = 0;
 
 static uint16_t color_select = 0xFFC0;
 static uint16_t color_hold = 0x06DF;
@@ -63,36 +65,48 @@ void vkb_set_virtual_keyboard_model(enum VkbModel model)
       current_kb_width = KEYB_MO5_IMG_WIDTH;
       current_kb_height = KEYB_MO5_IMG_HEIGHT;
       current_key = &mo5_kb[16];
+      current_keyboard_layout = mo5_kb;
+      current_keyboard_keys = MO5_KB_KEYS;
       break;
     case VKB_MODEL_MO6:
       current_kb_image_data = KEYB_MO6_IMG_DATA;
       current_kb_width = KEYB_MO6_IMG_WIDTH;
       current_kb_height = KEYB_MO6_IMG_HEIGHT;
       current_key = &mo6_kb[22];
+      current_keyboard_layout = mo6_kb;
+      current_keyboard_keys = MO6_KB_KEYS;
       break;
     case VKB_MODEL_PC128:
       current_kb_image_data = KEYB_PC128_IMG_DATA;
       current_kb_width = KEYB_PC128_IMG_WIDTH;
       current_kb_height = KEYB_PC128_IMG_HEIGHT;
       current_key = &mo6_kb[22];
+      current_keyboard_layout = mo6_kb;
+      current_keyboard_keys = MO6_KB_KEYS;
       break;
     case VKB_MODEL_TO7:
       current_kb_image_data = KEYB_TO7_IMG_DATA;
       current_kb_width = KEYB_TO7_IMG_WIDTH;
       current_kb_height = KEYB_TO7_IMG_HEIGHT;
       current_key = &to7_kb[17];
+      current_keyboard_layout = to7_kb;
+      current_keyboard_keys = TO7_KB_KEYS;
       break;
     case VKB_MODEL_TO770:
       current_kb_image_data = KEYB_TO770_IMG_DATA;
       current_kb_width = KEYB_TO770_IMG_WIDTH;
       current_kb_height = KEYB_TO770_IMG_HEIGHT;
       current_key = &to7_kb[17];
+      current_keyboard_layout = to7_kb;
+      current_keyboard_keys = TO7_KB_KEYS;
       break;
     default:
       current_kb_image_data = KEYB_TO8_IMG_DATA;
       current_kb_width = KEYB_TO8_IMG_WIDTH;
       current_kb_height = KEYB_TO8_IMG_HEIGHT;
       current_key = &to8_kb[25];
+      current_keyboard_layout = to8_kb;
+      current_keyboard_keys = TO8_KB_KEYS;
   }
 }
 
@@ -164,6 +178,23 @@ void vkb_move_key(enum VkbMoveDirection direction)
 int vkb_get_current_key_scancode(void)
 {
   return current_key->scancode;
+}
+
+bool vkb_move_at(int x, int y)
+{
+  int i;
+  int y_offset = y - ((vkb_position == VKB_POS_DOWN) ? vkb_screen_height - current_kb_height : 0);
+  for (i = 0; i < current_keyboard_keys; i++)
+  {
+    const struct VKey *key = &current_keyboard_layout[i];
+    if ((key->x <= x) && (x <= key->x + key->width)
+        && (key->y <= y_offset) && (y_offset <= key->y + key->height))
+    {
+      current_key = key;
+      return true;
+    }
+  }
+  return false;
 }
 
 bool vkb_hold_current_key(void)
