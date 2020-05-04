@@ -15,9 +15,9 @@ Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordin
 
 Cet émulateur est disponible sur les plateformes suivantes :
 * RetroArch : [Installer RetroArch](http://www.retroarch.com/?page=platforms), puis démarrer RetroArch et télécharger le core "theodore" via le "Core Updater".
-* [Recalbox](https://www.recalbox.com/) : Theodore est inclus dans votre console de retrogaming préférée depuis la version 2018.06.27.
-* [Lakka](http://www.lakka.tv/): Theodore est inclus dans cette distribution Linux légère à partir de la version 2.2.2.
-* [Kodi](https://kodi.tv/): Depuis la version 18 de Kodi, celui-ci permet de télécharger et d'exécuter des émulateurs basés sur libretro, dont Theodore.
+* [Recalbox](https://www.recalbox.com/)
+* [Lakka](http://www.lakka.tv/)
+* [Kodi](https://kodi.tv/)
 
 Il devrait être compatible avec toutes les plateformes supportées par RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
 
@@ -60,8 +60,13 @@ Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilis�
 
 TO7 et TO7/70 : Quand une cartouche n'est pas chargée, la cartouche BASIC est automatiquement chargée (BASIC 1 pour le TO7, BASIC 128 pour le TO7/70).
 
-**Fonctionnalité de clavier virtuel :** les boutons Y/X de la manette permettent de faire défiler des chiffres/lettres (Y=défilement vers le bas, X=défilement vers le haut). Le bouton "Select" simule un appui sur la touche choisie.
-L'ordre des touches du clavier virtuel est : chiffres (0 à 9), puis lettres (A à Z) puis "Espace" puis "Entrée".
+**Fonctionnalité de clavier virtuel :** Le bouton Select permet d'afficher ou faire disparaitre le clavier virtuel. Le niveau de transparence du clavier peut être réglé dans les options du core.
+Quand le clavier virtuel est affiché, l'utilisation des boutons de la manette change :
+* Droite/Gauche/Haut/Bas : Déplacement au sein du clavier virtuel.
+* B : Appuie sur la touche ayant le focus.
+* B (appuie long) : Maintien permanent de la touche (ou relâchement si elle était déjà maintenue). Jusqu'à 3 touches peuvent être maintenues. La disparition du clavier virtuel relâche toutes les touches maintenues.
+* Start : Raccourci pour appuyer sur la touche "Entrée".
+* Y : Déplace le clavier virtuel en haut ou en bas de l'écran.
 
 ### Correspondance des touches spéciales du clavier
 

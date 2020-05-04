@@ -34,7 +34,7 @@ static const uint16_t *current_kb_image_data = 0;
 static int current_kb_width = 0;
 static int current_kb_height = 0;
 static const struct VKey *current_key = 0;
-static const struct VKey* hold_keys[VKB_MAX_HOLD_KEYS] = { 0 };
+static const struct VKey* sticky_keys[VKB_MAX_STICKY_KEYS] = { 0 };
 static enum VkbPosition vkb_position = VKB_POS_DOWN;
 static const struct VKey *current_keyboard_layout = 0;
 static int current_keyboard_keys = 0;
@@ -52,11 +52,7 @@ void vkb_configure_virtual_keyboard(uint16_t *video_buffer, int width, int heigh
 
 void vkb_set_virtual_keyboard_model(enum VkbModel model)
 {
-  int i;
-  for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
-  {
-    hold_keys[i] = 0;
-  }
+  vkb_release_all_sticky_keys();
 
   switch (model)
   {
@@ -142,12 +138,12 @@ void vkb_show_virtual_keyboard(void)
   draw_bmp(keyb_x, keyb_y, current_kb_image_data, current_kb_width, current_kb_height);
 
   // Draw held keys
-  for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
+  for (i = 0; i < VKB_MAX_STICKY_KEYS; i++)
   {
-    if (hold_keys[i] != 0)
+    if (sticky_keys[i] != 0)
     {
-      draw_box(keyb_x+hold_keys[i]->x+1, keyb_y+hold_keys[i]->y+1,
-               hold_keys[i]->width-2, hold_keys[i]->height-2, color_hold);
+      draw_box(keyb_x+sticky_keys[i]->x+1, keyb_y+sticky_keys[i]->y+1,
+               sticky_keys[i]->width-2, sticky_keys[i]->height-2, color_hold);
     }
   }
 
@@ -197,38 +193,38 @@ bool vkb_move_at(int x, int y)
   return false;
 }
 
-bool vkb_hold_current_key(void)
+bool vkb_make_current_key_sticky(void)
 {
   int i;
   // If key already held
-  for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
+  for (i = 0; i < VKB_MAX_STICKY_KEYS; i++)
   {
-    if ((hold_keys[i] != 0) && (hold_keys[i]->scancode == current_key->scancode))
+    if ((sticky_keys[i] != 0) && (sticky_keys[i]->scancode == current_key->scancode))
     {
-      hold_keys[i] = 0;
+      sticky_keys[i] = 0;
       return true;
     }
   }
   // If key not already held
-  for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
+  for (i = 0; i < VKB_MAX_STICKY_KEYS; i++)
   {
-    if (hold_keys[i] == 0)
+    if (sticky_keys[i] == 0)
     {
-      hold_keys[i] = current_key;
+      sticky_keys[i] = current_key;
       return true;
     }
   }
   return false;
 }
 
-void vkb_get_current_hold_keys_scancode(int *scancodes)
+void vkb_get_current_sticky_keys_scancode(int *scancodes)
 {
   int i;
-  for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
+  for (i = 0; i < VKB_MAX_STICKY_KEYS; i++)
   {
-    if (hold_keys[i] != 0)
+    if (sticky_keys[i] != 0)
     {
-      scancodes[i] = hold_keys[i]->scancode;
+      scancodes[i] = sticky_keys[i]->scancode;
     }
     else
     {
@@ -237,15 +233,24 @@ void vkb_get_current_hold_keys_scancode(int *scancodes)
   }
 }
 
-bool vkb_is_key_held(int scancode)
+bool vkb_is_key_sticky(int scancode)
 {
   int i;
-  for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
+  for (i = 0; i < VKB_MAX_STICKY_KEYS; i++)
   {
-    if (hold_keys[i] && (hold_keys[i]->scancode == scancode))
+    if (sticky_keys[i] && (sticky_keys[i]->scancode == scancode))
     {
       return true;
     }
   }
   return false;
+}
+
+void vkb_release_all_sticky_keys(void)
+{
+  int i;
+  for (i = 0; i < VKB_MAX_STICKY_KEYS; i++)
+  {
+    sticky_keys[i] = 0;
+  }
 }

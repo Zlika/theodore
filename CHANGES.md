@@ -1,3 +1,8 @@
+Next Release
+===========
+* New graphical virtual keyboards (press Select to show/hide).
+* [#21](https://github.com/Zlika/theodore/pull/21): Add psl1ght (ps3 lightweight SDK) compilation - [@phcoder](https://github.com/phcoder)
+
 Release 3.0 (2020/03/21)
 ===========
 * Add TO7 emulation.

@@ -15,9 +15,9 @@ This is a [libretro](https://github.com/libretro) core for emulation of [Thomson
 
 This emulator is available on the following platforms:
 * RetroArch: [Install RetroArch](http://www.retroarch.com/?page=platforms), then start RetroArch and download the "theodore" core using the "Core Updater" feature.
-* [Recalbox](https://www.recalbox.com/): Starting from version 2018.06.27, Theodore is built into your favorite retrogaming operating system.
-* [Lakka](http://www.lakka.tv/): Starting from version 2.2.2, Theodore is built into this lightweight Linux distribution.
-* [Kodi](https://kodi.tv/): Starting from version 18, Kodi allows to download and run libretro-based emulators, including Theodore.
+* [Recalbox](https://www.recalbox.com/)
+* [Lakka](http://www.lakka.tv/)
+* [Kodi](https://kodi.tv/)
 
 It should be compatible with all the platforms supported by RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
 
@@ -60,8 +60,13 @@ If the game does not start, then maybe another BASIC must be used.
 
 TO7 and TO7/70: When a cartridge is not loaded, the BASIC cartridge is automatically loaded (BASIC 1 for TO7, BASIC 128 for TO7/70).
 
-**Virtual keyboard feature:** the Y/X buttons of the controller can be used to select a digit/letter/enter key (Y=go down, X=go up) and the Select button simulates a keystroke on the selected key.
-The order of the keys in the virtual keyboard is: digits (0->9) then letters (A->Z) then "Space" then "Enter".
+**Virtual keyboard feature:** Use Select button to show/hide the virtual keyboard. The transparency level of the virtual keyboard can be set in the core's options.
+When the virtual keyboard is displayed, the following buttons on the gamepad can be used:
+* Right/Left/Up/Down: Change focused key on the keyboard.
+* B: Press the focused key.
+* B (long press): Make the key "sticky" (or release it if it was already sticky). Up to 3 keys can be made sticky. All sticky keys are released when the virtual keyboard is hidden.
+* Start: Shortcut to press the "Enter" key.
+* Y: Move the keyboard in the upper or lower part of the screen.
 
 ### Keyboard: mapping of special keys
 

@@ -24,8 +24,8 @@
 #include <stdint.h>
 #include "libretro-common/include/boolean.h"
 
-// Maximum number of keys to be hold
-#define VKB_MAX_HOLD_KEYS 3
+// Maximum number of sticky keys
+#define VKB_MAX_STICKY_KEYS 3
 
 // Directions to move the currently selected key
 enum VkbMoveDirection { VKB_MOVE_LEFT, VKB_MOVE_RIGHT, VKB_MOVE_UP, VKB_MOVE_DOWN };
@@ -57,13 +57,15 @@ extern int vkb_get_current_key_scancode(void);
 // Returns false if no key was found at these coordinates.
 extern bool vkb_move_at(int x, int y);
 // Hold (or unhold) the currently selected key.
-// Returns false if too much keys are already held.
-extern bool vkb_hold_current_key(void);
+// Returns false if too much keys are already sticky.
+extern bool vkb_make_current_key_sticky(void);
 // Return the scancodes of the keys currently hold.
-// scancodes array must be of size VKB_MAX_HOLD_KEYS.
-// Array element is -1 if no key is held for this element.
-extern void vkb_get_current_hold_keys_scancode(int *scancodes);
-// Return true if the key with the given scancode is currently held.
-extern bool vkb_is_key_held(int scancode);
+// scancodes array must be of size VKB_MAX_STICKY_KEYS.
+// Array element is -1 if there is no sticky key for this element.
+extern void vkb_get_current_sticky_keys_scancode(int *scancodes);
+// Return true if the key with the given scancode is a sticky key.
+extern bool vkb_is_key_sticky(int scancode);
+// Release all the sticky keys
+extern void vkb_release_all_sticky_keys(void);
 
 #endif /* __VKEYB_H */

@@ -58,8 +58,8 @@ void linearFree(void* mem);
 // the key stroke to start the program
 #define AUTORUN_DELAY     70
 // Virtual keyboard: Number of frames to wait when B button is pushed
-// to hold the key
-#define VKB_HOLD_KEY_DELAY 25
+// to make the key sticky
+#define VKB_STICKY_KEY_DELAY 25
 
 static retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
@@ -302,10 +302,26 @@ static void update_input_virtual_keyboard()
   if (select && !last_btn_state.select)
   {
     vkb_show = !vkb_show;
-    // Release current key when virtual keyboard hidden
+    // Release current key and sticky keys when virtual keyboard hidden
     if (!vkb_show)
     {
+      int sticky_scancodes[VKB_MAX_STICKY_KEYS];
+      int i;
+      vkb_get_current_sticky_keys_scancode(sticky_scancodes);
+      for (i = 0; i < VKB_MAX_STICKY_KEYS; i++)
+      {
+        if (sticky_scancodes[i] != -1)
+        {
+          keyboard(sticky_scancodes[i], false);
+        }
+      }
+      vkb_release_all_sticky_keys();
       keyboard(vkb_get_current_key_scancode(), false);
+      // If start is pressed than release also the Enter key
+      if (start)
+      {
+        keyboard(libretroKeyCodeToThomsonScanCode[RETROK_RETURN], false);
+      }
     }
   }
 
@@ -316,12 +332,25 @@ static void update_input_virtual_keyboard()
     {
       vkb_set_virtual_keyboard_position((vkb_get_virtual_keyboard_position() + 1) % 2);
     }
+    // Direct click on the keyboard (touch screen)
+    if (click)
+    {
+      int xpointer, ypointer;
+      xpointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
+      ypointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
+      pointerToScreenCoordinates(&xpointer, &ypointer);
+      if (vkb_move_at(xpointer, ypointer))
+      {
+        // A key was touched: act as if the B button was pushed
+        b = true;
+      }
+    }
     // Press key
     if ((b && !last_btn_state.b) || (!b && last_btn_state.b))
     {
       last_btn_state.frames_since_b_pressed = 0;
       // Do not release key if held
-      if (b || !vkb_is_key_held(vkb_get_current_key_scancode()))
+      if (b || !vkb_is_key_sticky(vkb_get_current_key_scancode()))
       {
         keyboard(vkb_get_current_key_scancode(), b);
       }
@@ -330,16 +359,16 @@ static void update_input_virtual_keyboard()
     if (b && last_btn_state.b)
     {
       last_btn_state.frames_since_b_pressed += 1;
-      if (last_btn_state.frames_since_b_pressed == VKB_HOLD_KEY_DELAY)
+      if (last_btn_state.frames_since_b_pressed == VKB_STICKY_KEY_DELAY)
       {
-        int scancodes_prev[VKB_MAX_HOLD_KEYS];
-        vkb_get_current_hold_keys_scancode(scancodes_prev);
-        if (vkb_hold_current_key())
+        int scancodes_prev[VKB_MAX_STICKY_KEYS];
+        vkb_get_current_sticky_keys_scancode(scancodes_prev);
+        if (vkb_make_current_key_sticky())
         {
-          int scancodes[VKB_MAX_HOLD_KEYS];
+          int scancodes[VKB_MAX_STICKY_KEYS];
           int i;
-          vkb_get_current_hold_keys_scancode(scancodes);
-          for (i = 0; i < VKB_MAX_HOLD_KEYS; i++)
+          vkb_get_current_sticky_keys_scancode(scancodes);
+          for (i = 0; i < VKB_MAX_STICKY_KEYS; i++)
           {
             if (scancodes_prev[i] != scancodes[i])
             {
@@ -358,9 +387,9 @@ static void update_input_virtual_keyboard()
         }
       }
     }
-    // Move current key
     if (!b)
     {
+      // Move current key
       if (right && !last_btn_state.right)
       {
         vkb_move_key(VKB_MOVE_RIGHT);
@@ -377,15 +406,11 @@ static void update_input_virtual_keyboard()
       {
         vkb_move_key(VKB_MOVE_UP);
       }
-    }
-    // Direct click on the keyboard (touch screen)
-    if (click)
-    {
-      int xpointer, ypointer;
-      xpointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_X);
-      ypointer = input_state_cb(MAX_CONTROLLERS, RETRO_DEVICE_POINTER, 0, RETRO_DEVICE_ID_POINTER_Y);
-      pointerToScreenCoordinates(&xpointer, &ypointer);
-      vkb_move_at(xpointer, ypointer);
+      // If start is pressed than press the Enter key
+      if ((start && !last_btn_state.start) || (!start && last_btn_state.start))
+      {
+        keyboard(libretroKeyCodeToThomsonScanCode[RETROK_RETURN], start);
+      }
     }
   }
 
