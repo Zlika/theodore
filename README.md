@@ -18,6 +18,7 @@ This emulator is available on the following platforms:
 * [Recalbox](https://www.recalbox.com/)
 * [Lakka](http://www.lakka.tv/)
 * [Kodi](https://kodi.tv/)
+* [Batocera](https://batocera.org/)
 
 It should be compatible with all the platforms supported by RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
 
