@@ -20,6 +20,8 @@
 
 #include "vkeyb_layout.h"
 
+const struct VKey *MO5_DEFAULT_KEY = &mo5_kb[21];
+
 const struct VKey mo5_kb[] =
 {
   // 1st row (keys 0 to 14)
@@ -86,6 +88,8 @@ const struct VKey mo5_kb[] =
   // Last row (Space key)
   { 0x20, 164, 161,128, 32, &mo5_kb[57], &mo5_kb[57], &mo5_kb[49], &mo5_kb[6]  },  /* 57: Space */
 };
+
+const struct VKey *MO6_DEFAULT_KEY = &mo6_kb[27];
 
 const struct VKey mo6_kb[] =
 {
@@ -167,6 +171,8 @@ const struct VKey mo6_kb[] =
   { 0x04, 138, 192,298, 35, &mo6_kb[55], &mo6_kb[64], &mo6_kb[59], &mo6_kb[12] }, /* 69: SPACE */
 };
 
+const struct VKey *TO7_DEFAULT_KEY = &to7_kb[22];
+
 const struct VKey to7_kb[] =
 {
   // 1st row (function keys: keys 0 to 15)
@@ -233,6 +239,8 @@ const struct VKey to7_kb[] =
   // Last row (Space key)
   { 0x20, 111, 139,260, 29, &to7_kb[45], &to7_kb[53], &to7_kb[49],  &to7_kb[6] }, /* 57: SPACE */
 };
+
+const struct VKey *TO8_DEFAULT_KEY = &to8_kb[30];
 
 const struct VKey to8_kb[] =
 {

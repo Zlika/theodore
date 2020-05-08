@@ -41,6 +41,7 @@ static int current_keyboard_keys = 0;
 
 static uint16_t color_select = 0xFFC0;
 static uint16_t color_hold = 0x06DF;
+static int box_thickness = 2;
 
 void vkb_configure_virtual_keyboard(uint16_t *video_buffer, int width, int height)
 {
@@ -60,7 +61,7 @@ void vkb_set_virtual_keyboard_model(enum VkbModel model)
       current_kb_image_data = KEYB_MO5_IMG_DATA;
       current_kb_width = KEYB_MO5_IMG_WIDTH;
       current_kb_height = KEYB_MO5_IMG_HEIGHT;
-      current_key = &mo5_kb[16];
+      current_key = MO5_DEFAULT_KEY;
       current_keyboard_layout = mo5_kb;
       current_keyboard_keys = MO5_KB_KEYS;
       break;
@@ -68,7 +69,7 @@ void vkb_set_virtual_keyboard_model(enum VkbModel model)
       current_kb_image_data = KEYB_MO6_IMG_DATA;
       current_kb_width = KEYB_MO6_IMG_WIDTH;
       current_kb_height = KEYB_MO6_IMG_HEIGHT;
-      current_key = &mo6_kb[22];
+      current_key = MO6_DEFAULT_KEY;
       current_keyboard_layout = mo6_kb;
       current_keyboard_keys = MO6_KB_KEYS;
       break;
@@ -76,7 +77,7 @@ void vkb_set_virtual_keyboard_model(enum VkbModel model)
       current_kb_image_data = KEYB_PC128_IMG_DATA;
       current_kb_width = KEYB_PC128_IMG_WIDTH;
       current_kb_height = KEYB_PC128_IMG_HEIGHT;
-      current_key = &mo6_kb[22];
+      current_key = MO6_DEFAULT_KEY;
       current_keyboard_layout = mo6_kb;
       current_keyboard_keys = MO6_KB_KEYS;
       break;
@@ -84,7 +85,7 @@ void vkb_set_virtual_keyboard_model(enum VkbModel model)
       current_kb_image_data = KEYB_TO7_IMG_DATA;
       current_kb_width = KEYB_TO7_IMG_WIDTH;
       current_kb_height = KEYB_TO7_IMG_HEIGHT;
-      current_key = &to7_kb[17];
+      current_key = TO7_DEFAULT_KEY;
       current_keyboard_layout = to7_kb;
       current_keyboard_keys = TO7_KB_KEYS;
       break;
@@ -92,7 +93,7 @@ void vkb_set_virtual_keyboard_model(enum VkbModel model)
       current_kb_image_data = KEYB_TO770_IMG_DATA;
       current_kb_width = KEYB_TO770_IMG_WIDTH;
       current_kb_height = KEYB_TO770_IMG_HEIGHT;
-      current_key = &to7_kb[17];
+      current_key = TO7_DEFAULT_KEY;
       current_keyboard_layout = to7_kb;
       current_keyboard_keys = TO7_KB_KEYS;
       break;
@@ -100,7 +101,7 @@ void vkb_set_virtual_keyboard_model(enum VkbModel model)
       current_kb_image_data = KEYB_TO8_IMG_DATA;
       current_kb_width = KEYB_TO8_IMG_WIDTH;
       current_kb_height = KEYB_TO8_IMG_HEIGHT;
-      current_key = &to8_kb[25];
+      current_key = TO8_DEFAULT_KEY;
       current_keyboard_layout = to8_kb;
       current_keyboard_keys = TO8_KB_KEYS;
   }
@@ -142,14 +143,15 @@ void vkb_show_virtual_keyboard(void)
   {
     if (sticky_keys[i] != 0)
     {
-      draw_box(keyb_x+sticky_keys[i]->x+1, keyb_y+sticky_keys[i]->y+1,
-               sticky_keys[i]->width-2, sticky_keys[i]->height-2, color_hold);
+      draw_box(keyb_x+sticky_keys[i]->x+box_thickness, keyb_y+sticky_keys[i]->y+box_thickness,
+               sticky_keys[i]->width-2*box_thickness, sticky_keys[i]->height-2*box_thickness,
+               box_thickness, color_hold);
     }
   }
 
   // Drawn current position
   draw_box(keyb_x+current_key->x, keyb_y+current_key->y,
-           current_key->width, current_key->height, color_select);
+           current_key->width, current_key->height, box_thickness, color_select);
 }
 
 void vkb_move_key(enum VkbMoveDirection direction)

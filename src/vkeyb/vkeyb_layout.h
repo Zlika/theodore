@@ -41,9 +41,16 @@ struct VKey
 #define TO7_KB_KEYS 58
 #define TO8_KB_KEYS 82
 
+// Keyboard layouts
 extern const struct VKey mo5_kb[];
 extern const struct VKey mo6_kb[];
 extern const struct VKey to7_kb[];
 extern const struct VKey to8_kb[];
+
+// Default keys for each keyboard
+extern const struct VKey *MO5_DEFAULT_KEY;
+extern const struct VKey *MO6_DEFAULT_KEY;
+extern const struct VKey *TO7_DEFAULT_KEY;
+extern const struct VKey *TO8_DEFAULT_KEY;
 
 #endif /* __VKEYB_LAYOUT_H */

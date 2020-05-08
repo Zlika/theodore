@@ -48,31 +48,35 @@ static uint16_t blend(uint16_t fg, uint16_t bg, unsigned int alpha)
 
 void draw_bmp(int x, int y, const uint16_t *img, int img_width, int img_height)
 {
-  for (int j = 0; j < img_height; j++)
+  int i, j;
+  for (j = 0; j < img_height; j++)
   {
     uint16_t *screen_line = vkb_video_buffer + ((y + j) * vkb_screen_width) + x;
     const uint16_t *img_line = img + j * img_width;
-    for (int i = 0; i < img_width; i++)
+    for (i = 0; i < img_width; i++)
     {
       screen_line[i] = blend(img_line[i], screen_line[i], vkb_alpha);
     }
   }
 }
 
-void draw_box(int x, int y, int width, int height, uint16_t color)
+void draw_box(int x, int y, int width, int height, int thickness, uint16_t color)
 {
-  uint16_t *screen_line_up = vkb_video_buffer + (y * vkb_screen_width);
-  uint16_t *screen_line_down = vkb_video_buffer + ((y + height - 1) * vkb_screen_width);
-  for (int i = x; i < x + width; i++)
+  int i, j, k;
+  for (k = 0; k < thickness; k++)
   {
-    screen_line_up[i] = blend(color, screen_line_up[i], vkb_alpha);
-    screen_line_down[i] = blend(color, screen_line_down[i], vkb_alpha);
-  }
-
-  for (int j = y; j < y + height; j++)
-  {
-    int offset = (j * vkb_screen_width) + x;
-    vkb_video_buffer[offset] = blend(color, vkb_video_buffer[offset], vkb_alpha);
-    vkb_video_buffer[offset + width] = blend(color, vkb_video_buffer[offset + width], vkb_alpha);
+    uint16_t *screen_line_up = vkb_video_buffer + ((y + k) * vkb_screen_width);
+    uint16_t *screen_line_down = vkb_video_buffer + ((y + k + height - 1) * vkb_screen_width);
+    for (i = x; i < x + width + thickness; i++)
+    {
+      screen_line_up[i] = blend(color, screen_line_up[i], vkb_alpha);
+      screen_line_down[i] = blend(color, screen_line_down[i], vkb_alpha);
+    }
+    for (j = y; j < y + height; j++)
+    {
+      int offset = (j * vkb_screen_width) + x + k;
+      vkb_video_buffer[offset] = blend(color, vkb_video_buffer[offset], vkb_alpha);
+      vkb_video_buffer[offset + width] = blend(color, vkb_video_buffer[offset + width], vkb_alpha);
+    }
   }
 }
