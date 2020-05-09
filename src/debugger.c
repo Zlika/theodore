@@ -81,11 +81,11 @@ static void list_breakpoints()
 
 static void clear_breakpoints()
 {
-  memset(bp_pc, 0, BP_LENGTH);
+  memset(bp_pc, 0, BP_LENGTH * sizeof(bp_pc[0]));
   bp_pc_numitems = 0;
-  memset(bp_read_mem, 0, BP_LENGTH);
+  memset(bp_read_mem, 0, BP_LENGTH * sizeof(bp_read_mem[0]));
   bp_read_mem_numitems = 0;
-  memset(bp_write_mem, 0, BP_LENGTH);
+  memset(bp_write_mem, 0, BP_LENGTH * sizeof(bp_write_mem[0]));
   bp_write_mem_numitems = 0;
 }
 

@@ -16,21 +16,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Mapping Thomson <-> PC keyboard */
+/* Virtual keyboard configuration */
 
-#ifndef __KEYMAP_H
-#define __KEYMAP_H
+#ifndef __CONFIG_H
+#define __CONFIG_H
 
-#include "libretro-common/include/libretro.h"
+#include <stdint.h>
 
-/* Mapping libretro -> Thomson TO scancodes */
-extern const char libretroKeyCodeToThomsonToScanCode[RETROK_LAST];
-/* Mapping libretro -> Thomson MO5 scancodes */
-extern const char libretroKeyCodeToThomsonMo5ScanCode[RETROK_LAST];
-/* Mapping libretro -> Thomson MO6 scancodes */
-extern const char libretroKeyCodeToThomsonMo6ScanCode[RETROK_LAST];
+extern uint16_t *vkb_video_buffer;
+extern int vkb_screen_width;
+extern int vkb_screen_height;
+extern int vkb_alpha;
 
-/* Mapping libretro -> Thomson scancodes for the current MO/TO version */
-extern const char *libretroKeyCodeToThomsonScanCode;
-
-#endif /* __KEYMAP_H */
+#endif /* __CONFIG_H */
