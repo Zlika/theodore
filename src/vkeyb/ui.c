@@ -23,27 +23,31 @@
 
 static uint16_t blend(uint16_t fg, uint16_t bg, unsigned int alpha)
 {
+  unsigned int fg_r, fg_g, fg_b;
+  unsigned int bg_r, bg_g, bg_b;
+  unsigned int out_r, out_g, out_b;
+
   if (alpha == 255)
   {
     return fg;
   }
   // Split foreground into components
-  unsigned fg_r = fg >> 11;
-  unsigned fg_g = (fg >> 5) & ((1u << 6) - 1);
-  unsigned fg_b = fg & ((1u << 5) - 1);
+  fg_r = fg >> 11;
+  fg_g = (fg >> 5) & ((1u << 6) - 1);
+  fg_b = fg & ((1u << 5) - 1);
 
   // Split background into components
-  unsigned bg_r = bg >> 11;
-  unsigned bg_g = (bg >> 5) & ((1u << 6) - 1);
-  unsigned bg_b = bg & ((1u << 5) - 1);
+  bg_r = bg >> 11;
+  bg_g = (bg >> 5) & ((1u << 6) - 1);
+  bg_b = bg & ((1u << 5) - 1);
 
   // Alpha blend components
-  unsigned out_r = (fg_r * alpha + bg_r * (255 - alpha)) / 255;
-  unsigned out_g = (fg_g * alpha + bg_g * (255 - alpha)) / 255;
-  unsigned out_b = (fg_b * alpha + bg_b * (255 - alpha)) / 255;
+  out_r = (fg_r * alpha + bg_r * (255 - alpha)) / 255;
+  out_g = (fg_g * alpha + bg_g * (255 - alpha)) / 255;
+  out_b = (fg_b * alpha + bg_b * (255 - alpha)) / 255;
 
   // Pack result
-  return (unsigned short) ((out_r << 11) | (out_g << 5) | out_b);
+  return (uint16_t) ((out_r << 11) | (out_g << 5) | out_b);
 }
 
 void draw_bmp(int x, int y, const uint16_t *img, int img_width, int img_height)
