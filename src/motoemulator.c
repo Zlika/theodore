@@ -236,7 +236,7 @@ void SetThomsonModel(ThomsonModel model)
         break;
       case TO7_70:
         rom = &ROM_TO770;
-        LoadMemoFromArray(basic_128_memo7_rom, basic_128_memo7_rom_len);
+        LoadMemoFromArray(basic_1_memo7_rom, basic_1_memo7_rom_len);
         break;
       default:
         return;
