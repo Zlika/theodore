@@ -181,12 +181,13 @@ int vkb_get_current_key_scancode(void)
 bool vkb_move_at(int x, int y)
 {
   int i;
-  int y_offset = y - ((vkb_position == VKB_POS_DOWN) ? vkb_screen_height - current_kb_height : 0);
+  y -= ((vkb_position == VKB_POS_DOWN) ? vkb_screen_height - current_kb_height : 0);
+  x -= (vkb_screen_width - current_kb_width) / 2;
   for (i = 0; i < current_keyboard_keys; i++)
   {
     const struct VKey *key = &current_keyboard_layout[i];
     if ((key->x <= x) && (x <= key->x + key->width)
-        && (key->y <= y_offset) && (y_offset <= key->y + key->height))
+        && (key->y <= y) && (y <= key->y + key->height))
     {
       current_key = key;
       return true;
