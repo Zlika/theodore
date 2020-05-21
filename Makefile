@@ -168,6 +168,17 @@ else ifeq ($(platform), sncps3)
 	STATIC_LINKING = 1
 	DISABLE_GCC_SECURITY_FLAGS = 1
 
+# PS2
+else ifeq ($(platform), ps2)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = ee-gcc$(EXE_EXT)
+	CXX = ee-g++$(EXE_EXT)
+	AR = ee-ar$(EXE_EXT)
+	PLATFORM_DEFINES := -DPS2 -G0 -DSUPPORT_ARGB1555
+	STATIC_LINKING = 1
+	DISABLE_GCC_SECURITY_FLAGS = 1
+	HAS_GCC := 0
+
 # PSP
 else ifeq ($(platform), psp1)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a
