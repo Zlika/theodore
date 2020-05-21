@@ -57,8 +57,12 @@ static void (*DecodevideoModes[NB_VIDEO_MODES])(void) =
 //definition des intensites pour correction gamma (circuit palette EF9369 + circuit d'adaptation TEA5114)
 static const int intens[16] = {0,100,127,147,163,179,191,203,215,223,231,239,243,247,251,255};
 
+#if defined(SUPPORT_ARGB1555)
+#define PIXEL(r,g,b) ((((b) << 7) &  0x7C00) | (((g) << 2) & 0x3e0) | (((r) >> 3) & 0x1f))
+#else
 // Returns the RGB565 value of a pixel.
 #define PIXEL(r,g,b) ((((r) << 8) &  0xf800) | (((g) << 3) & 0x7e0) | (((b) >> 3) & 0x1f))
+#endif
 
 // Initialisation palette ////////////////////////////////////////////////////
 void InitPalette(void)
