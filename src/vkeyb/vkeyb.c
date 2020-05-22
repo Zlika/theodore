@@ -39,8 +39,14 @@ static enum VkbPosition vkb_position = VKB_POS_DOWN;
 static const struct VKey *current_keyboard_layout = 0;
 static int current_keyboard_keys = 0;
 
+#if defined(SUPPORT_ARGB1555)
+static uint16_t color_select = 0x03FF;
+static uint16_t color_hold = 0x7F60;
+#else
 static uint16_t color_select = 0xFFC0;
 static uint16_t color_hold = 0x06DF;
+#endif
+
 static int box_thickness = 2;
 
 void vkb_configure_virtual_keyboard(uint16_t *video_buffer, int width, int height)
