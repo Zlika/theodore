@@ -1,4 +1,4 @@
-Next Release
+Release 3.1 (2020/05/22)
 ===========
 * New graphical virtual keyboards (press Select to show/hide).
 * [#21](https://github.com/Zlika/theodore/pull/21): Add psl1ght (ps3 lightweight SDK) compilation - [@phcoder](https://github.com/phcoder)
