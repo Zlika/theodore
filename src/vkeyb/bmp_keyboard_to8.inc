@@ -18,8 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-const int KEYB_TO8_IMG_WIDTH = 670;
-const int KEYB_TO8_IMG_HEIGHT = 204;
+#define KEYB_TO8_IMG_WIDTH 670
+#define KEYB_TO8_IMG_HEIGHT 204
 
 #if defined(SUPPORT_ARGB1555)
 const uint16_t KEYB_TO8_IMG_DATA[] =

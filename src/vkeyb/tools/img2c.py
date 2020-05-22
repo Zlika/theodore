@@ -16,8 +16,8 @@ pixels = img.load()
 
 c_var_base_name = (os.path.splitext(os.path.basename(filename))[0]).upper()
 
-print("const int " + c_var_base_name + "_IMG_WIDTH = " + str(img.width) + ";")
-print("const int " + c_var_base_name + "_IMG_HEIGHT = " + str(img.height) + ";")
+print("#define " + c_var_base_name + "_IMG_WIDTH " + str(img.width))
+print("#define " + c_var_base_name + "_IMG_HEIGHT " + str(img.height))
 print("")
 
 print("#if defined(SUPPORT_ARGB1555)")
