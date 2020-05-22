@@ -31,6 +31,29 @@ static uint16_t blend(uint16_t fg, uint16_t bg, unsigned int alpha)
   {
     return fg;
   }
+
+#if defined(SUPPORT_ARGB1555)
+
+  // Split foreground into components
+  fg_r = fg & ((1u << 5) - 1);
+  fg_g = (fg >> 5) & ((1u << 5) - 1);
+  fg_b = fg >> 10;
+
+  // Split background into components
+  bg_r = bg & ((1u << 5) - 1);
+  bg_g = (bg >> 5) & ((1u << 5) - 1);
+  bg_b = bg >> 10;
+
+  // Alpha blend components
+  out_r = (fg_r * alpha + bg_r * (255 - alpha)) / 255;
+  out_g = (fg_g * alpha + bg_g * (255 - alpha)) / 255;
+  out_b = (fg_b * alpha + bg_b * (255 - alpha)) / 255;
+
+  // Pack result
+  return (uint16_t) ((out_b << 10) | (out_g << 5) | out_r);
+
+#else
+
   // Split foreground into components
   fg_r = fg >> 11;
   fg_g = (fg >> 5) & ((1u << 6) - 1);
@@ -48,6 +71,8 @@ static uint16_t blend(uint16_t fg, uint16_t bg, unsigned int alpha)
 
   // Pack result
   return (uint16_t) ((out_r << 11) | (out_g << 5) | out_b);
+
+#endif
 }
 
 void draw_bmp(int x, int y, const uint16_t *img, int img_width, int img_height)
