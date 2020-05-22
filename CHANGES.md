@@ -1,3 +1,7 @@
+Next version
+===========
+* [#22](https://github.com/Zlika/theodore/pull/22): Add PS2 platform - [@fjtrujy](https://github.com/fjtrujy)
+
 Release 3.1 (2020/05/22)
 ===========
 * New graphical virtual keyboards (press Select to show/hide).
