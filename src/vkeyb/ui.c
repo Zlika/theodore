@@ -32,7 +32,7 @@ static uint16_t blend(uint16_t fg, uint16_t bg, unsigned int alpha)
     return fg;
   }
 
-#if defined(SUPPORT_ARGB1555)
+#if defined(SUPPORT_ABGR1555)
   // Hack for PS2 that expects ABGR1555 encoded pixels
 
   // Split foreground into components

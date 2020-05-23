@@ -20,7 +20,7 @@ print("#define " + c_var_base_name + "_IMG_WIDTH " + str(img.width))
 print("#define " + c_var_base_name + "_IMG_HEIGHT " + str(img.height))
 print("")
 
-print("#if defined(SUPPORT_ARGB1555)")
+print("#if defined(SUPPORT_ABGR1555)")
 print("const uint16_t " + c_var_base_name + "_IMG_DATA[] =")
 print("{")
 for y in range(0, img.height):

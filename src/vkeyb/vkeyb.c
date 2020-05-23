@@ -39,7 +39,7 @@ static enum VkbPosition vkb_position = VKB_POS_DOWN;
 static const struct VKey *current_keyboard_layout = 0;
 static int current_keyboard_keys = 0;
 
-#if defined(SUPPORT_ARGB1555)
+#if defined(SUPPORT_ABGR1555)
 // Hack for PS2 that expects ABGR1555 encoded pixels
 static uint16_t color_select = 0x03FF;
 static uint16_t color_hold = 0x7F60;

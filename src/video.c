@@ -57,7 +57,7 @@ static void (*DecodevideoModes[NB_VIDEO_MODES])(void) =
 //definition des intensites pour correction gamma (circuit palette EF9369 + circuit d'adaptation TEA5114)
 static const int intens[16] = {0,100,127,147,163,179,191,203,215,223,231,239,243,247,251,255};
 
-#if defined(SUPPORT_ARGB1555)
+#if defined(SUPPORT_ABGR1555)
 // Hack for PS2 that expects ABGR1555 encoded pixels
 #define PIXEL(r,g,b) ((((b) << 7) &  0x7C00) | (((g) << 2) & 0x3e0) | (((r) >> 3) & 0x1f))
 #else
