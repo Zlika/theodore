@@ -24,7 +24,7 @@ jobs:
     runs-on: windows-2016
     steps:
       - uses: actions/checkout@v2
-      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: microsoft/setup-msbuild@v1.0.0
       - name: Compile project
         run: make platform=windows_msvc2017_desktop_x64 clean all
 
