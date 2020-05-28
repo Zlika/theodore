@@ -7,6 +7,26 @@ on:
     types: [run_build]
 
 jobs:
+  build-unix:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, masOS-latest]
+        cpp-version: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile project
+        run: |
+          make clean all -DASM=1
+
+  build-windoze:
+    runs-on: windows-2017
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile project
+        run: |
+          make plateform=windows_msvc2017_desktop_x64 clean all
+
   build-ps2:
     runs-on: ubuntu-latest
     container: ps2dev/ps2dev:latest
@@ -34,3 +54,4 @@ jobs:
       with:
         name: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}-${{ steps.core.outputs.sha8 }}
         path: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}.a
+
