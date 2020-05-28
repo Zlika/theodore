@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Compile project
         run: |
-          make clean all -DASM=1
+          make clean all DASM=1
 
   build-windoze:
     runs-on: windows-2017
