@@ -24,10 +24,10 @@ jobs:
     runs-on: windows-2016
     steps:
       - uses: actions/checkout@v2
+      - name: Set PATH
+        run: |echo "::add-path::C:\msys64\usr\bin"
       - name: Compile project
-        run: |
-          echo "::add-path::C:\msys64\usr\bin"
-          make platform=windows_msvc2017_desktop_x64 clean all
+        run: make platform=windows_msvc2017_desktop_x64 clean all
 
   build-ps2:
     runs-on: ubuntu-latest
