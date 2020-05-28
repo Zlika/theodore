@@ -24,9 +24,9 @@ jobs:
     runs-on: windows-2016
     steps:
       - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
       - name: Compile project
-        run: |
-          make platform=windows_msvc2017_desktop_x64 clean all
+        run: make platform=windows_msvc2017_desktop_x64 clean all
 
   build-ps2:
     runs-on: ubuntu-latest
@@ -35,8 +35,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Install dependencies
-      run: |
-        apk add build-base
+      run: apk add build-base
 
     - name: Get Information Variables
       id: core
@@ -46,8 +45,7 @@ jobs:
         echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
 
     - name: Compile project
-      run: |
-        make platform=${{ steps.core.outputs.platform }} clean all
+      run: make platform=${{ steps.core.outputs.platform }} clean all
 
     - name: Upload artifacts
       if: ${{ success() }}
