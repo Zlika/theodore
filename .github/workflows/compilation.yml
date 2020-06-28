@@ -61,6 +61,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install dependencies
+      run: apk add build-base
+
     - name: Get Information Variables
       id: core
       run: |
