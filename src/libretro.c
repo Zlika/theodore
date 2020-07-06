@@ -30,6 +30,7 @@
 #include "autostart.h"
 #include "devices.h"
 #include "keymap.h"
+#include "logger.h"
 #include "sap.h"
 #include "motoemulator.h"
 #include "video.h"
@@ -61,7 +62,7 @@ void linearFree(void* mem);
 // to make the key sticky
 #define VKB_STICKY_KEY_DELAY 25
 
-static retro_log_printf_t log_cb = NULL;
+retro_log_printf_t log_cb = NULL;
 static retro_environment_t environ_cb = NULL;
 static retro_video_refresh_t video_cb = NULL;
 static retro_audio_sample_t audio_cb = NULL;
@@ -702,7 +703,7 @@ static bool load_file(const char *filename)
       LoadMemo(filename);
       break;
     default:
-      if (log_cb) log_cb(RETRO_LOG_ERROR, "Unknown file type for file %s.\n", filename);
+      LOG_ERROR("Unknown file type for file %s.\n", filename);
       return false;
   }
   autostart_init(filename);
@@ -734,9 +735,9 @@ bool retro_load_game(const struct retro_game_info *game)
   // Use of RGB565 pixel format instead of XRGB8888
   // for better compatibility with low-end devices
   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
-  if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt) && log_cb)
+  if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
   {
-    log_cb(RETRO_LOG_ERROR, "RGB5656 is not supported.\n");
+    LOG_ERROR("RGB5656 is not supported.\n");
     return false;
   }
 
@@ -746,11 +747,7 @@ bool retro_load_game(const struct retro_game_info *game)
 
   if (game && game->path)
   {
-    if (log_cb)
-    {
-      log_cb(RETRO_LOG_INFO, "Loading file %s.\n", game->path);
-    }
-
+    LOG_INFO("Loading file %s.\n", game->path);
     return load_file(game->path);
   }
   return true;

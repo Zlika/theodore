@@ -24,6 +24,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "logger.h"
 #include "keymap.h"
 #include "motoemulator.h"
 
@@ -264,8 +265,14 @@ static bool autodetect_tape_first_file_is_basic(const char *filename)
   char tape_buffer[SIZE_BUFFER_TAPE];
 
   file = fopen(filename, "rb");
+  if (file == NULL)
+  {
+    LOG_ERROR("Cannot open file %s.\n", filename);
+    return false;
+  }
   if (fread(tape_buffer, SIZE_BUFFER_TAPE, 1, file) != 1)
   {
+    LOG_ERROR("Cannot read file %s.\n", filename);
     fclose(file);
     return false;
   }
