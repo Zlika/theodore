@@ -683,6 +683,12 @@ static void check_autorun(void)
 // Load file with auto-detection of type based on the file extension.
 static bool load_file(const char *filename)
 {
+  // On some systems (e.g. Nintendo Switch) it seems that it is not possible to open a file
+  // that is already opened. As autostart_init() opens the file to read its header before
+  // closing it, it must be called BEFORE the LoadXxx() functions that open the file
+  // without (immediately) closing it.
+  autostart_init(filename);
+
   Media currentMedia = get_media_type(filename);
   switch (currentMedia)
   {
@@ -706,7 +712,6 @@ static bool load_file(const char *filename)
       LOG_ERROR("Unknown file type for file %s.\n", filename);
       return false;
   }
-  autostart_init(filename);
   check_automodel(filename);
   check_autorun();
   return true;
