@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set PATH
-        run: echo "C:\msys64\usr\bin" >> $GITHUB_PATH
+        run: echo "C:\msys64\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Compile project
         run: make platform=windows_msvc2017_desktop_x64 clean all
 
