@@ -278,6 +278,8 @@ static void WriteByteTape(void)
   }
   else
   {
+    // A register contains the byte to write
+    if(fputc(A, fk7) == EOF) {Initprog(); return;}
     Mputc(0x2045, 0);
   }
 }
