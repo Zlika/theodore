@@ -3,6 +3,7 @@ Next version
 * [#22](https://github.com/Zlika/theodore/pull/22): Add PS2 platform - [@fjtrujy](https://github.com/fjtrujy)
 * [#23](https://github.com/Zlika/theodore/issues/23): Fix crash on Nintendo Switch (thanks [@cucholix](https://github.com/cucholix) and [@natinusala](https://github.com/natinusala) for helping me fix the problem).
 * Fix tape writing in MO mode.
+* Add .gitlab-ci.yml and update makefile for compatibility with the new libretro build infrastructure - [@twinaphex](https://github.com/twinaphex)
 
 Release 3.1 (2020/05/22)
 ===========

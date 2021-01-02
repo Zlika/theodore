@@ -69,6 +69,7 @@ else ifeq ($(platform), osx)
 	SHARED := -dynamiclib
 	OSXVER = `sw_vers -productVersion | cut -d. -f 2`
 	OSX_LT_MAVERICKS = `(( $(OSXVER) <= 9)) && echo "YES"`
+	OSX_GT_MOJAVE = $(shell (( $(OSXVER) >= 14)) && echo "YES")
 	LDFLAGS += -mmacosx-version-min=10.7
 	CFLAGS += -mmacosx-version-min=10.7
 	CXXFLAGS += -mmacosx-version-min=10.7
@@ -141,30 +142,7 @@ else ifeq ($(platform), psl1ght)
 	CXX = $(PS3DEV)/ppu/bin/ppu-g++$(EXE_EXT)
 	CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
 	AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
-	PLATFORM_DEFINES := -D__CELLOS_LV2__ -D__PSL1GHT__
-	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
-
-# PS3
-else ifeq ($(platform), ps3)
-	HAVE_GCC_WARNINGS := 0
-	TARGET := $(TARGET_NAME)_libretro_ps3.a
-	CXX = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-g++.exe
-	CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
-	AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
-	PLATFORM_DEFINES := -D__CELLOS_LV2__
-	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
-
-# sncps3
-else ifeq ($(platform), sncps3)
-	HAVE_GCC_WARNINGS := 0
-	TARGET := $(TARGET_NAME)_libretro_ps3.a
-	HAS_GCC := 0
-	CC = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
-	CXX = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
-	AR = $(CELL_SDK)/host-win32/sn/bin/ps3snarl.exe
-	PLATFORM_DEFINES := -D__CELLOS_LV2__
+	PLATFORM_DEFINES := -D__PSL1GHT__
 	STATIC_LINKING = 1
 	DISABLE_GCC_SECURITY_FLAGS = 1
 
@@ -235,15 +213,6 @@ else ifeq ($(platform), rpi4)
 	SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
 	PLATFORM_DEFINES += -marm -mcpu=cortex-a72 -mfpu=neon-fp-armv8 -mfloat-abi=hard -ffast-math
 	PLATFORM_DEFINES += -DARM
-
-# Lightweight PS3 Homebrew SDK
-else ifeq ($(platform), psl1ght)
-	TARGET := $(TARGET_NAME)_libretro_$(platform).a
-	CC  = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
-	CXX = $(PS3DEV)/ppu/bin/ppu-g++$(EXE_EXT)
-	AR  = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
-	PLATFORM_DEFINES := -D__CELLOS_LV2__
-	STATIC_LINKING = 1
 
 # Windows MSVC 2003 Xbox 1
 else ifeq ($(platform), xbox1_msvc2003)
