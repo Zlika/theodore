@@ -24,9 +24,11 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "autostartkeys.h"
 #include "logger.h"
 #include "keymap.h"
 #include "motoemulator.h"
+#include "md5.h"
 
 #define SIZE_BUFFER_TAPE 32
 #define TAPE_BASIC_PATTERN1 "BAS\0"
@@ -36,158 +38,14 @@
 #define TAPE_BASIC_PATTERN3 "ENTETE  TO"
 #define TAPE_BASIC_PATTERN3_SIZE 10
 
-typedef struct { int retrokey; bool down; } Key;
-
-#define MO5_AUTOSTART_BASIC_KEYS_LENGTH 12
-// Key strokes to start a BASIC game on MO5: RUN"
-static const Key MO5_AUTOSTART_BASIC_KEYS[MO5_AUTOSTART_BASIC_KEYS_LENGTH] =
-{ {RETROK_r, true}, {RETROK_r, false}, {RETROK_u, true}, {RETROK_u, false},
-  {RETROK_n, true}, {RETROK_n, false}, {RETROK_LSHIFT, true}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-#define MO5_AUTOSTART_BIN_KEYS_LENGTH 24
-// Key strokes to start a BINARY game on MO5: LOADM"",,R
-static const Key MO5_AUTOSTART_BIN_KEYS[MO5_AUTOSTART_BIN_KEYS_LENGTH] =
-{ {RETROK_l, true}, {RETROK_l, false}, {RETROK_o, true}, {RETROK_o, false},
-  {RETROK_q, true}, {RETROK_q, false}, {RETROK_d, true}, {RETROK_d, false},
-  {RETROK_SEMICOLON, true}, {RETROK_SEMICOLON, false},
-  {RETROK_LSHIFT, true}, {RETROK_2, true}, {RETROK_2, false}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, false}, {RETROK_m, true}, {RETROK_m, false}, {RETROK_m, true}, {RETROK_m, false},
-  {RETROK_r, true}, {RETROK_r, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-#define MO6_AUTOSTART_BASIC_KEYS_LENGTH 15+14*4
-// Key strokes to start a BASIC game on MO6: 2 + RUN"
-static const Key MO6_AUTOSTART_BASIC_KEYS[MO6_AUTOSTART_BASIC_KEYS_LENGTH] =
-{ {RETROK_2, true}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_r, true}, {RETROK_r, false}, {RETROK_u, true}, {RETROK_u, false},
-  {RETROK_n, true}, {RETROK_n, false}, {RETROK_LSHIFT, true}, {RETROK_3, true}, {RETROK_3, false},
-  {RETROK_LSHIFT, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-#define MO6_AUTOSTART_BIN_KEYS_LENGTH 27+14*4
-// Key strokes to start a BINARY game on MO6: 2 + LOADM"",,R
-static const Key MO6_AUTOSTART_BIN_KEYS[MO6_AUTOSTART_BIN_KEYS_LENGTH] =
-{ {RETROK_2, true}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_l, true}, {RETROK_l, false}, {RETROK_o, true}, {RETROK_o, false},
-  {RETROK_q, true}, {RETROK_q, false}, {RETROK_d, true}, {RETROK_d, false},
-  {RETROK_SEMICOLON, true}, {RETROK_SEMICOLON, false},
-  {RETROK_LSHIFT, true}, {RETROK_3, true}, {RETROK_3, false}, {RETROK_3, true}, {RETROK_3, false},
-  {RETROK_LSHIFT, false}, {RETROK_m, true}, {RETROK_m, false}, {RETROK_m, true}, {RETROK_m, false},
-  {RETROK_r, true}, {RETROK_r, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-// Key strokes to start a BASIC game on PC128: 2 + RUN"
-static const Key PC128_AUTOSTART_BASIC_KEYS[MO6_AUTOSTART_BASIC_KEYS_LENGTH] =
-{ {RETROK_2, true}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_r, true}, {RETROK_r, false}, {RETROK_u, true}, {RETROK_u, false},
-  {RETROK_n, true}, {RETROK_n, false}, {RETROK_LSHIFT, true}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-// Key strokes to start a BINARY game on PC128: 2 + LOADM"",,R
-static const Key PC128_AUTOSTART_BIN_KEYS[MO6_AUTOSTART_BIN_KEYS_LENGTH] =
-{ {RETROK_2, true}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_l, true}, {RETROK_l, false}, {RETROK_o, true}, {RETROK_o, false},
-  {RETROK_a, true}, {RETROK_a, false}, {RETROK_d, true}, {RETROK_d, false},
-  {RETROK_m, true}, {RETROK_m, false},
-  {RETROK_LSHIFT, true}, {RETROK_2, true}, {RETROK_2, false}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, false}, {RETROK_COMMA, true}, {RETROK_COMMA, false}, {RETROK_COMMA, true}, {RETROK_COMMA, false},
-  {RETROK_r, true}, {RETROK_r, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-#define BASIC512_AUTOSTART_KEYS_LENGTH 2
-static const Key BASIC512_KEYS[BASIC512_AUTOSTART_KEYS_LENGTH] = { {RETROK_b, true}, {RETROK_b, false} };
-#define BASIC128_AUTOSTART_KEYS_LENGTH 2
-static const Key BASIC128_KEYS[BASIC128_AUTOSTART_KEYS_LENGTH] = { {RETROK_d, true}, {RETROK_d, false} };
-#define BASIC1_TO8_AUTOSTART_KEYS_LENGTH 2
-static const Key BASIC1_TO8_AUTOSTART_KEYS[BASIC1_TO8_AUTOSTART_KEYS_LENGTH] = { {RETROK_c, true}, {RETROK_c, false} };
-#define BASIC1_TO9_AUTOSTART_KEYS_LENGTH 2
-static const Key BASIC1_TO9_AUTOSTART_KEYS[BASIC1_TO9_AUTOSTART_KEYS_LENGTH] = { {RETROK_e, true}, {RETROK_e, false} };
-#define CARTRIDGE_AUTOSTART_KEYS_LENGTH 2
-static const Key CARTRIDGE_AUTOSTART_KEYS[CARTRIDGE_AUTOSTART_KEYS_LENGTH] = { {RETROK_KP0, true}, {RETROK_KP0, false} };
-#define TO7_CARTRIDGE_AUTOSTART_KEYS_LENGTH 2
-static const Key TO7_CARTRIDGE_AUTOSTART_KEYS[TO7_CARTRIDGE_AUTOSTART_KEYS_LENGTH] = { {RETROK_KP1, true}, {RETROK_KP1, false} };
-#define TO7_AUTOSTART_BASIC_KEYS_LENGTH 15+14*4
-// Key strokes to start a BASIC game on TO7: 1 + RUN"
-static const Key TO7_AUTOSTART_BASIC_KEYS[TO7_AUTOSTART_BASIC_KEYS_LENGTH] =
-{ {RETROK_1, true}, {RETROK_1, true}, {RETROK_1, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_r, true}, {RETROK_r, false}, {RETROK_u, true}, {RETROK_u, false},
-  {RETROK_n, true}, {RETROK_n, false}, {RETROK_LSHIFT, true}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-#define TO7_AUTOSTART_BIN_KEYS_LENGTH 27+14*4
-// Key strokes to start a BINARY game on TO7: 1 + LOADM"",,R
-static const Key TO7_AUTOSTART_BIN_KEYS[TO7_AUTOSTART_BIN_KEYS_LENGTH] =
-{ {RETROK_1, true}, {RETROK_1, true}, {RETROK_1, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_l, true}, {RETROK_l, false}, {RETROK_o, true}, {RETROK_o, false},
-  {RETROK_q, true}, {RETROK_q, false}, {RETROK_d, true}, {RETROK_d, false},
-  {RETROK_SEMICOLON, true}, {RETROK_SEMICOLON, false},
-  {RETROK_LSHIFT, true}, {RETROK_2, true}, {RETROK_2, false}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, false}, {RETROK_m, true}, {RETROK_m, false}, {RETROK_m, true}, {RETROK_m, false},
-  {RETROK_r, true}, {RETROK_r, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-#define TO770_AUTOSTART_BASIC_KEYS_LENGTH 15+14*13
-// Key strokes to start a BASIC game on TO7/70: 1 + RUN" (same as TO7 but longer wait to start BASIC 128)
-static const Key TO770_AUTOSTART_BASIC_KEYS[TO770_AUTOSTART_BASIC_KEYS_LENGTH] =
-{ {RETROK_1, true}, {RETROK_1, true}, {RETROK_1, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_r, true}, {RETROK_r, false}, {RETROK_u, true}, {RETROK_u, false},
-  {RETROK_n, true}, {RETROK_n, false}, {RETROK_LSHIFT, true}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-#define TO770_AUTOSTART_BIN_KEYS_LENGTH 27+14*13
-// Key strokes to start a BINARY game on TO7: 1 + LOADM"",,R (same as TO7 but longer wait to start BASIC 128)
-static const Key TO770_AUTOSTART_BIN_KEYS[TO770_AUTOSTART_BIN_KEYS_LENGTH] =
-{ {RETROK_1, true}, {RETROK_1, true}, {RETROK_1, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false}, {RETROK_LSHIFT, true}, {RETROK_LSHIFT, false},
-  {RETROK_l, true}, {RETROK_l, false}, {RETROK_o, true}, {RETROK_o, false},
-  {RETROK_q, true}, {RETROK_q, false}, {RETROK_d, true}, {RETROK_d, false},
-  {RETROK_SEMICOLON, true}, {RETROK_SEMICOLON, false},
-  {RETROK_LSHIFT, true}, {RETROK_2, true}, {RETROK_2, false}, {RETROK_2, true}, {RETROK_2, false},
-  {RETROK_LSHIFT, false}, {RETROK_m, true}, {RETROK_m, false}, {RETROK_m, true}, {RETROK_m, false},
-  {RETROK_r, true}, {RETROK_r, false}, {RETROK_RETURN, true}, {RETROK_RETURN, false} };
-
-static int autostart_keys_length = 0;
 static const Key *autostart_keys = NULL;
 static int current_autostart_key_pos = -1;
 
 static Media currentMedia = NO_MEDIA;
 static bool program_is_basic = true;
+#define MD5_LENGTH 16
+#define MD5_BUFFER_SIZE 1024
+static unsigned char md5_digest[MD5_LENGTH];
 
 /* Compare 2 strings without casing. */
 static bool streq_nocase(const char *s1, const char *s2)
@@ -333,98 +191,116 @@ char *autodetect_model(const char *filename)
   return "";
 }
 
-void autostart_init(const char *filename)
+static void compute_md5(const char *filename, unsigned char *hash)
+{
+  FILE *file;
+  char buffer[MD5_BUFFER_SIZE];
+  unsigned long size_read;
+  MD5_CTX ctx;
+
+  MD5_Init(&ctx);
+
+  file = fopen(filename, "rb");
+  if (file == NULL)
+  {
+    LOG_ERROR("Cannot open file %s.\n", filename);
+    return;
+  }
+  while ((size_read = fread(buffer, 1, MD5_BUFFER_SIZE, file)) > 0)
+  {
+    MD5_Update(&ctx, buffer, size_read);
+  }
+  fclose(file);
+  MD5_Final(hash, &ctx);
+}
+
+void autostart_init(const char *filename, bool compute_hash)
 {
   currentMedia = get_media_type(filename);
   program_is_basic = autodetect_tape_first_file_is_basic(filename);
   current_autostart_key_pos = -1;
+  memset(md5_digest, 0, sizeof(md5_digest));
+  if (compute_hash)
+  {
+    char md5string[2*MD5_LENGTH+1];
+    compute_md5(filename, md5_digest);
+    for (int i = 0; i < MD5_LENGTH; i++)
+    {
+      sprintf(&md5string[i*2], "%02x", (unsigned int)md5_digest[i]);
+    }
+    LOG_DEBUG("MD5 hash of file %s is %s.\n", filename, md5string);
+  }
 }
 
-bool autostart_nextkey()
+static const Key* get_default_autostart_keys(ThomsonModel model, Media media)
 {
-  if (current_autostart_key_pos < 0)
-  {
-    current_autostart_key_pos = 0;
-    switch (GetThomsonModel())
+  const Key* keys = NULL;
+  switch (model)
     {
       case MO5:
         if (program_is_basic)
         {
-          autostart_keys = MO5_AUTOSTART_BASIC_KEYS;
-          autostart_keys_length = MO5_AUTOSTART_BASIC_KEYS_LENGTH;
+          keys = MO5_AUTOSTART_BASIC_KEYS;
         }
         else
         {
-          autostart_keys = MO5_AUTOSTART_BIN_KEYS;
-          autostart_keys_length = MO5_AUTOSTART_BIN_KEYS_LENGTH;
+          keys = MO5_AUTOSTART_BIN_KEYS;
         }
         break;
       case MO6:
-        if (currentMedia == MEDIA_CARTRIDGE)
+        if (media == MEDIA_CARTRIDGE)
         {
-          autostart_keys = CARTRIDGE_AUTOSTART_KEYS;
-          autostart_keys_length = CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+          keys = CARTRIDGE_AUTOSTART_KEYS;
         }
         else if (program_is_basic)
         {
-          autostart_keys = MO6_AUTOSTART_BASIC_KEYS;
-          autostart_keys_length = MO6_AUTOSTART_BASIC_KEYS_LENGTH;
+          keys = MO6_AUTOSTART_BASIC_KEYS;
         }
         else
         {
-          autostart_keys = MO6_AUTOSTART_BIN_KEYS;
-          autostart_keys_length = MO6_AUTOSTART_BIN_KEYS_LENGTH;
+          keys = MO6_AUTOSTART_BIN_KEYS;
         }
         break;
       case PC128:
-        if (currentMedia == MEDIA_CARTRIDGE)
+        if (media == MEDIA_CARTRIDGE)
         {
-          autostart_keys = CARTRIDGE_AUTOSTART_KEYS;
-          autostart_keys_length = CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+          keys = CARTRIDGE_AUTOSTART_KEYS;
         }
         else if (program_is_basic)
         {
-          autostart_keys = PC128_AUTOSTART_BASIC_KEYS;
-          autostart_keys_length = MO6_AUTOSTART_BASIC_KEYS_LENGTH;
+          keys = PC128_AUTOSTART_BASIC_KEYS;
         }
         else
         {
-          autostart_keys = PC128_AUTOSTART_BIN_KEYS;
-          autostart_keys_length = MO6_AUTOSTART_BIN_KEYS_LENGTH;
+          keys = PC128_AUTOSTART_BIN_KEYS;
         }
         break;
       case TO7:
-        if (currentMedia == MEDIA_CARTRIDGE)
+        if (media == MEDIA_CARTRIDGE)
         {
-          autostart_keys = TO7_CARTRIDGE_AUTOSTART_KEYS;
-          autostart_keys_length = TO7_CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+          keys = TO7_CARTRIDGE_AUTOSTART_KEYS;
         }
         else if (program_is_basic)
         {
-          autostart_keys = TO7_AUTOSTART_BASIC_KEYS;
-          autostart_keys_length = TO7_AUTOSTART_BASIC_KEYS_LENGTH;
+          keys = TO7_AUTOSTART_BASIC_KEYS;
         }
         else
         {
-          autostart_keys = TO7_AUTOSTART_BIN_KEYS;
-          autostart_keys_length = TO7_AUTOSTART_BIN_KEYS_LENGTH;
+          keys = TO7_AUTOSTART_BIN_KEYS;
         }
         break;
       case TO7_70:
-        if (currentMedia == MEDIA_CARTRIDGE)
+        if (media == MEDIA_CARTRIDGE)
         {
-          autostart_keys = TO7_CARTRIDGE_AUTOSTART_KEYS;
-          autostart_keys_length = TO7_CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+          keys = TO7_CARTRIDGE_AUTOSTART_KEYS;
         }
         else if (program_is_basic)
         {
-          autostart_keys = TO770_AUTOSTART_BASIC_KEYS;
-          autostart_keys_length = TO770_AUTOSTART_BASIC_KEYS_LENGTH;
+          keys = TO770_AUTOSTART_BASIC_KEYS;
         }
         else
         {
-          autostart_keys = TO770_AUTOSTART_BIN_KEYS;
-          autostart_keys_length = TO770_AUTOSTART_BIN_KEYS_LENGTH;
+          keys = TO770_AUTOSTART_BIN_KEYS;
         }
         break;
       // Most games are started with the 'B' key (Basic 512) on TO8/TO8D/TO9+
@@ -432,43 +308,94 @@ bool autostart_nextkey()
       // Tapes generally requires BASIC 1 ('C' key on TO8/TO8D/TO9+, 'E' key on TO9).
       // Cartridges are started by '0'.
       case TO9:
-        if (currentMedia == MEDIA_CARTRIDGE)
+        if (media == MEDIA_CARTRIDGE)
         {
-          autostart_keys = CARTRIDGE_AUTOSTART_KEYS;
-          autostart_keys_length = CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+          keys = CARTRIDGE_AUTOSTART_KEYS;
         }
-        else if (currentMedia == MEDIA_TAPE)
+        else if (media == MEDIA_TAPE)
         {
-          autostart_keys = BASIC1_TO9_AUTOSTART_KEYS;
-          autostart_keys_length = BASIC1_TO9_AUTOSTART_KEYS_LENGTH;
+          keys = BASIC1_TO9_AUTOSTART_KEYS;
         }
         else
         {
-          autostart_keys = BASIC128_KEYS;
-          autostart_keys_length = BASIC128_AUTOSTART_KEYS_LENGTH;
+          keys = BASIC128_KEYS;
         }
         break;
       default:
-        if (currentMedia == MEDIA_CARTRIDGE)
+        if (media == MEDIA_CARTRIDGE)
         {
-          autostart_keys = CARTRIDGE_AUTOSTART_KEYS;
-          autostart_keys_length = CARTRIDGE_AUTOSTART_KEYS_LENGTH;
+          keys = CARTRIDGE_AUTOSTART_KEYS;
         }
-        else if (currentMedia == MEDIA_TAPE)
+        else if (media == MEDIA_TAPE)
         {
-          autostart_keys = BASIC1_TO8_AUTOSTART_KEYS;
-          autostart_keys_length = BASIC1_TO8_AUTOSTART_KEYS_LENGTH;
+          keys = BASIC1_TO8_AUTOSTART_KEYS;
         }
         else
         {
-          autostart_keys = BASIC512_KEYS;
-          autostart_keys_length = BASIC512_AUTOSTART_KEYS_LENGTH;
+          keys = BASIC512_KEYS;
         }
         break;
     }
+  return keys;
+}
+
+static const Key* find_specific_autostart_keys(ThomsonModel model)
+{
+  const Key* keys = NULL;
+  int line = 0;
+  while (SPECIFIC_START_KEYS_TABLE[line].keys != NULL)
+  {
+    // Test if we found the game
+    if (memcmp(md5_digest, SPECIFIC_START_KEYS_TABLE[line].hash, MD5_LENGTH) == 0)
+    {
+      // Test if it is the correct model
+      if (SPECIFIC_START_KEYS_TABLE[line].model == model)
+      {
+        keys = SPECIFIC_START_KEYS_TABLE[line].keys;
+        LOG_DEBUG("Found matching MD5 in database.\n");
+        break;
+      }
+    }
+    line++;
+  }
+  return keys;
+}
+
+static bool is_hash_computed()
+{
+  int i;
+  for (i = 0; i < MD5_LENGTH; i++)
+  {
+    if (md5_digest[i] != 0)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool autostart_nextkey()
+{
+  // First key?
+  if (current_autostart_key_pos < 0)
+  {
+    ThomsonModel model = GetThomsonModel();
+    current_autostart_key_pos = 0;
+    // First search if it is a known game with a specific start method, and
+    // if not use the default start method
+    autostart_keys = NULL;
+    if (is_hash_computed())
+    {
+      autostart_keys = find_specific_autostart_keys(model);
+    }
+    if (autostart_keys == NULL)
+    {
+      autostart_keys = get_default_autostart_keys(model, currentMedia);
+    }
   }
 
-  if (current_autostart_key_pos >= autostart_keys_length)
+  // No more keys?
+  if (autostart_keys[current_autostart_key_pos].retrokey == RETROK_UNKNOWN)
   {
     current_autostart_key_pos = -1;
     return false;

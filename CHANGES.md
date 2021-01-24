@@ -4,6 +4,7 @@ Next version
 * [#23](https://github.com/Zlika/theodore/issues/23): Fix crash on Nintendo Switch (thanks [@cucholix](https://github.com/cucholix) and [@natinusala](https://github.com/natinusala) for helping me fix the problem).
 * Fix tape writing in MO mode.
 * Add .gitlab-ci.yml and update makefile for compatibility with the new libretro build infrastructure - [@twinaphex](https://github.com/twinaphex)
+* Add internal database of games with specific start commands for improved autostart feature.
 
 Release 3.1 (2020/05/22)
 ===========

@@ -100,6 +100,7 @@ struct ButtonsState last_btn_state = { false, false, false, false,
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128|TO7|TO7/70" },
     { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
+    { PACKAGE_NAME"_autostart_use_game_hash", "Use game hash for autostart; disabled|enabled" },
     { PACKAGE_NAME"_vkb_transparency", "Virtual keyboard transparency; 0%|10%|20%|30%|40%|50%|60%|70%|80%|90%" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
     { PACKAGE_NAME"_tape_write_protect", "Tape write protection; enabled|disabled" },
@@ -680,6 +681,18 @@ static void check_autorun(void)
   }
 }
 
+static bool is_autostart_use_game_hash(void)
+{
+  struct retro_variable var = {0, 0};
+
+  var.key = PACKAGE_NAME"_autostart_use_game_hash";
+  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var))
+  {
+    return strcmp(var.value, "enabled") == 0;
+  }
+  return false;
+}
+
 // Load file with auto-detection of type based on the file extension.
 static bool load_file(const char *filename)
 {
@@ -687,7 +700,7 @@ static bool load_file(const char *filename)
   // that is already opened. As autostart_init() opens the file to read its header before
   // closing it, it must be called BEFORE the LoadXxx() functions that open the file
   // without (immediately) closing it.
-  autostart_init(filename);
+  autostart_init(filename, is_autostart_use_game_hash());
 
   Media currentMedia = get_media_type(filename);
   switch (currentMedia)

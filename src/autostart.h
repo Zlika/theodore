@@ -36,7 +36,7 @@ char *autodetect_model(const char *filename);
 
 /* Initialise the autostart feature.
  * This function must be called when a file/game is loaded. */
-void autostart_init(const char *filename);
+void autostart_init(const char *filename, bool compute_hash);
 /* This function must be called once per call of input_poll_cb() until it returns false
  * to simulate the keystrokes needed to start the currently loaded media. */
 bool autostart_nextkey();
