@@ -70,10 +70,22 @@ else ifeq ($(platform), osx)
 	OSXVER = `sw_vers -productVersion | cut -d. -f 2`
 	OSX_LT_MAVERICKS = `(( $(OSXVER) <= 9)) && echo "YES"`
 	OSX_GT_MOJAVE = $(shell (( $(OSXVER) >= 14)) && echo "YES")
-	LDFLAGS += -mmacosx-version-min=10.7
-	CFLAGS += -mmacosx-version-min=10.7
-	CXXFLAGS += -mmacosx-version-min=10.7
-	ifndef ($(NOUNIVERSAL))
+	MINVERSION = -mmacosx-version-min=10.7
+	ifeq ($(shell uname -p),arm)
+	MINVERSION =
+	endif
+   ifeq ($(CROSS_COMPILE),1)
+		TARGET_RULE   = -target $(LIBRETRO_APPLE_PLATFORM) -isysroot $(LIBRETRO_APPLE_ISYSROOT)
+		CFLAGS   += $(TARGET_RULE)
+		CPPFLAGS += $(TARGET_RULE)
+		CXXFLAGS += $(TARGET_RULE)
+		LDFLAGS  += $(TARGET_RULE)
+		MINVERSION =
+   endif
+	LDFLAGS  += $(MINVERSION)
+	CFLAGS   += $(MINVERSION)
+	CXXFLAGS += $(MINVERSION
+	ifeq ($(UNIVERSAL),1)
 		CFLAGS  += $(ARCHFLAGS)
 		CXXFLAGS  += $(ARCHFLAGS)
 		LDFLAGS += $(ARCHFLAGS)
