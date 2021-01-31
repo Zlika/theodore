@@ -5,6 +5,7 @@ Theodore - Thomson MO/TO emulator
 ====================================
 
 ![Build status](https://github.com/Zlika/theodore/workflows/CI/badge.svg)
+[![Libretro Build Status](https://img.shields.io/gitlab/pipeline/libretro/theodore/master?gitlab_url=https%3A%2F%2Fgit.libretro.com)](https://git.libretro.com/libretro/theodore/-/pipelines)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
@@ -60,6 +61,8 @@ Start => "Start Program". Simulates one or several keystrokes on the keyboard to
 If the game does not start, then maybe another BASIC must be used.
 
 TO7 and TO7/70: When a cartridge is not loaded, the BASIC cartridge is automatically loaded (BASIC 1 for TO7, BASIC 128 for TO7/70).
+
+Starting from version 3.2, Theodore includes an internal database of games with specific start sequences. If the core's option "Use game hash for autostart" is enabled and the game is present in the internal database, its specific start sequence will be used.
 
 **Virtual keyboard feature:** Use Select button to show/hide the virtual keyboard. The transparency level of the virtual keyboard can be set in the core's options.
 When the virtual keyboard is displayed, the following buttons on the gamepad can be used:

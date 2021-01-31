@@ -5,7 +5,7 @@ Theodore - Emulateur Thomson MO/TO
 =====================================
 
 ![Build status](https://github.com/Zlika/theodore/workflows/CI/badge.svg)
-[![Build status](https://ci.appveyor.com/api/projects/status/7lo7cohkpmn50ogk?svg=true)](https://ci.appveyor.com/project/Zlika/theodore)
+[![Libretro Build Status](https://img.shields.io/gitlab/pipeline/libretro/theodore/master?gitlab_url=https%3A%2F%2Fgit.libretro.com)](https://git.libretro.com/libretro/theodore/-/pipelines)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
@@ -61,6 +61,8 @@ Start => "Démarrer le programme". Simule la frappe d'une ou plusieurs touches s
 Si le jeu ne démarre pas, c'est sans doute qu'un autre BASIC doit être utilisé.
 
 TO7 et TO7/70 : Quand une cartouche n'est pas chargée, la cartouche BASIC est automatiquement chargée (BASIC 1 pour le TO7, BASIC 128 pour le TO7/70).
+
+A partir de la version 3.2, Theodore inclut une base de données interne de jeux nécessitant une séquence de démarrage spécifique. Si l'option "Use game hash for autostart" est activée et que le jeu est présent dans la base de données interne, sa séquence de démarrage spécifique sera utilisée.
 
 **Fonctionnalité de clavier virtuel :** Le bouton Select permet d'afficher ou faire disparaitre le clavier virtuel. Le niveau de transparence du clavier peut être réglé dans les options du core.
 Quand le clavier virtuel est affiché, l'utilisation des boutons de la manette change :
