@@ -58,6 +58,7 @@ ifeq ($(platform), unix)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
 	SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
+	ENABLE_GCC_SECURITY_FLAGS = 1
 ifeq ($(shell uname -s), Haiku)
 	LDFLAGS += -lroot
 endif
@@ -156,7 +157,6 @@ else ifeq ($(platform), psl1ght)
 	AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
 	PLATFORM_DEFINES := -D__PSL1GHT__
 	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # PS2
 else ifeq ($(platform), ps2)
@@ -166,7 +166,6 @@ else ifeq ($(platform), ps2)
 	AR = mips64r5900el-ps2-elf-ar$(EXE_EXT)
 	PLATFORM_DEFINES := -DPS2 -G0 -DSUPPORT_ABGR1555
 	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 	HAS_GCC := 0
 
 # PSP
@@ -177,7 +176,6 @@ else ifeq ($(platform), psp1)
 	AR = psp-ar$(EXE_EXT)
 	PLATFORM_DEFINES := -DPSP -G0
 	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Vita
 else ifeq ($(platform), vita)
@@ -187,7 +185,6 @@ else ifeq ($(platform), vita)
 	AR = arm-vita-eabi-ar$(EXE_EXT)
 	PLATFORM_DEFINES := -DVITA -fno-short-enums
 	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # CTR(3DS)
 else ifeq ($(platform), ctr)
@@ -200,7 +197,6 @@ else ifeq ($(platform), ctr)
 	PLATFORM_DEFINES += -mword-relocations
 	PLATFORM_DEFINES += -fomit-frame-pointer -fstrict-aliasing -ffast-math
 	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Raspberry Pi 2
 else ifeq ($(platform), rpi2)
@@ -397,7 +393,6 @@ else ifeq ($(platform), ngc)
 	PLATFORM_DEFINES += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float
 	PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
 	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Nintendo Wii
 else ifeq ($(platform), wii)
@@ -408,7 +403,6 @@ else ifeq ($(platform), wii)
 	PLATFORM_DEFINES += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float
 	PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
 	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Nintendo WiiU
 else ifeq ($(platform), wiiu)
@@ -419,7 +413,6 @@ else ifeq ($(platform), wiiu)
 	PLATFORM_DEFINES += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float
 	PLATFORM_DEFINES += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int
 	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Nintendo Switch (libtransistor)
 else ifeq ($(platform), switch)
@@ -427,7 +420,6 @@ else ifeq ($(platform), switch)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).$(EXT)
 	include $(LIBTRANSISTOR_HOME)/libtransistor.mk
 	STATIC_LINKING=1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Nintendo Switch (libnx)
 else ifeq ($(platform), libnx)
@@ -441,7 +433,6 @@ else ifeq ($(platform), libnx)
 	CXXFLAGS := $(ASFLAGS) $(CFLAGS) -fno-rtti -std=gnu++11
 	CFLAGS += -std=gnu11
 	STATIC_LINKING = 1
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Classic Platforms ####################
 # Platform affix = classic_<ISA>_<µARCH>
@@ -524,9 +515,6 @@ else ifneq (,$(findstring armv,$(platform)))
 else ifeq ($(platform),emscripten)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).bc
 	STATIC_LINKING = 1
-	# stack protector flag breaks emscripten build
-	# https://github.com/emscripten-core/emscripten/issues/9780
-	DISABLE_GCC_SECURITY_FLAGS = 1
 
 # Windows MSVC 2017 all architectures
 else ifneq (,$(findstring windows_msvc2017,$(platform)))
@@ -690,7 +678,6 @@ else
 	CC ?= gcc
 	CXX ?= g++
 	SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
-	DISABLE_GCC_SECURITY_FLAGS = 1
 endif
 
 CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
@@ -762,8 +749,8 @@ ifeq ($(HAS_GCC), 1)
 			-fno-strict-overflow \
 			-Werror=format-security
 	endif
-	ifndef DISABLE_GCC_SECURITY_FLAGS
-		GCC_SECURITY_FLAGS = -D_FORTIFY_SOURCE=2 -fstack-protector
+	ifdef ENABLE_GCC_SECURITY_FLAGS
+		GCC_SECURITY_FLAGS = -D_FORTIFY_SOURCE=2 -fstack-protector-strong
 	endif
 endif
 
