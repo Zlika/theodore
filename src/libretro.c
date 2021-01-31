@@ -100,7 +100,7 @@ struct ButtonsState last_btn_state = { false, false, false, false,
 static const struct retro_variable prefs[] = {
     { PACKAGE_NAME"_rom", "Thomson model; Auto|TO8|TO8D|TO9|TO9+|MO5|MO6|PC128|TO7|TO7/70" },
     { PACKAGE_NAME"_autorun", "Auto run game; disabled|enabled" },
-    { PACKAGE_NAME"_autostart_use_game_hash", "Use game hash for autostart; disabled|enabled" },
+    { PACKAGE_NAME"_autostart_use_game_hash", "Use game hash for autostart; enabled|disabled" },
     { PACKAGE_NAME"_autostart_message_hint", "Display hint to start a game; enabled|disabled" },
     { PACKAGE_NAME"_vkb_transparency", "Virtual keyboard transparency; 0%|10%|20%|30%|40%|50%|60%|70%|80%|90%" },
     { PACKAGE_NAME"_floppy_write_protect", "Floppy write protection; enabled|disabled" },
