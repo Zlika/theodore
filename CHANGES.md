@@ -5,6 +5,7 @@ Next version
 * Fix tape writing in MO mode.
 * Add .gitlab-ci.yml and update makefile for compatibility with the new libretro build infrastructure - [@twinaphex](https://github.com/twinaphex)
 * Add internal database of games with specific start commands for improved autostart feature.
+* Add an option to display a text hint to invit the user to press the 'Start' button to launch the game.
 
 Release 3.1 (2020/05/22)
 ===========
