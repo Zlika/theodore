@@ -6,6 +6,7 @@ Next version
 * Add .gitlab-ci.yml and update makefile for compatibility with the new libretro build infrastructure - [@twinaphex](https://github.com/twinaphex)
 * Add internal database of games with specific start commands for improved autostart feature.
 * Add an option to display a text hint to invit the user to press the 'Start' button to launch the game.
+* [#28](https://github.com/Zlika/theodore/issues/28): Fix emulator crash (TO8/TO9/MO6 modes) if palette data register set to a value greater than 15.
 
 Release 3.1 (2020/05/22)
 ===========

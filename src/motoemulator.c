@@ -532,7 +532,7 @@ static void Palettecolor(char c)
   int i = port[0x1b];
   x7da[i] = c;
   port[0x1b] = (port[0x1b] + 1) & 0x1f;
-  if((i & 1))
+  if (i & 1)
   {
     char c1 = x7da[i & 0x1e];
     Palette(i >> 1, c1 & 0x0f, (c1 & 0xf0) >> 4, c & 0x0f);
@@ -852,7 +852,7 @@ static void MputTo(unsigned short a, char c)
                                              //intelligent function of the floppy controller is used
         case 0xe7d8: return;
         case 0xe7da: Palettecolor(c); return;
-        case 0xe7db: port[0x1b] = c; return;
+        case 0xe7db: port[0x1b] = c & 0x1f; return;
         case 0xe7dc: selectVideomode(c); return;
         case 0xe7dd: videopage_bordercolor(c); return;
         case 0xe7e4: port[0x24] = c; return;
@@ -1179,7 +1179,7 @@ static void MputMo(unsigned short a, char c)
         case 0xa7cf: port[0x0f] = c; return; //registre controle action - musique
         // A7DA->A7DB : Gate Palette Registers
         case 0xa7da: if (rom->is_mo6) { Palettecolor(c); } return;
-        case 0xa7db: if (rom->is_mo6) { port[0x1b] = c; } return;
+        case 0xa7db: if (rom->is_mo6) { port[0x1b] = c & 0x1f; } return;
         // A7DC->A7DD : Gate Mode Page Registers
         case 0xa7dc: if (rom->is_mo6) { selectVideomode(c); } return;
         case 0xa7dd: if (rom->is_mo6) { videopage_bordercolor(c); carflags = (carflags & ~0x04) | ((~c & 0x20) >> 3); selectRomBankMo6(); } return;
