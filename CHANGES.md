@@ -7,6 +7,7 @@ Next version
 * Add internal database of games with specific start commands for improved autostart feature.
 * Add an option to display a text hint to invit the user to press the 'Start' button to launch the game.
 * [#28](https://github.com/Zlika/theodore/issues/28): Fix emulator crash (TO8/TO9/MO6 modes) if palette data register set to a value greater than 15.
+* [#31](https://github.com/Zlika/theodore/issues/31): Fix wrong cycle counts on some instructions (thanks [@bhrousseau](https://github.com/bhrousseau)).
 
 Release 3.1 (2020/05/22)
 ===========

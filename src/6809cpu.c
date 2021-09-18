@@ -873,8 +873,8 @@ int Run6809(void)
     case 0xa9: INDIRECT; Adc(AP, GETC(W)); return 4 + N;        /* ADCA IX */
     case 0xaa: INDIRECT; Tstc(A |= GETC(W)); return 4 + N;      /* ORA  IX */
     case 0xab: INDIRECT; Addc(AP, GETC(W)); return 4 + N;       /* ADDA IX */
-    case 0xac: INDIRECT; Cmpw(&X, GETW(W)); return 4 + N;       /* CMPX IX */
-    case 0xad: INDIRECT; Pshs(0x80); PC = W; return 5 + N;      /* JSR  IX */
+    case 0xac: INDIRECT; Cmpw(&X, GETW(W)); return 6 + N;       /* CMPX IX */
+    case 0xad: INDIRECT; Pshs(0x80); PC = W; return 7 + N;      /* JSR  IX */
     case 0xae: INDIRECT; Tstw(X = GETW(W)); return 5 + N;       /* LDX  IX */
     case 0xaf: INDIRECT; PUTW(W, X); Tstw(X); return 5 + N;     /* STX  IX */
 
