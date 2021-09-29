@@ -247,6 +247,22 @@ else ifeq ($(platform), rpi4_64)
 	PLATFORM_DEFINES += -mcpu=cortex-a72 -mtune=cortex-a72 -ffast-math
 	PLATFORM_DEFINES += -DARM
 
+#MIYOO
+else ifeq ($(platform), miyoo)
+   TARGET := $(TARGET_NAME)_libretro.so
+      CC = /opt/miyoo/usr/bin/arm-linux-gcc
+      CC_AS = /opt/miyoo/usr/bin/arm-linux-as
+      CXX = /opt/miyoo/usr/bin/arm-linux-g++
+      AR = /opt/miyoo/usr/bin/arm-linux-ar
+   fpic := -fPIC
+	SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
+   CFLAGS := -DFRONTEND_SUPPORTS_RGB565  -DLOWRES -DINLINE="inline" -DM16B
+   CFLAGS += -ffast-math -march=armv5te -mtune=arm926ej-s
+   CFLAGS += -falign-functions=1 -falign-jumps=1 -falign-loops=1
+   CFLAGS += -fomit-frame-pointer -ffast-math   
+   CFLAGS += -funsafe-math-optimizations -fsingle-precision-constant -fexpensive-optimizations
+   CFLAGS += -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-unroll-loops
+   
 # Windows MSVC 2003 Xbox 1
 else ifeq ($(platform), xbox1_msvc2003)
 	TARGET := $(TARGET_NAME)_libretro_xdk1.lib
