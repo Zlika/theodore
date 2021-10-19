@@ -15,11 +15,12 @@ Theodore est un "core" [libretro](https://github.com/libretro) émulant un ordin
 
 Cet émulateur est disponible sur les plateformes suivantes :
 * RetroArch : [Installer RetroArch](http://www.retroarch.com/?page=platforms), puis démarrer RetroArch et télécharger le core "theodore" via le "Core Updater".
-* [Recalbox](https://www.recalbox.com/)
+* [Recalbox](https://www.recalbox.com/fr/)
 * [Lakka](http://www.lakka.tv/)
 * [Kodi](https://kodi.tv/)
 * [Batocera](https://batocera.org/)
 * [RetroPie](https://retropie.org.uk/)
+* [RetroBat](https://www.retrobat.ovh/index2.html)
 
 Il devrait être compatible avec toutes les plateformes supportées par RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
 

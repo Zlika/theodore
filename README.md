@@ -20,6 +20,7 @@ This emulator is available on the following platforms:
 * [Kodi](https://kodi.tv/)
 * [Batocera](https://batocera.org/)
 * [RetroPie](https://retropie.org.uk/)
+* [RetroBat](https://www.retrobat.ovh/)
 
 It should be compatible with all the platforms supported by RetroArch (Android, Linux, MacOS, Raspberry Pi, Windows, Nintendo...).
 
