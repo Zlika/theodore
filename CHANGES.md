@@ -1,13 +1,25 @@
 Next version
 ===========
-* [#22](https://github.com/Zlika/theodore/pull/22): Add PS2 platform - [@fjtrujy](https://github.com/fjtrujy)
-* [#23](https://github.com/Zlika/theodore/issues/23): Fix crash on Nintendo Switch (thanks [@cucholix](https://github.com/cucholix) and [@natinusala](https://github.com/natinusala) for helping me fix the problem).
-* Fix tape writing in MO mode.
-* Add .gitlab-ci.yml and update makefile for compatibility with the new libretro build infrastructure - [@twinaphex](https://github.com/twinaphex)
+Features
+--------
 * Add internal database of games with specific start commands for improved autostart feature.
 * Add an option to display a text hint to invit the user to press the 'Start' button to launch the game.
+
+Bug fixes
+---------
+* [#23](https://github.com/Zlika/theodore/issues/23): Fix crash on Nintendo Switch (thanks [@cucholix](https://github.com/cucholix) and [@natinusala](https://github.com/natinusala) for helping me fix the problem).
+* Fix tape writing in MO mode.
 * [#28](https://github.com/Zlika/theodore/issues/28): Fix emulator crash (TO8/TO9/MO6 modes) if palette data register set to a value greater than 15.
 * [#31](https://github.com/Zlika/theodore/issues/31): Fix wrong cycle counts on some instructions (thanks [@bhrousseau](https://github.com/bhrousseau)).
+
+Build infrastructure
+--------------------
+* [#22](https://github.com/Zlika/theodore/pull/22): Add PS2 platform - [@fjtrujy](https://github.com/fjtrujy)
+* Add .gitlab-ci.yml and update makefile for compatibility with the new libretro build infrastructure - [@twinaphex](https://github.com/twinaphex)
+* [#26](https://github.com/Zlika/theodore/pull/26): Add armv8 + rpi64 support - [liberodark](https://github.com/liberodark)
+* [#30](https://github.com/Zlika/theodore/pull/30): Add rpi3_64 support - [jdorigao](https://github.com/jdorigao)
+* [#33](https://github.com/Zlika/theodore/pull/33): Add rpi1 support - [jdorigao](https://github.com/jdorigao)
+* [#34](https://github.com/Zlika/theodore/pull/34): Add Miyoo platform - [salvacam](https://github.com/salvacam)
 
 Release 3.1 (2020/05/22)
 ===========
