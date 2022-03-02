@@ -149,15 +149,21 @@ else ifeq ($(platform), qnx)
 	AR = QCC -Vgcc_ntoarmv7le
 	PLATFORM_DEFINES := -D__BLACKBERRY_QNX__ -marm -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=softfp
 
-# PSL1GHT
-else ifeq ($(platform), psl1ght)
+# Lightweight PS3 Homebrew SDK
+else ifneq (,$(filter $(platform), ps3 psl1ght))
 	HAVE_GCC_WARNINGS := 0
-	TARGET := $(TARGET_NAME)_libretro_psl1ght.a
-	CXX = $(PS3DEV)/ppu/bin/ppu-g++$(EXE_EXT)
-	CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
-	AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
-	PLATFORM_DEFINES := -D__PSL1GHT__
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CXX = $(PS3DEV)/ppu/bin/ppu-$(COMMONLV)g++$(EXE_EXT)
+	CC = $(PS3DEV)/ppu/bin/ppu-$(COMMONLV)gcc$(EXE_EXT)
+	AR = $(PS3DEV)/ppu/bin/ppu-$(COMMONLV)ar$(EXE_EXT)
+	PLATFORM_DEFINES := -D__PS3__
 	STATIC_LINKING = 1
+	ifeq ($(platform), psl1ght)
+		PLATFORM_DEFINES += -D__PSL1GHT__
+	endif
+	ifeq ($(nowarning), 1)
+		PLATFORM_DEFINES += -w
+	endif
 
 # PS2
 else ifeq ($(platform), ps2)
