@@ -114,6 +114,7 @@ else
 	MINVERSION += -miphoneos-version-min=5.0
 endif
 	PLATFORM_DEFINES += $(MINVERSION)
+	LDFLAGS += $(MINVERSION)
 
 # tvOS
 else ifeq ($(platform), tvos-arm64)
