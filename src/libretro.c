@@ -152,6 +152,19 @@ void retro_set_input_state(retro_input_state_t input_state)
 
 void retro_init(void)
 {
+  static const struct retro_controller_description controllers[] = {
+    {"RetroPad", RETRO_DEVICE_JOYPAD},
+    {"Keyboard", RETRO_DEVICE_KEYBOARD},
+  };
+
+  static const struct retro_controller_info ports[] = {
+    {controllers, 2},
+    {controllers, 2},
+    {NULL, 0},
+  };
+
+  environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void *)ports);
+  
   struct retro_input_descriptor desc[] = {
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Left" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Up" },
