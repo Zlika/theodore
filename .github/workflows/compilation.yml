@@ -57,7 +57,7 @@ jobs:
 
   build-psp:
     runs-on: ubuntu-latest
-    container: greatwizard/devkitpsp:latest
+    container: pspdev/pspdev:latest
     steps:
     - uses: actions/checkout@v2
 
