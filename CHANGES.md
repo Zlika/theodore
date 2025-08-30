@@ -2,8 +2,9 @@ Next version
 ===========
 Features
 --------
-* Add internal database of games with specific start commands for improved autostart feature.
+* Add an internal database of games with specific start commands for improved autostart feature.
 * Add an option to display a text hint to invit the user to press the 'Start' button to launch the game.
+* [43](https://github.com/Zlika/theodore/pull/43): Allow to select keyboard as emulated device (thanks [@houbilami](https://github.com/houbilami)).
 
 Bug fixes
 ---------
