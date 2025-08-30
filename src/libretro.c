@@ -799,7 +799,7 @@ bool retro_load_game(const struct retro_game_info *game)
   enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_RGB565;
   if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt))
   {
-    LOG_ERROR("RGB5656 is not supported.\n");
+    LOG_ERROR("RGB565 is not supported.\n");
     return false;
   }
 
