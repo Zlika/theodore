@@ -21,9 +21,11 @@ jobs:
         run: make clean all DASM=1
 
   build-windoze:
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
       - name: Set PATH
         run: echo "C:\msys64\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Compile project
