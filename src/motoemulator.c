@@ -23,7 +23,7 @@
 #ifdef THEODORE_DASM
 #include "debugger.h"
 #endif
-
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -118,6 +118,8 @@ static int reserved1 = 0;
 static int reserved2 = 0;
 static int reserved3 = 0;
 static int reserved4 = 0;
+
+static int timerCsrRead = 0;
 
 //Forward declarations
 static char MgetTo(unsigned short a);
@@ -737,7 +739,15 @@ void Hardreset(void)
 // Timer control /////////////////////////////////////////////////////////////
 static void Timercontrol(void)
 {
-  if(port[0x05] & 0x01) timer6846 = latch6846 << 3;
+  // e7c5 = Timer control (TCR)
+  // If TCR0=1: Timer Reset
+  if(port[0x05] & 0x01)
+  {
+    //printf("Latch=%d\n", latch6846);
+    timer6846 = latch6846 << 3;
+    // Bit CSR0 reset
+    port[0] = port[0] & 0xfe;
+  }
 }
 
 // Execution n cycles processeur 6809 ////////////////////////////////////////
@@ -791,8 +801,10 @@ int Run(int ncyclesmax)
       if(timer6846 <= 5)
       {
         timer_irqcount = 100;
+        //printf("Latch=%d\n", latch6846);
         timer6846 = latch6846 << 3; //reset counter
         port[0x00] |= 0x81; //flag interruption timer et interruption composite
+        //timerCsrRead = 0;
         dc6809_irq = 1; //positionner le signal IRQ pour le processeur
       }
     }
@@ -831,13 +843,13 @@ static void MputTo(unsigned short a, char c)
     case 0xe:
       switch(a)
       {
-        case 0xe7c0: port[0x00] = c; return;
-        case 0xe7c1: port[0x01] = c; mute = c & 8; return;
-        case 0xe7c3: port[0x03] = (c & 0x3d); if((c & 0x20) == 0) keyb_irqcount = 0;
+        case 0xe7c0: timerCsrRead = 0; port[0x00] = c; return;
+        case 0xe7c1: timerCsrRead = 0; port[0x01] = c; mute = c & 8; return;
+        case 0xe7c3: timerCsrRead = 0; port[0x03] = (c & 0x3d); if((c & 0x20) == 0) keyb_irqcount = 0;
         selectVideoRam(); selectRomBank(); return;
-        case 0xe7c5: port[0x05] = c; Timercontrol(); return; //controle timer
-        case 0xe7c6: latch6846 = (latch6846 & 0xff) | ((c & 0xff) << 8); return;
-        case 0xe7c7: latch6846 = (latch6846 & 0xff00) | (c & 0xff); return;
+        case 0xe7c5: timerCsrRead = 0; port[0x05] = c; Timercontrol(); return; //controle timer
+        case 0xe7c6: timerCsrRead = 0; /*port[0] = port[0] & 0xfe;*/ latch6846 = (latch6846 & 0xff) | ((c & 0xff) << 8); return;
+        case 0xe7c7: timerCsrRead = 0; port[0] = port[0] & 0xfe; latch6846 = (latch6846 & 0xff00) | (c & 0xff); return;
         case 0xe7c9: port[0x09] = c; selectRamBankTo(); return;
         // Extension musique et jeux (Motorola 6821)
         //e7cc= registre de direction ou de donnees port A (6821 systeme)
@@ -931,22 +943,45 @@ static char MgetTo(unsigned short a)
     case 0xe:
       switch(a)
       {
-        //e7c0 = 6846 composite status register
-        //csr0 = timer interrupt flag
-        //csr1 = cp1 interrupt flag (keyboard)
-        //csr2 = cp2 interrupt flag
-        //csr3-csr6 unused and set to zeroes
-        //csr7 = composite interrupt flag (if at least one interrupt flag is set)
-        case 0xe7c0: return((port[0]) ? (port[0] | 0x80) : 0);
-        case 0xe7c3: return(port[0x03] | 0x80 | (penbutton << 1));
-        case 0xe7c6: return (timer6846 >> 11 & 0xff);
-        case 0xe7c7: return (timer6846 >> 3 & 0xff);
+        // == e7c0-e7c7: PIA Timer (6846) ==
+        // e7c0 = 6846 Composite Status Register (CSR)
+        //   csr0 = timer interrupt flag
+        //   csr1 = cp1 interrupt flag (keyboard)
+        //   csr2 = cp2 interrupt flag
+        //   csr3-csr6 unused and set to zeroes
+        //   csr7 = composite interrupt flag (if at least one interrupt flag is set)
+        //   Reset of csr0 when:
+        //     1) Timer Reset - Internal Reset Bit TCR0=1 or External Reset=0
+        //     2) Any Counter Initialization condition
+        //     3) A Write Timer Latches command if Time Interval modes (TCR3=1) are being used.
+        //     4) A Read Timer Counter command, provided this is preceded by a Read Composite
+        //        Status Register while CSR0 is set. This latter condition prevents missing an
+        //        Interrupt Request generated after reading the Status Register and prior
+        //        to reading the counter.
+        case 0xe7c0: if ((port[0] & 0x01) == 1) {timerCsrRead = 1;} return((port[0]) ? (port[0] | 0x80) : 0);
+        // e7c1 = Control Port C (CRC)
+        // e7c2 = Direction Port C (DDRC)
+        // e7c3 = Data Port C (PRC)
+        case 0xe7c3: timerCsrRead = 0; return(port[0x03] | 0x80 | (penbutton << 1));
+        // e7c5 = Timer control (TCR)
+        //   tcr0 = Internal reset
+        //   tcr1 = Clock source (0 = external)
+        //   tcr2 = Divide-by-8 prescaler for the counter if set
+        //   tcr3-5 = Timer operating mode
+        //   tcr6 = Mask or enable the Timer Interrupt Request
+        //   tcr7 = Output enable bit
+        // e7c6 = Timer MSB (TMSB)
+        // e7c7 = Timer LSB (TLSB)
+        case 0xe7c6: if (((port[0] & 0x01) == 1) && (timerCsrRead == 1)) {port[0] = port[0] & 0xfe; /*timerCsrRead = 0;*/} return (timer6846 >> 11 & 0xff);
+        case 0xe7c7: if (((port[0] & 0x01) == 1) && (timerCsrRead == 1)) {port[0] = port[0] & 0xfe; /*timerCsrRead = 0;*/} return (timer6846 >> 3 & 0xff);
+        // == e7c8-e7cb: 6821 System ==
+        // e7ca = Control Port A
         case 0xe7ca: return (videolinenumber < 200) ? 0 : 2; //non, registre de controle PIA
-        // Extension musique et jeux (Motorola 6821)
-        //e7cc= registre de direction ou de donnees port A (6821 systeme)
-        //e7cd= registre de direction ou de donnees port B
-        //e7ce= registre de controle port A (CRA)
-        //e7cf= registre de controle port B (CRB)
+        // == Extension musique et jeux (Motorola 6821) ==
+        // e7cc= registre de direction ou de donnees port A (6821 systeme)
+        // e7cd= registre de direction ou de donnees port B
+        // e7ce= registre de controle port A (CRA)
+        // e7cf= registre de controle port B (CRB)
         case 0xe7cc: return((port[0x0e] & 4) ? joysposition : port[0x0c]);
         case 0xe7cd: return((port[0x0f] & 4) ? joysaction | sound : port[0x0d]);
         case 0xe7ce: return 0x04;
