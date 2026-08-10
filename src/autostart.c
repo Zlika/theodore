@@ -20,7 +20,9 @@
 
 #include "autostart.h"
 
-#include <stdio.h>
+#include <streams/file_stream.h>
+#include <lrc_hash.h>
+
 #include <string.h>
 #include <ctype.h>
 
@@ -28,7 +30,6 @@
 #include "logger.h"
 #include "keymap.h"
 #include "motoemulator.h"
-#include "md5.h"
 
 #define SIZE_BUFFER_TAPE 32
 #define TAPE_BASIC_PATTERN1 "BAS\0"
@@ -119,22 +120,22 @@ static bool find_tape_pattern(char *buffer, int size_buffer, char *pattern, int 
 /* Returns true if the first file of the tape has a BAS extension, false otherwise. */
 static bool autodetect_tape_first_file_is_basic(const char *filename)
 {
-  FILE *file;
+  RFILE *file;
   char tape_buffer[SIZE_BUFFER_TAPE];
 
-  file = fopen(filename, "rb");
+  file = filestream_open(filename, RETRO_VFS_FILE_ACCESS_READ, RETRO_VFS_FILE_ACCESS_HINT_NONE);
   if (file == NULL)
   {
     LOG_ERROR("Cannot open file %s.\n", filename);
     return false;
   }
-  if (fread(tape_buffer, SIZE_BUFFER_TAPE, 1, file) != 1)
+  if (filestream_read(file, tape_buffer, SIZE_BUFFER_TAPE) != SIZE_BUFFER_TAPE)
   {
     LOG_ERROR("Cannot read file %s.\n", filename);
-    fclose(file);
+    filestream_close(file);
     return false;
   }
-  fclose(file);
+  filestream_close(file);
   return find_tape_pattern(tape_buffer, SIZE_BUFFER_TAPE, TAPE_BASIC_PATTERN1, TAPE_BASIC_PATTERN1_SIZE)
       || find_tape_pattern(tape_buffer, SIZE_BUFFER_TAPE, TAPE_BASIC_PATTERN2, TAPE_BASIC_PATTERN2_SIZE)
       || find_tape_pattern(tape_buffer, SIZE_BUFFER_TAPE, TAPE_BASIC_PATTERN3, TAPE_BASIC_PATTERN3_SIZE);
@@ -193,24 +194,24 @@ char *autodetect_model(const char *filename)
 
 static void compute_md5(const char *filename, unsigned char *hash)
 {
-  FILE *file;
+  RFILE *file;
   char buffer[MD5_BUFFER_SIZE];
   unsigned long size_read;
   MD5_CTX ctx;
 
   MD5_Init(&ctx);
 
-  file = fopen(filename, "rb");
+  file = filestream_open(filename, RETRO_VFS_FILE_ACCESS_READ, RETRO_VFS_FILE_ACCESS_HINT_NONE);
   if (file == NULL)
   {
     LOG_ERROR("Cannot open file %s.\n", filename);
     return;
   }
-  while ((size_read = fread(buffer, 1, MD5_BUFFER_SIZE, file)) > 0)
+  while ((size_read = filestream_read(file, buffer, MD5_BUFFER_SIZE)) > 0)
   {
     MD5_Update(&ctx, buffer, size_read);
   }
-  fclose(file);
+  filestream_close(file);
   MD5_Final(hash, &ctx);
 }
 

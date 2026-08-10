@@ -16,8 +16,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "libretro-common/include/libretro.h"
-#include "libretro-common/include/boolean.h"
+// Includes from libretro-common
+#include <libretro.h>
+#include <boolean.h>
+#include <streams/file_stream.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -115,12 +117,22 @@ static const struct retro_variable prefs[] = {
 
 void retro_set_environment(retro_environment_t env)
 {
+  struct retro_vfs_interface_info vfs_iface_info;
+
   // Emulator can be started without loading a game
   bool no_rom = true;
   env(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
 
   // Emulator's preferences
   env(RETRO_ENVIRONMENT_SET_VARIABLES, (void *) prefs);
+
+  // Initialise VFS
+  vfs_iface_info.required_interface_version = FILESTREAM_REQUIRED_VFS_VERSION;
+  vfs_iface_info.iface = NULL;
+  if (env(RETRO_ENVIRONMENT_GET_VFS_INTERFACE, &vfs_iface_info))
+  {
+    filestream_vfs_init(&vfs_iface_info);
+  }
 
   environ_cb = env;
 }

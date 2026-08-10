@@ -19,7 +19,8 @@
 
 /* Emulation of Thomson devices (floppy/tape/cartridge drives, printer, light pen, mouse) */
 
-#include <stdio.h>
+#include <streams/file_stream.h>
+
 #include <string.h>
 
 #include "6809cpu.h"
@@ -42,9 +43,9 @@
 static bool fdprotection = true;
 static bool k7protection = true;
 static bool printerEnabled = false;
-static FILE *ffd = NULL;   // floppy file (fd format)
-static FILE *fk7 = NULL;   // tape file
-static FILE *fprn = NULL;  // printer file
+static RFILE *ffd = NULL;   // floppy file (fd format)
+static RFILE *fk7 = NULL;   // tape file
+static RFILE *fprn = NULL;  // printer file
 static SapFile sap = { 0, NULL }; // floppy file (sap format)
 static int p0 = MONITOR_PAGE_0_TO;
 static bool is_to = true;
@@ -86,8 +87,23 @@ static void Print(void)
 {
   if (printerEnabled)
   {
-    if(fprn == NULL) fprn = fopen("thomson-printer.txt", "ab");
-    if(fprn != NULL) {fputc(B, fprn); CC &= 0xfe;};
+    if (fprn == NULL)
+    {
+      if (filestream_exists("thomson-printer.txt"))
+      {
+        fprn = filestream_open("thomson-printer.txt", RETRO_VFS_FILE_ACCESS_WRITE | RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING, RETRO_VFS_FILE_ACCESS_HINT_NONE);
+      }
+      else
+      {
+        // Create the file because it does not exist yet
+        fprn = filestream_open("thomson-printer.txt", RETRO_VFS_FILE_ACCESS_WRITE, RETRO_VFS_FILE_ACCESS_HINT_NONE);
+      }
+    }
+    if (fprn != NULL)
+    {
+      filestream_putc(fprn, B);
+      CC &= 0xfe;
+    }
   }
 }
 
@@ -121,10 +137,9 @@ static void Readsector(void)
   {
     // FD file
     s += SECTORS_PER_TRACK * p + SECTORS_PER_SIDE * u;
-    if (fseek(ffd, 0, SEEK_END)) {Diskerror(DISK_IO_ERROR); return;}
-    if ((s << 8) > ftell(ffd)) {Diskerror(DISK_IO_ERROR); return;}
-    if (fseek(ffd, (s - 1) << 8, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
-    if (fread(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
+    if ((s << 8) > filestream_get_size(ffd)) {Diskerror(DISK_IO_ERROR); return;}
+    if (filestream_seek(ffd, (s - 1) << 8, RETRO_VFS_SEEK_POSITION_START)) {Diskerror(DISK_IO_ERROR); return;}
+    if (filestream_read(ffd, buffer, SECTOR_SIZE) != SECTOR_SIZE) {Diskerror(DISK_IO_ERROR); return;}
   }
   else
   {
@@ -160,8 +175,8 @@ static void Writesector(void)
   {
     // FD file
     s += SECTORS_PER_TRACK * p + SECTORS_PER_SIDE * u;
-    if (fseek(ffd, (s - 1) << 8, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
-    if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
+    if (filestream_seek(ffd, (s - 1) << 8, RETRO_VFS_SEEK_POSITION_START)) {Diskerror(DISK_IO_ERROR); return;}
+    if (filestream_write(ffd, buffer, SECTOR_SIZE) != SECTOR_SIZE) {Diskerror(DISK_IO_ERROR); return;}
   }
   else
   {
@@ -185,25 +200,25 @@ static void Formatdisk(void)
   // rem: fatlength provisoire !!!!! (tester la variable adequate)
   // Initialisation of the whole disk with 0xE5
   for (i = 0; i < SECTOR_SIZE; i++) buffer[i] = 0xe5;
-  if (fseek(ffd, u, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
+  if (filestream_seek(ffd, u, RETRO_VFS_SEEK_POSITION_START)) {Diskerror(DISK_IO_ERROR); return;}
   for (i = 0; i < (fatlength * 8); i++)
-    if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
+    if (filestream_write(ffd, buffer, SECTOR_SIZE) != SECTOR_SIZE) {Diskerror(DISK_IO_ERROR); return;}
   // Initialisation of track 20 at 0xFF
   for (i = 0; i < SECTOR_SIZE; i++) buffer[i] = 0xff;
-  if (fseek(ffd, u + 0x14000, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
+  if (filestream_seek(ffd, u + 0x14000, RETRO_VFS_SEEK_POSITION_START)) {Diskerror(DISK_IO_ERROR); return;}
   for (i = 0; i < SECTORS_PER_TRACK; i++)
-    if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
+    if (filestream_write(ffd, buffer, SECTOR_SIZE) != SECTOR_SIZE) {Diskerror(DISK_IO_ERROR); return;}
   // Write the FAT
   buffer[0x00] = 0;
   buffer[0x29] = 0xfe; buffer[0x2a] = 0xfe;
   for (i = fatlength + 1; i < SECTOR_SIZE; i++) buffer[i] = 0xfe;
-  if (fseek(ffd, u + 0x14100, SEEK_SET)) {Diskerror(DISK_IO_ERROR); return;}
-  if (fwrite(buffer, SECTOR_SIZE, 1, ffd) == 0) {Diskerror(DISK_IO_ERROR); return;}
+  if (filestream_seek(ffd, u + 0x14100, RETRO_VFS_SEEK_POSITION_START)) {Diskerror(DISK_IO_ERROR); return;}
+  if (filestream_write(ffd, buffer, SECTOR_SIZE) != SECTOR_SIZE) {Diskerror(DISK_IO_ERROR); return;}
 }
 
 void UnloadFloppy(void)
 {
-  if (ffd) {fclose(ffd); ffd = NULL;}
+  if (ffd) {filestream_close(ffd); ffd = NULL;}
   if (sap.handle) {sap_close(&sap);}
 }
 
@@ -213,7 +228,7 @@ void LoadFd(const char *filename)
   UnloadFloppy();
   if(filename[0] == '\0') return;
   //ouverture de la nouvelle disquette
-  ffd = fopen(filename, "rb+");
+  ffd = filestream_open(filename, RETRO_VFS_FILE_ACCESS_READ_WRITE | RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING, RETRO_VFS_FILE_ACCESS_HINT_NONE);
 }
 
 void LoadSap(const char *filename)
@@ -224,21 +239,21 @@ void LoadSap(const char *filename)
 
 void UnloadTape(void)
 {
-  if(fk7) {fclose(fk7); fk7 = NULL;}
+  if(fk7) {filestream_close(fk7); fk7 = NULL;}
 }
 
 void LoadTape(const char *filename)
 {
   UnloadTape();
   if(filename[0] == '\0') return;
-  fk7 = fopen(filename, "rb+");
+  fk7 = filestream_open(filename, RETRO_VFS_FILE_ACCESS_READ_WRITE | RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING, RETRO_VFS_FILE_ACCESS_HINT_NONE);
 }
 
 void RewindTape(void)
 {
   if (fk7 != NULL)
   {
-    if (fseek(fk7, 0, SEEK_SET)) UnloadTape();
+    if (filestream_seek(fk7, 0, RETRO_VFS_SEEK_POSITION_START)) UnloadTape();
   }
 }
 
@@ -247,7 +262,7 @@ static int ReadByteTape(void)
 {
   int byte = 0;
   if(fk7 == NULL) {Initprog(); return 0;}
-  byte = fgetc(fk7);
+  byte = filestream_getc(fk7);
   if(byte == EOF)
   {
     Initprog();
@@ -274,12 +289,12 @@ static void WriteByteTape(void)
   if (is_to)
   {
     // B register contains the byte to write
-    if(fputc(B, fk7) == EOF) {Initprog(); return;}
+    if(filestream_putc(fk7, B) == EOF) {Initprog(); return;}
   }
   else
   {
     // A register contains the byte to write
-    if(fputc(A, fk7) == EOF) {Initprog(); return;}
+    if(filestream_putc(fk7, A) == EOF) {Initprog(); return;}
     Mputc(0x2045, 0);
   }
 }
@@ -300,16 +315,16 @@ void UnloadMemo(void)
 
 void LoadMemo(const char *filename)
 {
-  FILE *fp = NULL;
+  RFILE *fp = NULL;
   int i, c, carsize;
   // Open the memo7 file
-  fp = fopen(filename, "rb");
+  fp = filestream_open(filename, RETRO_VFS_FILE_ACCESS_READ, RETRO_VFS_FILE_ACCESS_HINT_NONE);
   if(fp == NULL) {UnloadMemo(); return;}
   // Loading
   carsize = 0;
   memset(car, 0, CARTRIDGE_MEM_SIZE);
-  while(((c = fgetc(fp)) != EOF) && (carsize < CARTRIDGE_MEM_SIZE)) car[carsize++] = c;
-  fclose(fp);
+  while(((c = filestream_getc(fp)) != EOF) && (carsize < CARTRIDGE_MEM_SIZE)) car[carsize++] = c;
+  filestream_close(fp);
   for(i = 0; i < 0xc000; i++) ram[i] = -((i & 0x80) >> 7);
   cartype = 0; // cartridge <= 16 Ko
   if(carsize > 0x4000) cartype = 1;   // bank switch system
@@ -413,7 +428,7 @@ void device_serialize(void *data)
     k7data = (k7octet << 8) + k7bit;
     memcpy(buffer+offset, &k7data, sizeof(int));
     offset += sizeof(int);
-    k7data = (int) ftell(fk7);
+    k7data = (int) filestream_tell(fk7);
     memcpy(buffer+offset, &k7data, sizeof(int));
   }
 }
@@ -430,6 +445,6 @@ void device_unserialize(const void *data)
     k7octet = (k7data >> 8) & 0xFF;
     k7bit = k7data & 0xFF;
     memcpy(&k7data, buffer+offset, sizeof(int));
-    fseek(fk7, k7data, SEEK_SET);
+    filestream_seek(fk7, k7data, RETRO_VFS_SEEK_POSITION_START);
   }
 }

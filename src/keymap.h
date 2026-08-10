@@ -21,7 +21,7 @@
 #ifndef __KEYMAP_H
 #define __KEYMAP_H
 
-#include "libretro-common/include/libretro.h"
+#include <libretro.h>
 
 /* Mapping libretro -> Thomson TO scancodes */
 extern const char libretroKeyCodeToThomsonToScanCode[RETROK_LAST];
