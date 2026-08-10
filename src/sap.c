@@ -19,7 +19,7 @@
 /* Management of the SAP file format */
 
 #include "sap.h"
-#include <stdio.h>
+
 #include <string.h>
 
 #define SAP_HEADER_SIZE        66
@@ -45,23 +45,23 @@ static const short int puktable[] = {
 
 SapFile sap_open(const char *filename)
 {
-  FILE *file;
+  RFILE *file;
   char header[SAP_HEADER_SIZE];
   SapFile sapFile = { 0, NULL };
 
-  file = fopen(filename, "rb+");
+  file = filestream_open(filename, RETRO_VFS_FILE_ACCESS_READ_WRITE | RETRO_VFS_FILE_ACCESS_UPDATE_EXISTING, RETRO_VFS_FILE_ACCESS_HINT_NONE);
   if (file == NULL)
   {
     return sapFile;
   }
-  if (fread(header, SAP_HEADER_SIZE, 1, file) != 1)
+  if (filestream_read(file, header, SAP_HEADER_SIZE) != SAP_HEADER_SIZE)
   {
-    fclose(file);
+    filestream_close(file);
     return sapFile;
   }
   if (((header[0] != 1) && (header[0] != 2)) || strncmp(header + 1, SAP_HEADER, sizeof(SAP_HEADER) - 1) != 0)
   {
-    fclose(file);
+    filestream_close(file);
     return sapFile;
   }
   sapFile.format = header[0];
@@ -103,11 +103,11 @@ DiskErrCode sap_readSector(const SapFile *file, int track, int sector, char *dat
   int sap_sector_size = SAP_SECTOR_SIZE(file->format);
   int offset = SAP_HEADER_SIZE + (track * SAP_SECTORS_PER_TRACK + sector - 1) * sap_sector_size;
 
-  if (fseek(file->handle, offset, SEEK_SET))
+  if (filestream_seek(file->handle, offset, RETRO_VFS_SEEK_POSITION_START))
   {
     return DISK_IO_ERROR;
   }
-  if (fread(sap_sector, sap_sector_size, 1, file->handle) != 1)
+  if (filestream_read(file->handle, sap_sector, sap_sector_size) != sap_sector_size)
   {
     return DISK_IO_ERROR;
   }
@@ -140,17 +140,17 @@ DiskErrCode sap_writeSector(const SapFile *file, int track, int sector, char *da
   int sap_sector_size = SAP_SECTOR_SIZE(file->format);
   int offset = SAP_HEADER_SIZE + (track * SAP_SECTORS_PER_TRACK + sector - 1) * sap_sector_size;
 
-  if (fseek(file->handle, offset, SEEK_SET))
+  if (filestream_seek(file->handle, offset, RETRO_VFS_SEEK_POSITION_START))
   {
     return DISK_IO_ERROR;
   }
   // Re-use the same sector's header data then the current one
-  if (fread(sap_sector, SAP_SECTOR_DATA_OFFSET, 1, file->handle) != 1)
+  if (filestream_read(file->handle, sap_sector, SAP_SECTOR_DATA_OFFSET) != SAP_SECTOR_DATA_OFFSET)
   {
     return DISK_IO_ERROR;
   }
   // Rewind to the beginning of the sector
-  if (fseek(file->handle, offset, SEEK_SET))
+  if (filestream_seek(file->handle, offset, RETRO_VFS_SEEK_POSITION_START))
   {
     return DISK_IO_ERROR;
   }
@@ -169,7 +169,7 @@ DiskErrCode sap_writeSector(const SapFile *file, int track, int sector, char *da
   {
     sap_sector[SAP_SECTOR_DATA_OFFSET + i] ^= SAP_MAGIC_NUM;
   }
-  if (fwrite(sap_sector, sap_sector_size, 1, file->handle) != 1)
+  if (filestream_write(file->handle, sap_sector, sap_sector_size) != sap_sector_size)
   {
     return DISK_IO_ERROR;
   }
@@ -178,7 +178,7 @@ DiskErrCode sap_writeSector(const SapFile *file, int track, int sector, char *da
 
 bool sap_close(SapFile *file)
 {
-  bool result = (fclose(file->handle) == 0);
+  bool result = (filestream_close(file->handle) == 0);
   file->format = 0;
   file->handle = NULL;
   return result;

@@ -21,13 +21,13 @@
 #ifndef __SAP_H
 #define __SAP_H
 
-#include <stdio.h>
-#include "boolean.h"
+#include <boolean.h>
+#include <streams/file_stream.h>
 
 typedef struct
 {
   unsigned char format;
-  FILE *handle;
+  RFILE *handle;
 } SapFile;
 
 // Error code that must be written in the DK.STA register ($604E).

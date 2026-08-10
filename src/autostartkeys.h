@@ -18,7 +18,7 @@
 
 /* Commands used to start games */
 
-#include "libretro-common/include/libretro.h"
+#include <libretro.h>
 // For ThomsonModel
 #include "motoemulator.h"
 

@@ -21,7 +21,7 @@
 #ifndef __LOGGER_H
 #define __LOGGER_H
 
-#include "libretro-common/include/libretro.h"
+#include <libretro.h>
 
 extern retro_log_printf_t log_cb;
 

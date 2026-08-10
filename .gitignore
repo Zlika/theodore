@@ -1,7 +1,6 @@
 /src/.deps
 /src/.dirstamp
-/src/*.o
-/src/vkeyb/*.o
+*.o
 
 *.so
 libs

@@ -1,3 +1,9 @@
+Next version
+===========
+Features
+--------
+* [49](https://github.com/Zlika/theodore/pull/49) Use libretro VFS (Virtual File System) interface for file access to be compatible with Android SAF (Storage Access Framework).
+
 Release 3.2 (2026/08/11)
 ===========
 Features
