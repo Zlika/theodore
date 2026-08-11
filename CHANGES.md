@@ -1,4 +1,4 @@
-Next version
+Release 3.2 (2026/08/11)
 ===========
 Features
 --------
@@ -21,6 +21,15 @@ Build infrastructure
 * [#30](https://github.com/Zlika/theodore/pull/30): Add rpi3_64 support - [jdorigao](https://github.com/jdorigao)
 * [#33](https://github.com/Zlika/theodore/pull/33): Add rpi1 support - [jdorigao](https://github.com/jdorigao)
 * [#34](https://github.com/Zlika/theodore/pull/34): Add Miyoo platform - [salvacam](https://github.com/salvacam)
+* [#35](https://github.com/Zlika/theodore/pull/35): Update PS3/PSL1GHT Makefile - [crystalct](https://github.com/crystalct)
+* [#41](https://github.com/Zlika/theodore/pull/41): WiiU Aroma CFW compatibility - [Ploggy](https://github.com/Ploggy)
+* [#42](https://github.com/Zlika/theodore/pull/42): iOS properly set min supported version - [warmenhoven](https://github.com/warmenhoven)
+* [#46](https://github.com/Zlika/theodore/pull/46): Add linux-aarch64 build - [warmenhoven](https://github.com/warmenhoven)
+* [#47](https://github.com/Zlika/theodore/pull/47): Add webOS to CI - [cscd98](https://github.com/cscd98)
+
+Misc
+----
+* [#37](https://github.com/Zlika/theodore/pull/37): Instructions to add the core into the Steam version of RetroArch - [sporniket](https://github.com/sporniket)
 
 Release 3.1 (2020/05/22)
 ===========
