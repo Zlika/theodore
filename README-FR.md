@@ -4,8 +4,8 @@
 Theodore - Emulateur Thomson MO/TO
 =====================================
 
-![Build status](https://github.com/Zlika/theodore/workflows/CI/badge.svg)
-[![Libretro Build Status](https://img.shields.io/gitlab/pipeline/libretro/theodore/master?gitlab_url=https%3A%2F%2Fgit.libretro.com)](https://git.libretro.com/libretro/theodore/-/pipelines)
+[![CI](https://github.com/Zlika/theodore/actions/workflows/compilation.yml/badge.svg)](https://github.com/Zlika/theodore/actions/workflows/compilation.yml)
+[![Libretro Build Status](https://img.shields.io/gitlab/pipeline-status/libretro/theodore?gitlab_url=https%3A%2F%2Fgit.libretro.com&branch=master&logo=gitlab)](https://git.libretro.com/libretro/theodore/-/pipelines)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/15677/badge.svg)](https://scan.coverity.com/projects/zlika-theodore)
 [![GitHub tag](https://img.shields.io/github/tag/Zlika/theodore.svg)](https://github.com/Zlika/theodore/releases)
 
