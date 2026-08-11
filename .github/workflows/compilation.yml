@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-latest, macOS-latest]
         compiler: [gcc, clang]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       - name: Compile project
         env:
           CC: ${{ matrix.compiler }}
@@ -22,20 +22,28 @@ jobs:
 
   build-windoze:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-      - name: Set PATH
-        run: echo "C:\msys64\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Set up MSYS2 (MINGW64)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: false
+          install: >-
+            make
+            git
+            mingw-w64-x86_64-toolchain
+      - uses: actions/checkout@v7
       - name: Compile project
-        run: make platform=windows_msvc2017_desktop_x64 clean all
+        run: make clean all
 
   build-ps2:
     runs-on: ubuntu-latest
     container: ps2dev/ps2dev:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
 
     - name: Install dependencies
       run: apk add build-base
@@ -61,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     container: pspdev/pspdev:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
 
     - name: Get Information Variables
       id: core
@@ -75,7 +83,7 @@ jobs:
 
     - name: Upload artifacts
       if: ${{ success() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}-${{ steps.core.outputs.sha8 }}
         path: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}.a
@@ -84,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     container: devkitpro/devkita64:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
 
     - name: Get Information Variables
       id: core
@@ -98,7 +106,7 @@ jobs:
 
     - name: Upload artifacts
       if: ${{ success() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}-${{ steps.core.outputs.sha8 }}
         path: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}.a
