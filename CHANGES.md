@@ -4,6 +4,11 @@ Features
 --------
 * [49](https://github.com/Zlika/theodore/pull/49) Use libretro VFS (Virtual File System) interface for file access to be compatible with Android SAF (Storage Access Framework).
 
+Build infrastructure
+--------------------
+* Replaced src/libretro-common directory with a git submodule pointing towards https://github.com/libretro/libretro-common/.
+* Fix Windows CI job.
+
 Release 3.2 (2026/08/11)
 ===========
 Features
