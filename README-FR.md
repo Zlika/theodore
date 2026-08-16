@@ -26,6 +26,10 @@ Il devrait être compatible avec toutes les plateformes supportées par RetroArc
 
 ### Instructions de compilation
 
+Cloner le dépôt (avec le sous-module src/libretro-common):
+```
+git clone --recurse-submodules https://github.com/Zlika/theodore.git
+```
 Sur Linux (et la plupart des autres plateformes) :
 ```
 make

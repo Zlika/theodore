@@ -26,6 +26,10 @@ It should be compatible with all the platforms supported by RetroArch (Android, 
 
 ### How to compile
 
+Clone the repository (including the src/libretro-common submodule):
+```
+git clone --recurse-submodules https://github.com/Zlika/theodore.git
+```
 On Linux (and most other platforms):
 ```
 make
