@@ -15,6 +15,8 @@ jobs:
         compiler: [gcc, clang]
     steps:
       - uses: actions/checkout@v7
+        with:
+          submodules: true
       - name: Compile project
         env:
           CC: ${{ matrix.compiler }}
@@ -36,6 +38,8 @@ jobs:
             git
             mingw-w64-x86_64-toolchain
       - uses: actions/checkout@v7
+        with:
+          submodules: true
       - name: Compile project
         run: make clean all
 
@@ -44,6 +48,8 @@ jobs:
     container: ps2dev/ps2dev:latest
     steps:
     - uses: actions/checkout@v7
+      with:
+        submodules: true
 
     - name: Install dependencies
       run: apk add build-base
@@ -70,6 +76,8 @@ jobs:
     container: pspdev/pspdev:latest
     steps:
     - uses: actions/checkout@v7
+      with:
+        submodules: true
 
     - name: Get Information Variables
       id: core
@@ -93,6 +101,8 @@ jobs:
     container: devkitpro/devkita64:latest
     steps:
     - uses: actions/checkout@v7
+      with:
+        submodules: true
 
     - name: Get Information Variables
       id: core
